@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" href="https://png.pngtree.com/png-vector/20240531/ourmid/pngtree-bird-of-prey-with-a-yellow-beak-png-image_12588694.png">
   <link rel="stylesheet" href="styles.css">
   <style>
+    /* ... Seus estilos atuais ... */
     body {
       font-family: 'Poppins', sans-serif;
       text-align: center;
@@ -33,136 +34,25 @@
       align-items: center;
       overflow: hidden;
     }
-    .screen {
-      display: none;
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-    .active {
-      display: block;
-      opacity: 1;
-      transform: translateY(0);
-    }
-    button {
-      background: #FF4500;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: 0.3s;
-      margin: 10px;
-    }
-    button:hover {
-      background: #D14000;
-      transform: scale(1.1);
-    }
-    .main-btn {
-      width: 100%;
-      font-size: 18px;
-      padding: 15px;
-      margin-top: 15px;
-    }
-    .export-btn {
-      margin-right: 20px;
-    }
-    input {
-      width: 90%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .profile-btn {
-      background: transparent;
-      border: none;
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .edit-profile-btn {
-      background: #FF4500;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border-radius: 5px;
-      margin-left: 10px;
-      transition: 0.3s;
-    }
-    .edit-profile-btn:hover {
-      background: #D14000;
-      transform: scale(1.1);
-    }
-    .popup {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .popup-content {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      max-width: 400px;
-      width: 100%;
-    }
-    .emergency-btn {
-      background-color: #FF0000;
-      color: white;
-      padding: 12px 24px;
-      font-size: 18px;
-      border-radius: 5px;
-      transition: 0.3s;
-    }
-    .emergency-btn:hover {
-      background-color: #D10000;
-      transform: scale(1.1);
-    }
-    /* Container de botões */
-    .buttons-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-    }
-    /* Layout dos botões de emergência e editar perfil */
-    .action-buttons {
-      display: flex;
-      justify-content: center;
-      margin-top: 20px;
-      width: 100%;
-    }
-    /* Estilos para a frase informativa */
-    .info-text {
-      font-size: 14px;
-      color: #555;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-    @media (max-width: 600px) {
-      #app {
-        width: 100%;
-      }
-    }
-    /* Barra de rolagem para a lista de aferições na tela "Histórico de Aferições" */
-    #historyList {
-      max-height: 300px;
-      overflow-y: auto;
-    }
+    /* ... demais estilos ... */
+    .screen { display: none; opacity: 0; transform: translateY(30px); transition: opacity 0.5s ease, transform 0.5s ease; }
+    .active { display: block; opacity: 1; transform: translateY(0); }
+    button { background: #FF4500; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; margin: 10px; }
+    button:hover { background: #D14000; transform: scale(1.1); }
+    .main-btn { width: 100%; font-size: 18px; padding: 15px; margin-top: 15px; }
+    input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
+    /* ... continue com seus estilos ... */
   </style>
+  
+  <!-- Scripts do Firebase (versão compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  
 </head>
 <body>
   <div id="app">
     <!-- Imagem no canto superior direito -->
-    <img src="https://logowik.com/content/uploads/images/colored-beta4114.logowik.com.webp" alt="Logo" style="position: absolute; top: 10px; right: 10px; height: 40px; width: auto;">
+    <img src="https://logowik.com/content/uploads/images/colored-beta4114.logowik.com.webp" alt="Logo" style="position: absolute; top: 10px; right: 10px; height: 40px;">
     
     <!-- Tela Inicial -->
     <div id="home" class="screen active">
@@ -183,10 +73,6 @@
           <button class="emergency-btn">EMERGÊNCIA</button>
         </a>
         <button class="edit-profile-btn" onclick="showScreen('profile')">Editar Perfil</button>
-      </div>
-      <!-- Seção para exibir as informações salvas (simulando uma "base de dados") -->
-      <div id="savedUserData" style="margin-top:20px;">
-        <!-- Aqui serão exibidos os dados do usuário -->
       </div>
     </div>
 
@@ -220,7 +106,7 @@
       <button onclick="showScreen('home')">Voltar</button>
     </div>
 
-    <!-- Popup para Editar Perfil -->
+    <!-- Popup de Edição de Perfil -->
     <div id="profilePopup" class="popup">
       <div class="popup-content">
         <h3>Editar Perfil</h3>
@@ -282,38 +168,25 @@
     </div>
   </div>
 
+  <!-- Bibliotecas externas -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
   <script src="script.js"></script>
+  
   <script>
-    // Recupera os dados do usuário, utilizando os valores salvos ou os campos atuais
-    function getUserProfileData() {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
-      return {
-        name: userProfile && userProfile.name ? userProfile.name : (document.getElementById('profileName').value || 'Nome não informado'),
-        dob: userProfile && userProfile.dob ? userProfile.dob : (document.getElementById('profileDob').value || 'Data de nascimento não informada'),
-        sus: userProfile && userProfile.sus ? userProfile.sus : (document.getElementById('profileSus').value || 'Número do SUS não informado'),
-        email: userProfile && userProfile.email ? userProfile.email : (document.getElementById('profileEmail').value || 'Email não informado')
-      };
-    }
-
-    // Atualiza a seção da página que exibe as informações salvas do usuário
-    function updateSavedUserData() {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
-      const container = document.getElementById('savedUserData');
-      if(userProfile && userProfile.name && userProfile.email){
-        container.innerHTML = `
-          <h3>Informações Salvas</h3>
-          <p><strong>Nome:</strong> ${userProfile.name}</p>
-          <p><strong>Email:</strong> ${userProfile.email}</p>
-          <p><strong>Data de Nascimento:</strong> ${userProfile.dob}</p>
-          <p><strong>Número do SUS:</strong> ${userProfile.sus}</p>
-        `;
-      } else {
-        container.innerHTML = `<p>Nenhuma informação salva.</p>`;
-      }
-    }
+    // Configuração do Firebase – substitua os valores abaixo pelas suas credenciais
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "seu-app.firebaseapp.com",
+      projectId: "seu-app",
+      storageBucket: "seu-app.appspot.com",
+      messagingSenderId: "SEU_SENDER_ID",
+      appId: "SEU_APP_ID"
+    };
+    // Inicializa o Firebase e o Firestore
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
     // Exibe a tela desejada
     function showScreen(screenId) {
@@ -328,7 +201,7 @@
       document.getElementById(screenId).classList.add('active');
     }
 
-    // Salva os dados de saúde e atualiza o histórico
+    // Função para registrar dados de saúde (permanece usando localStorage para o histórico)
     function saveHealthData() {
       const glucose = parseFloat(document.getElementById('glucose').value);
       const systolic = parseFloat(document.getElementById('systolic').value);
@@ -348,48 +221,44 @@
       showScreen('viewData');
     }
 
-    // Salva os dados do perfil e registra globalmente
+    // Salva os dados do perfil no Firestore
     function saveProfileData() {
       const name = document.getElementById('profileName').value;
       const dob = document.getElementById('profileDob').value;
       const sus = document.getElementById('profileSus').value;
       const email = document.getElementById('profileEmail').value;
       const userProfile = { name, dob, sus, email };
-      localStorage.setItem('userProfile', JSON.stringify(userProfile));
-      // Atualiza ou adiciona no array de usuários registrados
-      let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      const index = registeredUsers.findIndex(u => u.email === email);
-      if(index !== -1) {
-         registeredUsers[index] = { name, email };
-      } else {
-         registeredUsers.push({ name, email });
-      }
-      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-      Swal.fire('Alterações salvas com sucesso!', '', 'success');
-      updateSavedUserData(); // Atualiza a área com as informações salvas
-      showScreen('profile');
+
+      // Salva ou atualiza o documento (usando o email como ID)
+      db.collection("users").doc(email).set(userProfile)
+      .then(() => {
+          Swal.fire('Alterações salvas com sucesso!', '', 'success');
+          showScreen('profile');
+      })
+      .catch((error) => {
+          console.error("Erro ao salvar:", error);
+          Swal.fire('Erro ao salvar os dados', '', 'error');
+      });
     }
 
-    // Salva os dados do perfil a partir do popup
+    // Salva os dados do perfil a partir do popup (também no Firestore)
     function saveProfilePopupData() {
       const name = document.getElementById('popupName').value;
       const dob = document.getElementById('popupDob').value;
       const sus = document.getElementById('popupSus').value;
       const email = document.getElementById('popupEmail').value;
       const userProfile = { name, dob, sus, email };
-      localStorage.setItem('userProfile', JSON.stringify(userProfile));
-      let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      const index = registeredUsers.findIndex(u => u.email === email);
-      if(index !== -1) {
-         registeredUsers[index] = { name, email };
-      } else {
-         registeredUsers.push({ name, email });
-      }
-      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
-      Swal.fire('Alterações salvas com sucesso!', '', 'success');
-      closeProfilePopup();
-      updateSavedUserData();
-      showScreen('profile');
+
+      db.collection("users").doc(email).set(userProfile)
+      .then(() => {
+          Swal.fire('Alterações salvas com sucesso!', '', 'success');
+          closeProfilePopup();
+          showScreen('profile');
+      })
+      .catch((error) => {
+          console.error("Erro ao salvar:", error);
+          Swal.fire('Erro ao salvar os dados', '', 'error');
+      });
     }
 
     // Exibe o popup de histórico
@@ -406,7 +275,7 @@
       }, 500);
     }
 
-    // Gera PDF com os dados do usuário e aferições
+    // Geração de PDF dos dados de saúde
     function exportToPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -427,7 +296,7 @@
       Swal.fire('PDF gerado com sucesso!', '', 'success');
     }
 
-    // Gera PDF do histórico
+    // Geração de PDF do histórico
     function exportHistoryToPDF() {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -446,6 +315,18 @@
       doc.text(content, 10, 40);
       doc.save('historico_afericoes.pdf');
       Swal.fire('Histórico gerado com sucesso!', '', 'success');
+    }
+
+    // Função auxiliar para recuperar os dados do usuário (usando os dados atuais ou armazenados localmente)
+    function getUserProfileData() {
+      // Essa função pode ser adaptada para buscar do Firestore se necessário.
+      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
+      return {
+        name: userProfile.name || document.getElementById('profileName').value || 'Nome não informado',
+        dob: userProfile.dob || document.getElementById('profileDob').value || 'Data de nascimento não informada',
+        sus: userProfile.sus || document.getElementById('profileSus').value || 'Número do SUS não informado',
+        email: userProfile.email || document.getElementById('profileEmail').value || 'Email não informado'
+      };
     }
 
     // Exibe o popup "Sobre"
@@ -474,7 +355,7 @@
       }, 500);
     }
 
-    // Carrega o histórico de dados de saúde
+    // Carrega o histórico de dados de saúde (permanece usando localStorage para esse exemplo)
     function loadHealthDataHistory() {
       const healthDataHistory = JSON.parse(localStorage.getItem('healthDataHistory')) || [];
       document.getElementById('dataList').innerHTML = '';
@@ -485,7 +366,7 @@
       });
     }
 
-    // Carrega os dados do perfil do usuário
+    // Carrega os dados do perfil do usuário – essa função pode ser adaptada para também buscar do Firestore se desejado
     function loadUserProfile() {
       const userProfile = JSON.parse(localStorage.getItem('userProfile'));
       if (userProfile) {
@@ -496,7 +377,35 @@
       }
     }
 
-    // Limpa o histórico de aferições
+    // Função para o login de acesso médico
+    function loginMedical() {
+      const username = document.getElementById('medicalUsername').value;
+      const password = document.getElementById('medicalPassword').value;
+      if (username === 'admin' && password === 'admin') {
+        loadRegisteredUsers();
+        showScreen('medicalAccess');
+      } else {
+        Swal.fire('Credenciais incorretas!', '', 'error');
+      }
+    }
+
+    // Carrega os usuários registrados do Firestore e exibe na tela de acesso médico
+    function loadRegisteredUsers() {
+      db.collection("users").get()
+      .then((querySnapshot) => {
+        let html = '';
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          html += `<li>Nome: ${data.name} - Email: ${data.email}</li>`;
+        });
+        document.getElementById('usersList').innerHTML = html;
+      })
+      .catch((error) => {
+        console.error("Erro ao buscar usuários:", error);
+      });
+    }
+
+    // Limpa o histórico de aferições (permanece o mesmo)
     function clearHistory() {
       Swal.fire({
         title: 'Tem certeza?',
@@ -515,32 +424,9 @@
       });
     }
 
-    // Função para o login de acesso médico
-    function loginMedical() {
-      const username = document.getElementById('medicalUsername').value;
-      const password = document.getElementById('medicalPassword').value;
-      if (username === 'admin' && password === 'admin') {
-        loadRegisteredUsers();
-        showScreen('medicalAccess');
-      } else {
-        Swal.fire('Credenciais incorretas!', '', 'error');
-      }
-    }
-
-    // Carrega os usuários registrados e exibe na tela de acesso médico
-    function loadRegisteredUsers() {
-      const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
-      const usersList = document.getElementById('usersList');
-      usersList.innerHTML = '';
-      users.forEach(user => {
-        usersList.innerHTML += `<li>Nome: ${user.name} - Email: ${user.email}</li>`;
-      });
-    }
-
     window.onload = function() {
       loadHealthDataHistory();
       loadUserProfile();
-      updateSavedUserData(); // Atualiza a área com os dados salvos, simulando uma "base de dados"
     };
   </script>
 </body>
