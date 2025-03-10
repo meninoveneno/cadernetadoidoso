@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carcará Health - Registro de Dados de Saúde</title>
+  <link rel="icon" type="image/png" href="https://png.pngtree.com/png-vector/20240531/ourmid/pngtree-bird-of-prey-with-a-yellow-beak-png-image_12588694.png">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #1E90FF, #FF4500);
+      color: white;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    #app {
+      position: relative;
+      background: white;
+      color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 90%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .screen {
+      display: none;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .active {
+      display: block;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    button {
+      background: #FF4500;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin: 10px;
+    }
+    button:hover {
+      background: #D14000;
+      transform: scale(1.1);
+    }
+    .main-btn {
+      width: 100%;
+      font-size: 18px;
+      padding: 15px;
+      margin-top: 15px;
+    }
+    .export-btn {
+      margin-right: 20px;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .profile-btn {
+      background: transparent;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .edit-profile-btn {
+      background: #FF4500;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      margin-left: 10px;
+      transition: 0.3s;
+    }
+    .edit-profile-btn:hover {
+      background: #D14000;
+      transform: scale(1.1);
+    }
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .popup-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+    .emergency-btn {
+      background-color: #FF0000;
+      color: white;
+      padding: 12px 24px;
+      font-size: 18px;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+    .emergency-btn:hover {
+      background-color: #D10000;
+      transform: scale(1.1);
+    }
+    /* Container de botões */
+    .buttons-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+    }
+    /* Layout dos botões de emergência e editar perfil */
+    .action-buttons {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      width: 100%;
+    }
+    /* Estilos para a frase informativa */
+    .info-text {
+      font-size: 14px;
+      color: #555;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+    @media (max-width: 600px) {
+      #app {
+        width: 100%;
+      }
+    }
+    /* Barra de rolagem para a lista de aferições na tela "Histórico de Aferições" */
+    #historyList {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Imagem no canto superior direito -->
+    <img src="https://logowik.com/content/uploads/images/colored-beta4114.logowik.com.webp" alt="Logo" style="position: absolute; top: 10px; right: 10px; height: 40px; width: auto;">
+    
+    <!-- Tela Inicial -->
+    <div id="home" class="screen active">
+      <h1>
+        <img src="https://png.pngtree.com/png-vector/20240531/ourmid/pngtree-bird-of-prey-with-a-yellow-beak-png-image_12588694.png" alt="Ícone Carcará Health" style="vertical-align: middle; height: 50px; margin-right: 10px;">
+        Carcará Health
+      </h1>
+      <p>Feito por acadêmicos de medicina do grupo B de Inovação e Tecnologia em Saúde | FUNORTE 2025.1</p>
+      <div class="buttons-container">
+        <button class="main-btn" onclick="showScreen('healthData')">Começar</button>
+        <button class="main-btn" onclick="showHistory()">Histórico de Aferições</button>
+        <button class="main-btn" onclick="showAboutPopup()">Sobre</button>
+        <!-- Botão Acesso Médico -->
+        <button class="main-btn" onclick="showScreen('medicalLogin')">Acesso Médico</button>
+      </div>
+      <div class="action-buttons">
+        <a href="tel:192">
+          <button class="emergency-btn">EMERGÊNCIA</button>
+        </a>
+        <button class="edit-profile-btn" onclick="showScreen('profile')">Editar Perfil</button>
+      </div>
+    </div>
+
+    <!-- Tela de Registro de Dados de Saúde -->
+    <div id="healthData" class="screen">
+      <h2>Registrar Dados de Saúde</h2>
+      <input type="number" id="glucose" placeholder="Glicose (mg/dL)" required>
+      <input type="number" id="systolic" placeholder="Pressão Sistólica (mmHg)" required>
+      <input type="number" id="diastolic" placeholder="Pressão Diastólica (mmHg)" required>
+      <button onclick="saveHealthData()">Registrar</button>
+      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
+    </div>
+
+    <!-- Tela para Visualizar Dados Registrados -->
+    <div id="viewData" class="screen">
+      <h2>Dados Registrados</h2>
+      <ul id="dataList"></ul>
+      <button class="export-btn" onclick="exportToPDF()">Exportar PDF</button>
+      <button class="back-btn" onclick="showScreen('healthData')">Voltar</button>
+    </div>
+
+    <!-- Tela de Perfil do Usuário -->
+    <div id="profile" class="screen">
+      <h2>Perfil do Usuário</h2>
+      <input type="text" id="profileName" placeholder="Nome" required>
+      <input type="date" id="profileDob" required>
+      <input type="text" id="profileSus" placeholder="Número do Cartão SUS" required>
+      <input type="email" id="profileEmail" placeholder="Email" required>
+      <p class="info-text">Preencha o campo e-mail se deseja receber informações sobre saúde e bem-estar.</p>
+      <button onclick="saveProfileData()">Salvar Alterações</button>
+      <button onclick="showScreen('home')">Voltar</button>
+    </div>
+
+    <!-- Popup para Editar Perfil -->
+    <div id="profilePopup" class="popup">
+      <div class="popup-content">
+        <h3>Editar Perfil</h3>
+        <input type="text" id="popupName" placeholder="Nome Completo" required>
+        <input type="date" id="popupDob" required>
+        <input type="text" id="popupSus" placeholder="Número do Cartão SUS" required>
+        <input type="email" id="popupEmail" placeholder="Email" required>
+        <button onclick="saveProfilePopupData()">Salvar Alterações</button>
+        <button onclick="closeProfilePopup()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- Popup de Histórico de Aferições -->
+    <div id="historyPopup" class="popup">
+      <div class="popup-content">
+        <h3>Histórico de Aferições</h3>
+        <ul id="historyList"></ul>
+        <button onclick="exportHistoryToPDF()">Exportar Histórico</button>
+        <button onclick="clearHistory()">Excluir Histórico</button>
+        <button onclick="closeHistoryPopup()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- Popup Sobre o App -->
+    <div id="aboutPopup" class="popup">
+      <div class="popup-content">
+        <h3>Sobre o Carcará Health</h3>
+        <p>Este aplicativo foi desenvolvido por:</p>
+        <ul>
+          <li>Daiane Cavalcanti</li>
+          <li>Farley Eleandro</li>
+          <li>Fernanda Santos</li>
+          <li>Maria Cecília</li>
+          <li>Maria Fernanda</li>
+          <li>Maria Helena</li>
+          <li>Marcela Alencar</li>
+          <li>Ian Bastos</li>
+          <li>Ingrid Barbosa</li>
+          <li>Lara Regine</li>
+        </ul>
+        <button onclick="closeAboutPopup()">Fechar</button>
+      </div>
+    </div>
+
+    <!-- Tela de Login para Acesso Médico -->
+    <div id="medicalLogin" class="screen">
+      <h2>Acesso Médico</h2>
+      <input type="text" id="medicalUsername" placeholder="Usuário" required>
+      <input type="password" id="medicalPassword" placeholder="Senha" required>
+      <button onclick="loginMedical()">Entrar</button>
+      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
+    </div>
+
+    <!-- Tela de Registros para Acesso Médico -->
+    <div id="medicalAccess" class="screen">
+      <h2>Registros dos Usuários</h2>
+      <ul id="usersList"></ul>
+      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="script.js"></script>
+  <script>
+    // Recupera os dados do usuário, utilizando os valores salvos ou os campos atuais
+    function getUserProfileData() {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      return {
+        name: userProfile && userProfile.name ? userProfile.name : (document.getElementById('profileName').value || 'Nome não informado'),
+        dob: userProfile && userProfile.dob ? userProfile.dob : (document.getElementById('profileDob').value || 'Data de nascimento não informada'),
+        sus: userProfile && userProfile.sus ? userProfile.sus : (document.getElementById('profileSus').value || 'Número do SUS não informado'),
+        email: userProfile && userProfile.email ? userProfile.email : (document.getElementById('profileEmail').value || 'Email não informado')
+      };
+    }
+
+    // Exibe a tela desejada
+    function showScreen(screenId) {
+      if (screenId === 'profile') {
+        loadUserProfile();
+      } else if (screenId === 'viewData') {
+        loadHealthDataHistory();
+      }
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    // Salva os dados de saúde e atualiza o histórico
+    function saveHealthData() {
+      const glucose = parseFloat(document.getElementById('glucose').value);
+      const systolic = parseFloat(document.getElementById('systolic').value);
+      const diastolic = parseFloat(document.getElementById('diastolic').value);
+      const dateTime = new Date().toLocaleString();
+      let alertMessage = '';
+      if (glucose > 140 || systolic > 130 || diastolic > 90) {
+        alertMessage = 'Valores acima do normal!';
+      }
+      const entry = `${dateTime} - Glicose: ${glucose} mg/dL, Pressão: ${systolic}/${diastolic} mmHg <span style="color:red">${alertMessage}</span>`;
+      document.getElementById('dataList').innerHTML += `<li>${entry}</li>`;
+      document.getElementById('historyList').innerHTML += `<li>${entry}</li>`;
+      let healthDataHistory = JSON.parse(localStorage.getItem('healthDataHistory')) || [];
+      healthDataHistory.push(entry);
+      localStorage.setItem('healthDataHistory', JSON.stringify(healthDataHistory));
+      Swal.fire('Registro salvo!', '', 'success');
+      showScreen('viewData');
+    }
+
+    // Salva os dados do perfil e registra o nome e e-mail globalmente
+    function saveProfileData() {
+      const name = document.getElementById('profileName').value;
+      const dob = document.getElementById('profileDob').value;
+      const sus = document.getElementById('profileSus').value;
+      const email = document.getElementById('profileEmail').value;
+      const userProfile = { name, dob, sus, email };
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
+      // Atualiza ou adiciona no array de usuários registrados
+      let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const index = registeredUsers.findIndex(u => u.email === email);
+      if(index !== -1) {
+         registeredUsers[index] = { name, email };
+      } else {
+         registeredUsers.push({ name, email });
+      }
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      Swal.fire('Alterações salvas com sucesso!', '', 'success');
+      showScreen('profile');
+    }
+
+    // Salva os dados do perfil a partir do popup
+    function saveProfilePopupData() {
+      const name = document.getElementById('popupName').value;
+      const dob = document.getElementById('popupDob').value;
+      const sus = document.getElementById('popupSus').value;
+      const email = document.getElementById('popupEmail').value;
+      const userProfile = { name, dob, sus, email };
+      localStorage.setItem('userProfile', JSON.stringify(userProfile));
+      // Atualiza ou adiciona no array de usuários registrados
+      let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const index = registeredUsers.findIndex(u => u.email === email);
+      if(index !== -1) {
+         registeredUsers[index] = { name, email };
+      } else {
+         registeredUsers.push({ name, email });
+      }
+      localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
+      Swal.fire('Alterações salvas com sucesso!', '', 'success');
+      closeProfilePopup();
+      showScreen('profile');
+    }
+
+    // Exibe o popup de histórico
+    function showHistory() {
+      loadHealthDataHistory();
+      document.getElementById('historyPopup').style.display = 'flex';
+      document.getElementById('historyPopup').style.opacity = '1';
+    }
+
+    function closeHistoryPopup() {
+      document.getElementById('historyPopup').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('historyPopup').style.display = 'none';
+      }, 500);
+    }
+
+    // Gera PDF com os dados do usuário e aferições
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const userData = getUserProfileData();
+      doc.setFontSize(12);
+      doc.text(`Nome: ${userData.name}`, 10, 10);
+      doc.text(`Data de Nascimento: ${userData.dob}`, 10, 15);
+      doc.text(`Número SUS: ${userData.sus}`, 10, 20);
+      doc.text(`Email: ${userData.email}`, 10, 25);
+      doc.text('Dados de Aferições', 10, 35);
+      let content = '';
+      document.querySelectorAll('#dataList li').forEach(item => {
+        content += item.innerText + '\n';
+      });
+      doc.setFontSize(10);
+      doc.text(content, 10, 40);
+      doc.save('dados_saude.pdf');
+      Swal.fire('PDF gerado com sucesso!', '', 'success');
+    }
+
+    // Gera PDF do histórico
+    function exportHistoryToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const userData = getUserProfileData();
+      doc.setFontSize(12);
+      doc.text(`Nome: ${userData.name}`, 10, 10);
+      doc.text(`Data de Nascimento: ${userData.dob}`, 10, 15);
+      doc.text(`Número SUS: ${userData.sus}`, 10, 20);
+      doc.text(`Email: ${userData.email}`, 10, 25);
+      doc.text('Dados de Aferições', 10, 35);
+      let content = '';
+      document.querySelectorAll('#historyList li').forEach(item => {
+        content += item.innerText + '\n';
+      });
+      doc.setFontSize(10);
+      doc.text(content, 10, 40);
+      doc.save('historico_afericoes.pdf');
+      Swal.fire('Histórico gerado com sucesso!', '', 'success');
+    }
+
+    // Exibe o popup "Sobre"
+    function showAboutPopup() {
+      document.getElementById('aboutPopup').style.display = 'flex';
+      document.getElementById('aboutPopup').style.opacity = '1';
+    }
+
+    function closeAboutPopup() {
+      document.getElementById('aboutPopup').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('aboutPopup').style.display = 'none';
+      }, 500);
+    }
+
+    // Exibe o popup de edição de perfil
+    function showProfilePopup() {
+      document.getElementById('profilePopup').style.display = 'flex';
+      document.getElementById('profilePopup').style.opacity = '1';
+    }
+
+    function closeProfilePopup() {
+      document.getElementById('profilePopup').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('profilePopup').style.display = 'none';
+      }, 500);
+    }
+
+    // Carrega o histórico de dados de saúde
+    function loadHealthDataHistory() {
+      const healthDataHistory = JSON.parse(localStorage.getItem('healthDataHistory')) || [];
+      document.getElementById('dataList').innerHTML = '';
+      document.getElementById('historyList').innerHTML = '';
+      healthDataHistory.forEach(entry => {
+        document.getElementById('dataList').innerHTML += `<li>${entry}</li>`;
+        document.getElementById('historyList').innerHTML += `<li>${entry}</li>`;
+      });
+    }
+
+    // Carrega os dados do perfil do usuário
+    function loadUserProfile() {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      if (userProfile) {
+        document.getElementById('profileName').value = userProfile.name;
+        document.getElementById('profileDob').value = userProfile.dob;
+        document.getElementById('profileSus').value = userProfile.sus;
+        document.getElementById('profileEmail').value = userProfile.email;
+      }
+    }
+
+    // Limpa o histórico de aferições
+    function clearHistory() {
+      Swal.fire({
+        title: 'Tem certeza?',
+        text: 'Isso excluirá todo o histórico de aferições!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.removeItem('healthDataHistory');
+          document.getElementById('dataList').innerHTML = '';
+          document.getElementById('historyList').innerHTML = '';
+          Swal.fire('Histórico excluído!', '', 'success');
+        }
+      });
+    }
+
+    // Função para o login de acesso médico
+    function loginMedical() {
+      const username = document.getElementById('medicalUsername').value;
+      const password = document.getElementById('medicalPassword').value;
+      if (username === 'admin' && password === 'admin') {
+        loadRegisteredUsers();
+        showScreen('medicalAccess');
+      } else {
+        Swal.fire('Credenciais incorretas!', '', 'error');
+      }
+    }
+
+    // Carrega os usuários registrados e exibe na tela de acesso médico
+    function loadRegisteredUsers() {
+      const users = JSON.parse(localStorage.getItem('registeredUsers')) || [];
+      const usersList = document.getElementById('usersList');
+      usersList.innerHTML = '';
+      users.forEach(user => {
+        usersList.innerHTML += `<li>Nome: ${user.name} - Email: ${user.email}</li>`;
+      });
+    }
+
+    window.onload = function() {
+      loadHealthDataHistory();
+      loadUserProfile();
+    };
+  </script>
+</body>
+</html>
