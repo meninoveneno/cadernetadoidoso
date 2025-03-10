@@ -184,6 +184,10 @@
         </a>
         <button class="edit-profile-btn" onclick="showScreen('profile')">Editar Perfil</button>
       </div>
+      <!-- Seção para exibir as informações salvas (simulando uma "base de dados") -->
+      <div id="savedUserData" style="margin-top:20px;">
+        <!-- Aqui serão exibidos os dados do usuário -->
+      </div>
     </div>
 
     <!-- Tela de Registro de Dados de Saúde -->
@@ -294,6 +298,23 @@
       };
     }
 
+    // Atualiza a seção da página que exibe as informações salvas do usuário
+    function updateSavedUserData() {
+      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
+      const container = document.getElementById('savedUserData');
+      if(userProfile && userProfile.name && userProfile.email){
+        container.innerHTML = `
+          <h3>Informações Salvas</h3>
+          <p><strong>Nome:</strong> ${userProfile.name}</p>
+          <p><strong>Email:</strong> ${userProfile.email}</p>
+          <p><strong>Data de Nascimento:</strong> ${userProfile.dob}</p>
+          <p><strong>Número do SUS:</strong> ${userProfile.sus}</p>
+        `;
+      } else {
+        container.innerHTML = `<p>Nenhuma informação salva.</p>`;
+      }
+    }
+
     // Exibe a tela desejada
     function showScreen(screenId) {
       if (screenId === 'profile') {
@@ -327,7 +348,7 @@
       showScreen('viewData');
     }
 
-    // Salva os dados do perfil e registra o nome e e-mail globalmente
+    // Salva os dados do perfil e registra globalmente
     function saveProfileData() {
       const name = document.getElementById('profileName').value;
       const dob = document.getElementById('profileDob').value;
@@ -345,6 +366,7 @@
       }
       localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
       Swal.fire('Alterações salvas com sucesso!', '', 'success');
+      updateSavedUserData(); // Atualiza a área com as informações salvas
       showScreen('profile');
     }
 
@@ -356,7 +378,6 @@
       const email = document.getElementById('popupEmail').value;
       const userProfile = { name, dob, sus, email };
       localStorage.setItem('userProfile', JSON.stringify(userProfile));
-      // Atualiza ou adiciona no array de usuários registrados
       let registeredUsers = JSON.parse(localStorage.getItem('registeredUsers')) || [];
       const index = registeredUsers.findIndex(u => u.email === email);
       if(index !== -1) {
@@ -367,6 +388,7 @@
       localStorage.setItem('registeredUsers', JSON.stringify(registeredUsers));
       Swal.fire('Alterações salvas com sucesso!', '', 'success');
       closeProfilePopup();
+      updateSavedUserData();
       showScreen('profile');
     }
 
@@ -518,6 +540,7 @@
     window.onload = function() {
       loadHealthDataHistory();
       loadUserProfile();
+      updateSavedUserData(); // Atualiza a área com os dados salvos, simulando uma "base de dados"
     };
   </script>
 </body>
