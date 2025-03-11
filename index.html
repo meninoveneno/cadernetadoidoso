@@ -2,8 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Caderneta Virtual do Idoso</title>
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1742/1742554.png">
   <style>
     /* Estilos modernos */
     body {
@@ -322,7 +323,7 @@
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
-    <img src="https://png.pngtree.com/png-clipart/20250104/original/pngtree-flat-family-elderly-material-png-image_5452427.png" alt="Família e Idosos">
+    <img src="https://cdn-icons-png.flaticon.com/512/1742/1742554.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -344,8 +345,6 @@
         <input type="text" id="nome" name="nome">
         <label for="dataNascimento">Data de Nascimento:</label>
         <input type="date" id="dataNascimento" name="dataNascimento">
-        <label for="idade">Idade:</label>
-        <input type="number" id="idade" name="idade">
         <label for="peso">Peso (kg):</label>
         <input type="number" id="peso" name="peso">
         <label for="contato">Contato:</label>
@@ -586,7 +585,6 @@
       if (savedData) {
         let identificacao = `<p><strong>Nome:</strong> ${savedData.nome}</p>
           <p><strong>Data de Nascimento:</strong> ${savedData.dataNascimento}</p>
-          <p><strong>Idade:</strong> ${savedData.idade}</p>
           <p><strong>Peso (kg):</strong> ${savedData.peso}</p>
           <p><strong>Contato:</strong> ${savedData.contato}</p>
           <p><strong>Contato de Emergência:</strong> ${savedData.contatoEmergencia}</p>`;
@@ -643,7 +641,6 @@
       const formData = {
         nome: document.getElementById('nome').value,
         dataNascimento: document.getElementById('dataNascimento').value,
-        idade: document.getElementById('idade').value,
         peso: document.getElementById('peso').value,
         contato: document.getElementById('contato').value,
         contatoEmergencia: document.getElementById('contatoEmergencia').value,
@@ -706,17 +703,19 @@
       const doc = new jsPDF();
       let y = 10;
       
-      // Cabeçalho com identificação do paciente
+      // Cabeçalho com identificação do paciente e data/hora
+      const currentDate = new Date().toLocaleString('pt-BR');
       doc.setFontSize(16);
       doc.text(`Paciente: ${savedData.nome}`, 10, y);
       y += 10;
       doc.setFontSize(12);
+      doc.text(`Data e Hora de Criação: ${currentDate}`, 10, y);
+      y += 10;
       
       let lines = [];
       lines.push("Identificação:");
       lines.push(`Nome: ${savedData.nome}`);
       lines.push(`Data de Nascimento: ${savedData.dataNascimento}`);
-      lines.push(`Idade: ${savedData.idade}`);
       lines.push(`Peso (kg): ${savedData.peso}`);
       lines.push(`Contato: ${savedData.contato}`);
       lines.push(`Contato de Emergência: ${savedData.contatoEmergencia}`);
@@ -829,7 +828,6 @@
       if (savedData) {
         document.getElementById('nome').value = savedData.nome || '';
         document.getElementById('dataNascimento').value = savedData.dataNascimento || '';
-        document.getElementById('idade').value = savedData.idade || '';
         document.getElementById('peso').value = savedData.peso || '';
         document.getElementById('contato').value = savedData.contato || '';
         document.getElementById('contatoEmergencia').value = savedData.contatoEmergencia || '';
