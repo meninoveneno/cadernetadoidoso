@@ -5,21 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Caderneta Virtual do Idoso</title>
   <style>
-    /* Estilos básicos */
+    /* Estilos modernos */
     body {
-      font-family: Arial, sans-serif;
-      font-size: 18px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 16px;
       margin: 0;
       padding: 0;
-      background-color: #f5f5f5;
+      background-color: #f8f9fa;
+      color: #333;
     }
     .container {
       max-width: 900px;
       margin: 20px auto;
       background: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
-      border-radius: 8px;
+      border-radius: 12px;
     }
     /* Abas */
     .tabs {
@@ -27,27 +28,27 @@
       overflow-x: auto;
       padding: 0;
       list-style: none;
-      border-bottom: 2px solid #ddd;
-      -webkit-overflow-scrolling: touch;
+      border-bottom: 2px solid #e9ecef;
       margin-bottom: 20px;
     }
     .tabs li {
       text-align: center;
-      padding: 14px;
-      font-size: 18px;
-      font-weight: bold;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
-      background-color: #f0f0f0;
-      border-radius: 5px;
+      background-color: #e9ecef;
+      border-radius: 8px 8px 0 0;
       transition: all 0.3s ease;
       flex-shrink: 0;
-      min-width: 140px;
+      min-width: 120px;
       margin-right: 8px;
+      color: #495057;
     }
     .tabs li.active {
-      background-color: #007BFF;
+      background-color: #007bff;
       color: white;
-      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
     }
     .tabs li:hover {
       background-color: #0056b3;
@@ -65,17 +66,27 @@
     form label {
       display: block;
       margin-top: 12px;
-      font-size: 18px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
     }
     form input,
     form select,
     form textarea {
       width: 100%;
-      padding: 12px;
+      padding: 10px;
       margin-top: 8px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 18px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
     }
     form textarea {
       resize: vertical;
@@ -84,13 +95,14 @@
     /* Botões */
     button {
       margin-top: 20px;
-      padding: 16px 24px;
+      padding: 12px 20px;
       border: none;
       background: #28a745;
       color: #fff;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 18px;
+      font-size: 16px;
+      font-weight: 600;
       transition: background-color 0.3s;
     }
     button:hover {
@@ -110,10 +122,11 @@
       background: #28a745;
       color: #fff;
       padding: 12px 20px;
-      border-radius: 4px;
-      font-size: 18px;
+      border-radius: 8px;
+      font-size: 16px;
       opacity: 0;
       transition: opacity 0.5s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     .popup.show {
       opacity: 1;
@@ -125,16 +138,16 @@
     /* Responsividade */
     @media(max-width: 600px) {
       .tabs li {
-        font-size: 16px;
-        padding: 10px;
-        min-width: 110px;
+        font-size: 14px;
+        padding: 10px 15px;
+        min-width: 100px;
       }
       button, form input, form select, form textarea {
-        font-size: 16px;
-        padding: 10px;
+        font-size: 14px;
+        padding: 8px;
       }
       form label {
-        font-size: 16px;
+        font-size: 14px;
       }
     }
     .review-buttons {
@@ -150,7 +163,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       display: none;
       z-index: 900;
     }
@@ -161,15 +174,16 @@
       transform: translate(-50%, -50%);
       background: #fff;
       padding: 20px;
-      border: 2px solid #007BFF;
-      border-radius: 8px;
+      border-radius: 12px;
       z-index: 1000;
       display: none;
       width: 90%;
       max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
     #monitoramentoScreen h3 {
       margin-top: 0;
+      color: #333;
     }
     #monitoramentoScreen button {
       margin-top: 10px;
@@ -177,11 +191,11 @@
     }
     /* Estilos para o formulário de vacinação */
     .vacina-form {
-      border: 1px solid #ccc;
+      border: 1px solid #e9ecef;
       padding: 15px;
       margin-bottom: 15px;
-      border-radius: 5px;
-      background-color: #f9f9f9;
+      border-radius: 8px;
+      background-color: #f8f9fa;
     }
     .vacina-form .form-row {
       display: flex;
@@ -200,10 +214,11 @@
       color: white;
       border: none;
       padding: 8px 12px;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 14px;
       margin-top: 10px;
+      transition: background-color 0.3s;
     }
     .vacina-form .delete-btn:hover {
       background-color: #c82333;
@@ -217,9 +232,9 @@
     <ul class="tabs">
       <li class="tab active" data-tab="identificacao">Identificação</li>
       <li class="tab" data-tab="vacinacao">Vacinação</li>
-      <li class="tab" data-tab="doencas">Doenças Crônicas e Alergias</li>
-      <li class="tab" data-tab="medicamentos">Medicamentos em Uso</li>
-      <li class="tab" data-tab="recomendacoes">Recomendações/Anotações Médicas</li>
+      <li class="tab" data-tab="doencas">Doenças Crônicas</li>
+      <li class="tab" data-tab="medicamentos">Medicamentos</li>
+      <li class="tab" data-tab="recomendacoes">Anotações</li>
     </ul>
 
     <!-- Conteúdo das abas -->
