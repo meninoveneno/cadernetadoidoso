@@ -31,6 +31,14 @@
       font-size: 36px;
       color: #007bff;
       margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #homeScreen h1 img {
+      width: 50px;
+      height: 50px;
+      margin-right: 15px;
     }
     #homeScreen button {
       padding: 12px 20px;
@@ -284,7 +292,10 @@
 <body>
   <!-- Tela inicial -->
   <div id="homeScreen" class="container">
-    <h1>Caderneta Virtual do Idoso</h1>
+    <h1>
+      <img src="https://png.pngtree.com/png-clipart/20250104/original/pngtree-flat-family-elderly-material-png-image_5452427.png" alt="Ícone de idoso">
+      Caderneta Virtual do Idoso
+    </h1>
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -526,12 +537,24 @@
         if (alarmTime > now) {
           const timeout = alarmTime - now;
           setTimeout(() => {
-            alert(`Hora de tomar o medicamento! Horário: ${time}`);
+            if (Notification.permission === "granted") {
+              new Notification("Hora de tomar o medicamento!", {
+                body: `Horário: ${time}`,
+                icon: "https://png.pngtree.com/png-clipart/20250104/original/pngtree-flat-family-elderly-material-png-image_5452427.png"
+              });
+            } else {
+              alert(`Hora de tomar o medicamento! Horário: ${time}`);
+            }
           }, timeout);
         }
       });
 
       alert("Alarmes configurados com sucesso!");
+    }
+
+    // Solicitar permissão para notificações
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission();
     }
 
     // Atualiza a tela de revisão com os dados salvos, incluindo o monitoramento
