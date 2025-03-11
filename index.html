@@ -175,6 +175,39 @@
       margin-top: 10px;
       width: 48%;
     }
+    /* Estilos para o formulário de vacinação */
+    .vacina-form {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .vacina-form .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .vacina-form .form-row label {
+      flex: 1;
+    }
+    .vacina-form .form-row input,
+    .vacina-form .form-row textarea {
+      flex: 2;
+    }
+    .vacina-form .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .vacina-form .delete-btn:hover {
+      background-color: #c82333;
+    }
   </style>
 </head>
 <body>
@@ -211,14 +244,23 @@
       <div id="vacinasContainer">
         <!-- Formulário inicial para uma vacina -->
         <div class="vacina-form">
-          <label for="nomeVacina">Nome da Vacina:</label>
-          <input type="text" class="nomeVacina" name="nomeVacina[]">
-          <label for="dataAplicacao">Data de Aplicação:</label>
-          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
-          <label for="loteVacina">Lote:</label>
-          <input type="text" class="loteVacina" name="loteVacina[]">
-          <label for="observacoesVacina">Observações:</label>
-          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+          <div class="form-row">
+            <label for="nomeVacina">Nome da Vacina:</label>
+            <input type="text" class="nomeVacina" name="nomeVacina[]">
+          </div>
+          <div class="form-row">
+            <label for="dataAplicacao">Data de Aplicação:</label>
+            <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+          </div>
+          <div class="form-row">
+            <label for="loteVacina">Lote:</label>
+            <input type="text" class="loteVacina" name="loteVacina[]">
+          </div>
+          <div class="form-row">
+            <label for="observacoesVacina">Observações:</label>
+            <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+          </div>
+          <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
         </div>
       </div>
       <button type="button" id="addVacina">Adicionar Vacina</button>
@@ -333,17 +375,32 @@
       const newBlock = document.createElement('div');
       newBlock.classList.add('vacina-form');
       newBlock.innerHTML = `
-        <label for="nomeVacina">Nome da Vacina:</label>
-        <input type="text" class="nomeVacina" name="nomeVacina[]">
-        <label for="dataAplicacao">Data de Aplicação:</label>
-        <input type="date" class="dataAplicacao" name="dataAplicacao[]">
-        <label for="loteVacina">Lote:</label>
-        <input type="text" class="loteVacina" name="loteVacina[]">
-        <label for="observacoesVacina">Observações:</label>
-        <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+        <div class="form-row">
+          <label for="nomeVacina">Nome da Vacina:</label>
+          <input type="text" class="nomeVacina" name="nomeVacina[]">
+        </div>
+        <div class="form-row">
+          <label for="dataAplicacao">Data de Aplicação:</label>
+          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+        </div>
+        <div class="form-row">
+          <label for="loteVacina">Lote:</label>
+          <input type="text" class="loteVacina" name="loteVacina[]">
+        </div>
+        <div class="form-row">
+          <label for="observacoesVacina">Observações:</label>
+          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+        </div>
+        <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
       `;
       container.appendChild(newBlock);
     });
+
+    // Função para excluir um formulário de vacina
+    function deleteVacinaForm(button) {
+      const form = button.closest('.vacina-form');
+      form.remove();
+    }
 
     // Atualiza a tela de revisão com os dados salvos, incluindo o monitoramento
     function updateReviewScreen() {
@@ -628,14 +685,23 @@
               const newBlock = document.createElement('div');
               newBlock.classList.add('vacina-form');
               newBlock.innerHTML = `
-                <label for="nomeVacina">Nome da Vacina:</label>
-                <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nome}">
-                <label for="dataAplicacao">Data de Aplicação:</label>
-                <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao}">
-                <label for="loteVacina">Lote:</label>
-                <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.lote}">
-                <label for="observacoesVacina">Observações:</label>
-                <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes}</textarea>
+                <div class="form-row">
+                  <label for="nomeVacina">Nome da Vacina:</label>
+                  <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nome}">
+                </div>
+                <div class="form-row">
+                  <label for="dataAplicacao">Data de Aplicação:</label>
+                  <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao}">
+                </div>
+                <div class="form-row">
+                  <label for="loteVacina">Lote:</label>
+                  <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.lote}">
+                </div>
+                <div class="form-row">
+                  <label for="observacoesVacina">Observações:</label>
+                  <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes}</textarea>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
               `;
               document.getElementById('vacinasContainer').appendChild(newBlock);
             }
