@@ -29,6 +29,7 @@
       background: linear-gradient(135deg, #007bff, #00bfff);
       color: #fff;
       border-radius: 12px;
+      position: relative; /* Adicionado para posicionar a imagem */
     }
     #homeScreen h1 {
       font-size: 36px;
@@ -38,6 +39,12 @@
       font-size: 24px;
       margin-bottom: 30px;
       font-weight: 400;
+    }
+    #homeScreen img {
+      width: 150px;
+      position: absolute; /* Posicionamento absoluto */
+      left: 20px; /* Distância da borda esquerda */
+      bottom: 20px; /* Distância da borda inferior */
     }
     #homeScreen button {
       padding: 12px 20px;
@@ -284,6 +291,28 @@
     .alarm-btn i {
       font-size: 18px;
     }
+    /* Estilos para o formulário de medicamentos */
+    .medicamento-form {
+      border: 1px solid #e9ecef;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    .medicamento-form .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+    .medicamento-form .delete-btn:hover {
+      background-color: #c82333;
+    }
   </style>
   <!-- Ícones do FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -292,7 +321,8 @@
   <!-- Tela inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
-    <h2>Cuidar hoje para viver melhor amanhã - Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
+    <h2>Cuidar hoje para viver melhor amanhã - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
+    <img src="https://png.pngtree.com/png-clipart/20250104/original/pngtree-flat-family-elderly-material-png-image_5452427.png" alt="Família e Idosos">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -366,7 +396,7 @@
       <form id="form-medicamentos">
         <div id="medicamentosContainer">
           <!-- Bloco inicial de medicamento -->
-          <div class="medicamento">
+          <div class="medicamento-form">
             <label>Nome do Medicamento:</label>
             <input type="text" name="nomeMedicamento[]">
             <label>Dose:</label>
@@ -375,6 +405,7 @@
             <input type="text" name="posologiaMedicamento[]">
             <label>Horário:</label>
             <input type="time" name="horarioMedicamento[]">
+            <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
           </div>
         </div>
         <button type="button" id="addMedicamento">Adicionar Medicamento</button>
@@ -468,7 +499,7 @@
     document.getElementById('addMedicamento').addEventListener('click', () => {
       const container = document.getElementById('medicamentosContainer');
       const newBlock = document.createElement('div');
-      newBlock.classList.add('medicamento');
+      newBlock.classList.add('medicamento-form');
       newBlock.innerHTML = `
         <label>Nome do Medicamento:</label>
         <input type="text" name="nomeMedicamento[]">
@@ -478,9 +509,16 @@
         <input type="text" name="posologiaMedicamento[]">
         <label>Horário:</label>
         <input type="time" name="horarioMedicamento[]">
+        <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
       `;
       container.appendChild(newBlock);
     });
+
+    // Função para excluir um formulário de medicamento
+    function deleteMedicamentoForm(button) {
+      const form = button.closest('.medicamento-form');
+      form.remove();
+    }
 
     // Adicionar vacina dinamicamente
     document.getElementById('addVacina').addEventListener('click', () => {
@@ -809,7 +847,7 @@
               document.querySelector('input[name="horarioMedicamento[]"]').value = medicamento.horario || '';
             } else {
               const newBlock = document.createElement('div');
-              newBlock.classList.add('medicamento');
+              newBlock.classList.add('medicamento-form');
               newBlock.innerHTML = `
                 <label>Nome do Medicamento:</label>
                 <input type="text" name="nomeMedicamento[]" value="${medicamento.nome}">
@@ -819,6 +857,7 @@
                 <input type="text" name="posologiaMedicamento[]" value="${medicamento.posologia}">
                 <label>Horário:</label>
                 <input type="time" name="horarioMedicamento[]" value="${medicamento.horario}">
+                <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
               `;
               document.getElementById('medicamentosContainer').appendChild(newBlock);
             }
