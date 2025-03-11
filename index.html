@@ -133,7 +133,7 @@
       min-height: 100px;
     }
     /* Botões */
-    button {
+    .btn {
       margin-top: 20px;
       padding: 12px 20px;
       border: none;
@@ -144,12 +144,16 @@
       font-size: 16px;
       font-weight: 600;
       transition: background-color 0.3s;
+      width: 100%;
+      max-width: 200px;
     }
-    button:hover {
+    .btn:hover {
       background-color: #218838;
     }
     #addMedicamento, #addVacina {
       background: #17a2b8;
+      width: 100%;
+      max-width: 200px;
     }
     #addMedicamento:hover, #addVacina:hover {
       background: #117a8b;
@@ -386,7 +390,7 @@
           <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
         </div>
       </div>
-      <button type="button" id="addVacina">Adicionar Vacina</button>
+      <button type="button" id="addVacina" class="btn">Adicionar Vacina</button>
     </div>
 
     <div class="tab-content" id="doencas">
@@ -416,7 +420,7 @@
             <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
           </div>
         </div>
-        <button type="button" id="addMedicamento">Adicionar Medicamento</button>
+        <button type="button" id="addMedicamento" class="btn">Adicionar Medicamento</button>
       </form>
     </div>
 
@@ -428,7 +432,7 @@
     </div>
 
     <!-- Botão Salvar Dados -->
-    <button id="saveBtn">Salvar Dados</button>
+    <button id="saveBtn" class="btn">Salvar Dados</button>
 
     <!-- Popup de confirmação -->
     <div id="popup" class="popup">Dados salvos com sucesso!</div>
@@ -467,10 +471,10 @@
       <div id="reviewAnotacoes"></div>
     </div>
     <div class="review-buttons">
-      <button id="exportBtn">Exportar</button>
-      <button id="monitoramentoBtn">Monitoramento</button>
-      <button id="editBtn">Editar</button>
-      <button id="deleteAllBtn">Excluir todos os dados</button>
+      <button id="exportBtn" class="btn">Exportar</button>
+      <button id="monitoramentoBtn" class="btn">Monitoramento</button>
+      <button id="editBtn" class="btn">Editar</button>
+      <button id="deleteAllBtn" class="btn">Excluir todos os dados</button>
     </div>
   </div>
 
@@ -484,8 +488,8 @@
       <label for="glicemiaMonitor">Glicemia:</label>
       <input type="number" id="glicemiaMonitor" name="glicemiaMonitor">
       <div style="display: flex; justify-content: space-between;">
-        <button type="button" id="saveMonitorBtn">Salvar Monitoramento</button>
-        <button type="button" id="closeMonitorBtn">Fechar</button>
+        <button type="button" id="saveMonitorBtn" class="btn">Salvar Monitoramento</button>
+        <button type="button" id="closeMonitorBtn" class="btn">Fechar</button>
       </div>
     </form>
   </div>
