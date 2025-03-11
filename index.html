@@ -512,6 +512,7 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+        updateProgressBar(); // Atualiza a barra de progresso ao mudar de aba
       });
     });
 
@@ -934,6 +935,16 @@
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
+      // Entrar em tela cheia
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+        document.documentElement.mozRequestFullScreen();
+      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari e Opera
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+        document.documentElement.msRequestFullscreen();
+      }
     });
 
     // Atualiza a barra de progresso conforme os dados são preenchidos
@@ -944,14 +955,13 @@
         return;
       }
 
-      const totalFields = 6; // Número total de seções de dados
+      const totalFields = 5; // Número total de seções de dados
       let filledFields = 0;
 
       if (savedData.nome) filledFields++;
       if (savedData.vacinas && savedData.vacinas.length > 0) filledFields++;
       if (savedData.doenças) filledFields++;
       if (savedData.medicamentos && savedData.medicamentos.length > 0) filledFields++;
-      if (savedData.monitoramento && savedData.monitoramento.length > 0) filledFields++;
       if (savedData.anotacoes) filledFields++;
 
       const progress = (filledFields / totalFields) * 100;
