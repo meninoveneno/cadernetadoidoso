@@ -399,6 +399,7 @@
       <button id="exportBtn">Exportar</button>
       <button id="monitoramentoBtn">Monitoramento</button>
       <button id="editBtn">Editar</button>
+      <button id="deleteAllBtn">Excluir todos os dados</button>
     </div>
   </div>
 
@@ -714,6 +715,29 @@
       document.getElementById('monitoramentoOverlay').style.display = 'none';
       document.getElementById('monitoramentoScreen').style.display = 'none';
       updateReviewScreen();
+    });
+
+    // Botão "Compartilhar com os filhos" - envia as anotações médicas via WhatsApp
+    document.getElementById('shareBtn').addEventListener('click', () => {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (!savedData || !savedData.contatoEmergencia) {
+        alert("Nenhum contato de emergência cadastrado.");
+        return;
+      }
+
+      const message = `Anotações médicas:\n${savedData.anotacoes}`;
+      const phoneNumber = savedData.contatoEmergencia.replace(/\D/g, ''); // Remove caracteres não numéricos
+      const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    });
+
+    // Botão "Excluir todos os dados" - remove todos os dados salvos
+    document.getElementById('deleteAllBtn').addEventListener('click', () => {
+      if (confirm("Tem certeza que deseja excluir todos os dados salvos?")) {
+        localStorage.removeItem('formData');
+        alert("Todos os dados foram excluídos com sucesso.");
+        updateReviewScreen();
+      }
     });
 
     // Recuperar dados ao carregar a página (preenche o formulário, se houver dados salvos)
