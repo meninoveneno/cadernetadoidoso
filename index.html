@@ -3,431 +3,648 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carcará Health - Registro de Dados de Saúde</title>
-  <link rel="icon" type="image/png" href="https://png.pngtree.com/png-vector/20240531/ourmid/pngtree-bird-of-prey-with-a-yellow-beak-png-image_12588694.png">
-  <link rel="stylesheet" href="styles.css">
+  <title>Caderneta Virtual do Idoso</title>
   <style>
-    /* ... Seus estilos atuais ... */
+    /* Estilos básicos */
     body {
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #1E90FF, #FF4500);
-      color: white;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
+      font-family: Arial, sans-serif;
+      font-size: 18px;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
     }
-    #app {
-      position: relative;
-      background: white;
-      color: #333;
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 30px;
+      border-radius: 8px;
+    }
+    /* Abas */
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      padding: 0;
+      list-style: none;
+      border-bottom: 2px solid #ddd;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 20px;
+    }
+    .tabs li {
+      text-align: center;
+      padding: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      min-width: 140px;
+      margin-right: 8px;
+    }
+    .tabs li.active {
+      background-color: #007BFF;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.3);
+    }
+    .tabs li:hover {
+      background-color: #0056b3;
+      color: white;
+    }
+    /* Conteúdo das abas */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* Formulários */
+    form label {
+      display: block;
+      margin-top: 12px;
+      font-size: 18px;
+    }
+    form input,
+    form select,
+    form textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+    form textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    /* Botões */
+    button {
+      margin-top: 20px;
+      padding: 16px 24px;
+      border: none;
+      background: #28a745;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #addMedicamento, #addVacina {
+      background: #17a2b8;
+    }
+    #addMedicamento:hover, #addVacina:hover {
+      background: #117a8b;
+    }
+    /* Popup de confirmação */
+    .popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-size: 18px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    .popup.show {
+      opacity: 1;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* Responsividade */
+    @media(max-width: 600px) {
+      .tabs li {
+        font-size: 16px;
+        padding: 10px;
+        min-width: 110px;
+      }
+      button, form input, form select, form textarea {
+        font-size: 16px;
+        padding: 10px;
+      }
+      form label {
+        font-size: 16px;
+      }
+    }
+    .review-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    /* Estilos do Modal de Monitoramento */
+    #monitoramentoOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      z-index: 900;
+    }
+    #monitoramentoScreen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
       padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border: 2px solid #007BFF;
+      border-radius: 8px;
+      z-index: 1000;
+      display: none;
       width: 90%;
       max-width: 400px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
     }
-    /* ... demais estilos ... */
-    .screen { display: none; opacity: 0; transform: translateY(30px); transition: opacity 0.5s ease, transform 0.5s ease; }
-    .active { display: block; opacity: 1; transform: translateY(0); }
-    button { background: #FF4500; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; margin: 10px; }
-    button:hover { background: #D14000; transform: scale(1.1); }
-    .main-btn { width: 100%; font-size: 18px; padding: 15px; margin-top: 15px; }
-    input { width: 90%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; }
-    /* ... continue com seus estilos ... */
+    #monitoramentoScreen h3 {
+      margin-top: 0;
+    }
+    #monitoramentoScreen button {
+      margin-top: 10px;
+      width: 48%;
+    }
   </style>
-  
-  <!-- Scripts do Firebase (versão compat) -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  
 </head>
 <body>
-  <div id="app">
-    <!-- Imagem no canto superior direito -->
-    <img src="https://logowik.com/content/uploads/images/colored-beta4114.logowik.com.webp" alt="Logo" style="position: absolute; top: 10px; right: 10px; height: 40px;">
-    
-    <!-- Tela Inicial -->
-    <div id="home" class="screen active">
-      <h1>
-        <img src="https://png.pngtree.com/png-vector/20240531/ourmid/pngtree-bird-of-prey-with-a-yellow-beak-png-image_12588694.png" alt="Ícone Carcará Health" style="vertical-align: middle; height: 50px; margin-right: 10px;">
-        Carcará Health
-      </h1>
-      <p>Feito por acadêmicos de medicina do grupo B de Inovação e Tecnologia em Saúde | FUNORTE 2025.1</p>
-      <div class="buttons-container">
-        <button class="main-btn" onclick="showScreen('healthData')">Começar</button>
-        <button class="main-btn" onclick="showHistory()">Histórico de Aferições</button>
-        <button class="main-btn" onclick="showAboutPopup()">Sobre</button>
-        <!-- Botão Acesso Médico -->
-        <button class="main-btn" onclick="showScreen('medicalLogin')">Acesso Médico</button>
+  <!-- Tela de Edição -->
+  <div id="editScreen" class="container">
+    <!-- Menu de abas -->
+    <ul class="tabs">
+      <li class="tab active" data-tab="identificacao">Identificação</li>
+      <li class="tab" data-tab="vacinacao">Vacinação</li>
+      <li class="tab" data-tab="doencas">Doenças Crônicas e Alergias</li>
+      <li class="tab" data-tab="medicamentos">Medicamentos em Uso</li>
+      <li class="tab" data-tab="recomendacoes">Recomendações/Anotações Médicas</li>
+    </ul>
+
+    <!-- Conteúdo das abas -->
+    <div class="tab-content active" id="identificacao">
+      <form id="form-identificacao">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome">
+        <label for="dataNascimento">Data de Nascimento:</label>
+        <input type="date" id="dataNascimento" name="dataNascimento">
+        <label for="idade">Idade:</label>
+        <input type="number" id="idade" name="idade">
+        <label for="peso">Peso (kg):</label>
+        <input type="number" id="peso" name="peso">
+        <label for="contato">Contato:</label>
+        <input type="tel" id="contato" name="contato">
+        <label for="contatoEmergencia">Contato de Emergência:</label>
+        <input type="tel" id="contatoEmergencia" name="contatoEmergencia">
+      </form>
+    </div>
+
+    <div class="tab-content" id="vacinacao">
+      <div id="vacinasContainer">
+        <!-- Formulário inicial para uma vacina -->
+        <div class="vacina-form">
+          <label for="nomeVacina">Nome da Vacina:</label>
+          <input type="text" class="nomeVacina" name="nomeVacina[]">
+          <label for="dataAplicacao">Data de Aplicação:</label>
+          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+          <label for="loteVacina">Lote:</label>
+          <input type="text" class="loteVacina" name="loteVacina[]">
+          <label for="observacoesVacina">Observações:</label>
+          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+        </div>
       </div>
-      <div class="action-buttons">
-        <a href="tel:192">
-          <button class="emergency-btn">EMERGÊNCIA</button>
-        </a>
-        <button class="edit-profile-btn" onclick="showScreen('profile')">Editar Perfil</button>
-      </div>
+      <button type="button" id="addVacina">Adicionar Vacina</button>
     </div>
 
-    <!-- Tela de Registro de Dados de Saúde -->
-    <div id="healthData" class="screen">
-      <h2>Registrar Dados de Saúde</h2>
-      <input type="number" id="glucose" placeholder="Glicose (mg/dL)" required>
-      <input type="number" id="systolic" placeholder="Pressão Sistólica (mmHg)" required>
-      <input type="number" id="diastolic" placeholder="Pressão Diastólica (mmHg)" required>
-      <button onclick="saveHealthData()">Registrar</button>
-      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
+    <div class="tab-content" id="doencas">
+      <form id="form-doencas">
+        <label><input type="checkbox" id="hipertensao" name="hipertensao"> Hipertensão</label>
+        <label><input type="checkbox" id="diabetes" name="diabetes"> Diabetes</label>
+        <label><input type="checkbox" id="cardiopatias" name="cardiopatias"> Cardiopatias</label>
+        <label><input type="checkbox" id="chagas" name="chagas"> Chagas</label>
+        <label for="outrasDoencas">Outras Doenças/Alergias:</label>
+        <input type="text" id="outrasDoencas" name="outrasDoencas">
+      </form>
     </div>
 
-    <!-- Tela para Visualizar Dados Registrados -->
-    <div id="viewData" class="screen">
-      <h2>Dados Registrados</h2>
-      <ul id="dataList"></ul>
-      <button class="export-btn" onclick="exportToPDF()">Exportar PDF</button>
-      <button class="back-btn" onclick="showScreen('healthData')">Voltar</button>
+    <div class="tab-content" id="medicamentos">
+      <form id="form-medicamentos">
+        <div id="medicamentosContainer">
+          <!-- Bloco inicial de medicamento -->
+          <div class="medicamento">
+            <label>Nome do Medicamento:</label>
+            <input type="text" name="nomeMedicamento[]">
+            <label>Dose:</label>
+            <input type="text" name="doseMedicamento[]">
+            <label>Posologia:</label>
+            <input type="text" name="posologiaMedicamento[]">
+            <label>Horário:</label>
+            <input type="time" name="horarioMedicamento[]">
+          </div>
+        </div>
+        <button type="button" id="addMedicamento">Adicionar Medicamento</button>
+      </form>
     </div>
 
-    <!-- Tela de Perfil do Usuário -->
-    <div id="profile" class="screen">
-      <h2>Perfil do Usuário</h2>
-      <input type="text" id="profileName" placeholder="Nome" required>
-      <input type="date" id="profileDob" required>
-      <input type="text" id="profileSus" placeholder="Número do Cartão SUS" required>
-      <input type="email" id="profileEmail" placeholder="Email" required>
-      <p class="info-text">Preencha o campo e-mail se deseja receber informações sobre saúde e bem-estar.</p>
-      <button onclick="saveProfileData()">Salvar Alterações</button>
-      <button onclick="showScreen('home')">Voltar</button>
+    <div class="tab-content" id="recomendacoes">
+      <form id="form-recomendacoes">
+        <label for="anotacoes">Anotações Médicas:</label>
+        <textarea id="anotacoes" name="anotacoes"></textarea>
+        <button type="button" id="shareBtn">Compartilhar com os filhos</button>
+      </form>
     </div>
 
-    <!-- Popup de Edição de Perfil -->
-    <div id="profilePopup" class="popup">
-      <div class="popup-content">
-        <h3>Editar Perfil</h3>
-        <input type="text" id="popupName" placeholder="Nome Completo" required>
-        <input type="date" id="popupDob" required>
-        <input type="text" id="popupSus" placeholder="Número do Cartão SUS" required>
-        <input type="email" id="popupEmail" placeholder="Email" required>
-        <button onclick="saveProfilePopupData()">Salvar Alterações</button>
-        <button onclick="closeProfilePopup()">Fechar</button>
-      </div>
-    </div>
+    <!-- Botão Salvar Dados -->
+    <button id="saveBtn">Salvar Dados</button>
 
-    <!-- Popup de Histórico de Aferições -->
-    <div id="historyPopup" class="popup">
-      <div class="popup-content">
-        <h3>Histórico de Aferições</h3>
-        <ul id="historyList"></ul>
-        <button onclick="exportHistoryToPDF()">Exportar Histórico</button>
-        <button onclick="clearHistory()">Excluir Histórico</button>
-        <button onclick="closeHistoryPopup()">Fechar</button>
-      </div>
-    </div>
+    <!-- Popup de confirmação -->
+    <div id="popup" class="popup">Dados salvos com sucesso!</div>
+  </div>
 
-    <!-- Popup Sobre o App -->
-    <div id="aboutPopup" class="popup">
-      <div class="popup-content">
-        <h3>Sobre o Carcará Health</h3>
-        <p>Este aplicativo foi desenvolvido por:</p>
-        <ul>
-          <li>Daiane Cavalcanti</li>
-          <li>Farley Eleandro</li>
-          <li>Fernanda Santos</li>
-          <li>Maria Cecília</li>
-          <li>Maria Fernanda</li>
-          <li>Maria Helena</li>
-          <li>Marcela Alencar</li>
-          <li>Ian Bastos</li>
-          <li>Ingrid Barbosa</li>
-          <li>Lara Regine</li>
-        </ul>
-        <button onclick="closeAboutPopup()">Fechar</button>
-      </div>
-    </div>
-
-    <!-- Tela de Login para Acesso Médico -->
-    <div id="medicalLogin" class="screen">
-      <h2>Acesso Médico</h2>
-      <input type="text" id="medicalUsername" placeholder="Usuário" required>
-      <input type="password" id="medicalPassword" placeholder="Senha" required>
-      <button onclick="loginMedical()">Entrar</button>
-      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
-    </div>
-
-    <!-- Tela de Registros para Acesso Médico -->
-    <div id="medicalAccess" class="screen">
-      <h2>Registros dos Usuários</h2>
-      <ul id="usersList"></ul>
-      <button class="back-btn" onclick="showScreen('home')">Voltar</button>
+  <!-- Tela de Revisão (visualização somente) -->
+  <div id="reviewScreen" class="container" style="display: none;">
+    <h2>Resumo dos Dados Salvos</h2>
+    <div id="reviewContent"></div>
+    <div class="review-buttons">
+      <button id="exportBtn">Exportar</button>
+      <button id="monitoramentoBtn">Monitoramento</button>
+      <button id="editBtn">Editar</button>
     </div>
   </div>
 
-  <!-- Bibliotecas externas -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- Modal de Monitoramento (PA e Glicemia) -->
+  <div id="monitoramentoOverlay"></div>
+  <div id="monitoramentoScreen">
+    <h3>Mapeamento de PA e Glicemia</h3>
+    <form id="form-monitoramento">
+      <label for="paMonitor">Pressão Arterial (PA):</label>
+      <input type="text" id="paMonitor" name="paMonitor" placeholder="ex: 120/80">
+      <label for="glicemiaMonitor">Glicemia:</label>
+      <input type="number" id="glicemiaMonitor" name="glicemiaMonitor">
+      <div style="display: flex; justify-content: space-between;">
+        <button type="button" id="saveMonitorBtn">Salvar Monitoramento</button>
+        <button type="button" id="closeMonitorBtn">Fechar</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- jsPDF (para gerar o PDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <script src="script.js"></script>
-  
   <script>
-    // Configuração do Firebase – substitua os valores abaixo pelas suas credenciais
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "seu-app.firebaseapp.com",
-      projectId: "seu-app",
-      storageBucket: "seu-app.appspot.com",
-      messagingSenderId: "SEU_SENDER_ID",
-      appId: "SEU_APP_ID"
-    };
-    // Inicializa o Firebase e o Firestore
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    // Exibe a tela desejada
-    function showScreen(screenId) {
-      if (screenId === 'profile') {
-        loadUserProfile();
-      } else if (screenId === 'viewData') {
-        loadHealthDataHistory();
-      }
-      document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
+    // Lógica das abas
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
       });
-      document.getElementById(screenId).classList.add('active');
-    }
+    });
 
-    // Função para registrar dados de saúde (permanece usando localStorage para o histórico)
-    function saveHealthData() {
-      const glucose = parseFloat(document.getElementById('glucose').value);
-      const systolic = parseFloat(document.getElementById('systolic').value);
-      const diastolic = parseFloat(document.getElementById('diastolic').value);
-      const dateTime = new Date().toLocaleString();
-      let alertMessage = '';
-      if (glucose > 140 || systolic > 130 || diastolic > 90) {
-        alertMessage = 'Valores acima do normal!';
-      }
-      const entry = `${dateTime} - Glicose: ${glucose} mg/dL, Pressão: ${systolic}/${diastolic} mmHg <span style="color:red">${alertMessage}</span>`;
-      document.getElementById('dataList').innerHTML += `<li>${entry}</li>`;
-      document.getElementById('historyList').innerHTML += `<li>${entry}</li>`;
-      let healthDataHistory = JSON.parse(localStorage.getItem('healthDataHistory')) || [];
-      healthDataHistory.push(entry);
-      localStorage.setItem('healthDataHistory', JSON.stringify(healthDataHistory));
-      Swal.fire('Registro salvo!', '', 'success');
-      showScreen('viewData');
-    }
+    // Adicionar medicamento dinamicamente (novo bloco com campo "Horário")
+    document.getElementById('addMedicamento').addEventListener('click', () => {
+      const container = document.getElementById('medicamentosContainer');
+      const newBlock = document.createElement('div');
+      newBlock.classList.add('medicamento');
+      newBlock.innerHTML = `
+        <label>Nome do Medicamento:</label>
+        <input type="text" name="nomeMedicamento[]">
+        <label>Dose:</label>
+        <input type="text" name="doseMedicamento[]">
+        <label>Posologia:</label>
+        <input type="text" name="posologiaMedicamento[]">
+        <label>Horário:</label>
+        <input type="time" name="horarioMedicamento[]">
+      `;
+      container.appendChild(newBlock);
+    });
 
-    // Salva os dados do perfil no Firestore
-    function saveProfileData() {
-      const name = document.getElementById('profileName').value;
-      const dob = document.getElementById('profileDob').value;
-      const sus = document.getElementById('profileSus').value;
-      const email = document.getElementById('profileEmail').value;
-      const userProfile = { name, dob, sus, email };
+    // Adicionar vacina dinamicamente
+    document.getElementById('addVacina').addEventListener('click', () => {
+      const container = document.getElementById('vacinasContainer');
+      const newBlock = document.createElement('div');
+      newBlock.classList.add('vacina-form');
+      newBlock.innerHTML = `
+        <label for="nomeVacina">Nome da Vacina:</label>
+        <input type="text" class="nomeVacina" name="nomeVacina[]">
+        <label for="dataAplicacao">Data de Aplicação:</label>
+        <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+        <label for="loteVacina">Lote:</label>
+        <input type="text" class="loteVacina" name="loteVacina[]">
+        <label for="observacoesVacina">Observações:</label>
+        <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+      `;
+      container.appendChild(newBlock);
+    });
 
-      // Salva ou atualiza o documento (usando o email como ID)
-      db.collection("users").doc(email).set(userProfile)
-      .then(() => {
-          Swal.fire('Alterações salvas com sucesso!', '', 'success');
-          showScreen('profile');
-      })
-      .catch((error) => {
-          console.error("Erro ao salvar:", error);
-          Swal.fire('Erro ao salvar os dados', '', 'error');
-      });
-    }
-
-    // Salva os dados do perfil a partir do popup (também no Firestore)
-    function saveProfilePopupData() {
-      const name = document.getElementById('popupName').value;
-      const dob = document.getElementById('popupDob').value;
-      const sus = document.getElementById('popupSus').value;
-      const email = document.getElementById('popupEmail').value;
-      const userProfile = { name, dob, sus, email };
-
-      db.collection("users").doc(email).set(userProfile)
-      .then(() => {
-          Swal.fire('Alterações salvas com sucesso!', '', 'success');
-          closeProfilePopup();
-          showScreen('profile');
-      })
-      .catch((error) => {
-          console.error("Erro ao salvar:", error);
-          Swal.fire('Erro ao salvar os dados', '', 'error');
-      });
-    }
-
-    // Exibe o popup de histórico
-    function showHistory() {
-      loadHealthDataHistory();
-      document.getElementById('historyPopup').style.display = 'flex';
-      document.getElementById('historyPopup').style.opacity = '1';
-    }
-
-    function closeHistoryPopup() {
-      document.getElementById('historyPopup').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('historyPopup').style.display = 'none';
-      }, 500);
-    }
-
-    // Geração de PDF dos dados de saúde
-    function exportToPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const userData = getUserProfileData();
-      doc.setFontSize(12);
-      doc.text(`Nome: ${userData.name}`, 10, 10);
-      doc.text(`Data de Nascimento: ${userData.dob}`, 10, 15);
-      doc.text(`Número SUS: ${userData.sus}`, 10, 20);
-      doc.text(`Email: ${userData.email}`, 10, 25);
-      doc.text('Dados de Aferições', 10, 35);
-      let content = '';
-      document.querySelectorAll('#dataList li').forEach(item => {
-        content += item.innerText + '\n';
-      });
-      doc.setFontSize(10);
-      doc.text(content, 10, 40);
-      doc.save('dados_saude.pdf');
-      Swal.fire('PDF gerado com sucesso!', '', 'success');
-    }
-
-    // Geração de PDF do histórico
-    function exportHistoryToPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const userData = getUserProfileData();
-      doc.setFontSize(12);
-      doc.text(`Nome: ${userData.name}`, 10, 10);
-      doc.text(`Data de Nascimento: ${userData.dob}`, 10, 15);
-      doc.text(`Número SUS: ${userData.sus}`, 10, 20);
-      doc.text(`Email: ${userData.email}`, 10, 25);
-      doc.text('Dados de Aferições', 10, 35);
-      let content = '';
-      document.querySelectorAll('#historyList li').forEach(item => {
-        content += item.innerText + '\n';
-      });
-      doc.setFontSize(10);
-      doc.text(content, 10, 40);
-      doc.save('historico_afericoes.pdf');
-      Swal.fire('Histórico gerado com sucesso!', '', 'success');
-    }
-
-    // Função auxiliar para recuperar os dados do usuário (usando os dados atuais ou armazenados localmente)
-    function getUserProfileData() {
-      // Essa função pode ser adaptada para buscar do Firestore se necessário.
-      const userProfile = JSON.parse(localStorage.getItem('userProfile')) || {};
-      return {
-        name: userProfile.name || document.getElementById('profileName').value || 'Nome não informado',
-        dob: userProfile.dob || document.getElementById('profileDob').value || 'Data de nascimento não informada',
-        sus: userProfile.sus || document.getElementById('profileSus').value || 'Número do SUS não informado',
-        email: userProfile.email || document.getElementById('profileEmail').value || 'Email não informado'
-      };
-    }
-
-    // Exibe o popup "Sobre"
-    function showAboutPopup() {
-      document.getElementById('aboutPopup').style.display = 'flex';
-      document.getElementById('aboutPopup').style.opacity = '1';
-    }
-
-    function closeAboutPopup() {
-      document.getElementById('aboutPopup').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('aboutPopup').style.display = 'none';
-      }, 500);
-    }
-
-    // Exibe o popup de edição de perfil
-    function showProfilePopup() {
-      document.getElementById('profilePopup').style.display = 'flex';
-      document.getElementById('profilePopup').style.opacity = '1';
-    }
-
-    function closeProfilePopup() {
-      document.getElementById('profilePopup').style.opacity = '0';
-      setTimeout(() => {
-        document.getElementById('profilePopup').style.display = 'none';
-      }, 500);
-    }
-
-    // Carrega o histórico de dados de saúde (permanece usando localStorage para esse exemplo)
-    function loadHealthDataHistory() {
-      const healthDataHistory = JSON.parse(localStorage.getItem('healthDataHistory')) || [];
-      document.getElementById('dataList').innerHTML = '';
-      document.getElementById('historyList').innerHTML = '';
-      healthDataHistory.forEach(entry => {
-        document.getElementById('dataList').innerHTML += `<li>${entry}</li>`;
-        document.getElementById('historyList').innerHTML += `<li>${entry}</li>`;
-      });
-    }
-
-    // Carrega os dados do perfil do usuário – essa função pode ser adaptada para também buscar do Firestore se desejado
-    function loadUserProfile() {
-      const userProfile = JSON.parse(localStorage.getItem('userProfile'));
-      if (userProfile) {
-        document.getElementById('profileName').value = userProfile.name;
-        document.getElementById('profileDob').value = userProfile.dob;
-        document.getElementById('profileSus').value = userProfile.sus;
-        document.getElementById('profileEmail').value = userProfile.email;
-      }
-    }
-
-    // Função para o login de acesso médico
-    function loginMedical() {
-      const username = document.getElementById('medicalUsername').value;
-      const password = document.getElementById('medicalPassword').value;
-      if (username === 'admin' && password === 'admin') {
-        loadRegisteredUsers();
-        showScreen('medicalAccess');
-      } else {
-        Swal.fire('Credenciais incorretas!', '', 'error');
-      }
-    }
-
-    // Carrega os usuários registrados do Firestore e exibe na tela de acesso médico
-    function loadRegisteredUsers() {
-      db.collection("users").get()
-      .then((querySnapshot) => {
-        let html = '';
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          html += `<li>Nome: ${data.name} - Email: ${data.email}</li>`;
-        });
-        document.getElementById('usersList').innerHTML = html;
-      })
-      .catch((error) => {
-        console.error("Erro ao buscar usuários:", error);
-      });
-    }
-
-    // Limpa o histórico de aferições (permanece o mesmo)
-    function clearHistory() {
-      Swal.fire({
-        title: 'Tem certeza?',
-        text: 'Isso excluirá todo o histórico de aferições!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sim, excluir!',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          localStorage.removeItem('healthDataHistory');
-          document.getElementById('dataList').innerHTML = '';
-          document.getElementById('historyList').innerHTML = '';
-          Swal.fire('Histórico excluído!', '', 'success');
+    // Atualiza a tela de revisão com os dados salvos, incluindo o monitoramento
+    function updateReviewScreen() {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (savedData) {
+        let content = `<h3>Identificação</h3>
+          <p><strong>Nome:</strong> ${savedData.nome}</p>
+          <p><strong>Data de Nascimento:</strong> ${savedData.dataNascimento}</p>
+          <p><strong>Idade:</strong> ${savedData.idade}</p>
+          <p><strong>Peso (kg):</strong> ${savedData.peso}</p>
+          <p><strong>Contato:</strong> ${savedData.contato}</p>
+          <p><strong>Contato de Emergência:</strong> ${savedData.contatoEmergencia}</p>`;
+          
+        content += `<h3>Vacinação</h3>`;
+        if (savedData.vacinas && savedData.vacinas.length > 0) {
+          savedData.vacinas.forEach((vacina, index) => {
+            content += `<p><strong>Vacina ${index+1}:</strong></p>
+              <p><strong>Nome:</strong> ${vacina.nome}</p>
+              <p><strong>Data de Aplicação:</strong> ${vacina.dataAplicacao}</p>
+              <p><strong>Lote:</strong> ${vacina.lote}</p>
+              <p><strong>Observações:</strong> ${vacina.observacoes}</p>`;
+          });
+        } else {
+          content += `<p>Nenhuma vacina registrada.</p>`;
         }
-      });
+          
+        content += `<h3>Doenças Crônicas e Alergias</h3>
+          <p><strong>Hipertensão:</strong> ${savedData.doenças && savedData.doenças.hipertensao ? 'Sim' : 'Não'}</p>
+          <p><strong>Diabetes:</strong> ${savedData.doenças && savedData.doenças.diabetes ? 'Sim' : 'Não'}</p>
+          <p><strong>Cardiopatias:</strong> ${savedData.doenças && savedData.doenças.cardiopatias ? 'Sim' : 'Não'}</p>
+          <p><strong>Chagas:</strong> ${savedData.doenças && savedData.doenças.chagas ? 'Sim' : 'Não'}</p>
+          <p><strong>Outras Doenças/Alergias:</strong> ${savedData.doenças ? savedData.doenças.outrasDoencas : ''}</p>`;
+          
+        content += `<h3>Medicamentos em Uso</h3>`;
+        savedData.medicamentos.forEach((med, index) => {
+          content += `<p><strong>Medicamento ${index+1}:</strong></p>
+            <p><strong>Nome:</strong> ${med.nome}</p>
+            <p><strong>Dose:</strong> ${med.dose}</p>
+            <p><strong>Posologia:</strong> ${med.posologia}</p>
+            <p><strong>Horário:</strong> ${med.horario}</p>`;
+        });
+          
+        content += `<h3>Mapeamento de PA e Glicemia</h3>`;
+        if (savedData.monitoramento && savedData.monitoramento.length > 0) {
+          savedData.monitoramento.forEach((measurement, index) => {
+            content += `<p><strong>Aferição ${index+1}:</strong> ${measurement.datetime} - PA: ${measurement.pa} | Glicemia: ${measurement.glicemia}</p>`;
+          });
+        } else {
+          content += `<p>Nenhuma aferição registrada.</p>`;
+        }
+          
+        content += `<h3>Recomendações/Anotações Médicas</h3>
+          <p>${savedData.anotacoes}</p>`;
+          
+        document.getElementById('reviewContent').innerHTML = content;
+      }
     }
 
-    window.onload = function() {
-      loadHealthDataHistory();
-      loadUserProfile();
-    };
+    // Ao salvar, armazena os dados (exceto os novos monitoramentos) e navega para a tela de revisão
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const formData = {
+        nome: document.getElementById('nome').value,
+        dataNascimento: document.getElementById('dataNascimento').value,
+        idade: document.getElementById('idade').value,
+        peso: document.getElementById('peso').value,
+        contato: document.getElementById('contato').value,
+        contatoEmergencia: document.getElementById('contatoEmergencia').value,
+        vacinas: Array.from(document.querySelectorAll('.vacina-form')).map(form => ({
+          nome: form.querySelector('.nomeVacina').value,
+          dataAplicacao: form.querySelector('.dataAplicacao').value,
+          lote: form.querySelector('.loteVacina').value,
+          observacoes: form.querySelector('.observacoesVacina').value
+        })),
+        doenças: {
+          hipertensao: document.getElementById('hipertensao').checked,
+          diabetes: document.getElementById('diabetes').checked,
+          cardiopatias: document.getElementById('cardiopatias').checked,
+          chagas: document.getElementById('chagas').checked,
+          outrasDoencas: document.getElementById('outrasDoencas').value
+        },
+        medicamentos: Array.from(document.querySelectorAll('input[name="nomeMedicamento[]"]')).map((input, index) => ({
+          nome: input.value,
+          dose: document.querySelectorAll('input[name="doseMedicamento[]"]')[index].value,
+          posologia: document.querySelectorAll('input[name="posologiaMedicamento[]"]')[index].value,
+          horario: document.querySelectorAll('input[name="horarioMedicamento[]"]')[index].value,
+        })),
+        anotacoes: document.getElementById('anotacoes').value
+      };
+
+      // Preserva os monitoramentos já registrados, se houver
+      const existingData = JSON.parse(localStorage.getItem('formData'));
+      if (existingData && existingData.monitoramento) {
+        formData.monitoramento = existingData.monitoramento;
+      } else {
+        formData.monitoramento = [];
+      }
+      
+      localStorage.setItem('formData', JSON.stringify(formData));
+      
+      // Exibe popup de confirmação
+      const popup = document.getElementById('popup');
+      popup.textContent = "Dados salvos com sucesso!";
+      popup.classList.add('show');
+      setTimeout(() => popup.classList.remove('show'), 3000);
+      
+      // Atualiza a tela de revisão e navega para ela
+      updateReviewScreen();
+      document.getElementById('editScreen').style.display = 'none';
+      document.getElementById('reviewScreen').style.display = 'block';
+    });
+
+    // Botão "Editar" - volta para a tela de edição
+    document.getElementById('editBtn').addEventListener('click', () => {
+      document.getElementById('reviewScreen').style.display = 'none';
+      document.getElementById('editScreen').style.display = 'block';
+    });
+
+    // Botão "Exportar" - gera o PDF com os dados salvos (incluindo os monitoramentos)
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (!savedData) return;
+      
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      let y = 10;
+      
+      // Cabeçalho com identificação do paciente
+      doc.setFontSize(16);
+      doc.text(`Paciente: ${savedData.nome}`, 10, y);
+      y += 10;
+      doc.setFontSize(12);
+      
+      let lines = [];
+      lines.push("Identificação:");
+      lines.push(`Nome: ${savedData.nome}`);
+      lines.push(`Data de Nascimento: ${savedData.dataNascimento}`);
+      lines.push(`Idade: ${savedData.idade}`);
+      lines.push(`Peso (kg): ${savedData.peso}`);
+      lines.push(`Contato: ${savedData.contato}`);
+      lines.push(`Contato de Emergência: ${savedData.contatoEmergencia}`);
+      lines.push("");
+      lines.push("Vacinação:");
+      if (savedData.vacinas && savedData.vacinas.length > 0) {
+        savedData.vacinas.forEach((vacina, index) => {
+          lines.push(`Vacina ${index+1}:`);
+          lines.push(`  Nome: ${vacina.nome}`);
+          lines.push(`  Data de Aplicação: ${vacina.dataAplicacao}`);
+          lines.push(`  Lote: ${vacina.lote}`);
+          lines.push(`  Observações: ${vacina.observacoes}`);
+        });
+      } else {
+        lines.push("Nenhuma vacina registrada.");
+      }
+      lines.push("");
+      lines.push("Doenças Crônicas e Alergias:");
+      lines.push(`Hipertensão: ${savedData.doenças.hipertensao ? 'Sim' : 'Não'}`);
+      lines.push(`Diabetes: ${savedData.doenças.diabetes ? 'Sim' : 'Não'}`);
+      lines.push(`Cardiopatias: ${savedData.doenças.cardiopatias ? 'Sim' : 'Não'}`);
+      lines.push(`Chagas: ${savedData.doenças.chagas ? 'Sim' : 'Não'}`);
+      lines.push(`Outras Doenças/Alergias: ${savedData.doenças.outrasDoencas}`);
+      lines.push("");
+      lines.push("Medicamentos em Uso:");
+      savedData.medicamentos.forEach((med, index) => {
+        lines.push(`Medicamento ${index+1}:`);
+        lines.push(`  Nome: ${med.nome}`);
+        lines.push(`  Dose: ${med.dose}`);
+        lines.push(`  Posologia: ${med.posologia}`);
+        lines.push(`  Horário: ${med.horario}`);
+      });
+      lines.push("");
+      lines.push("Mapeamento de PA e Glicemia:");
+      if (savedData.monitoramento && savedData.monitoramento.length > 0) {
+        savedData.monitoramento.forEach((measurement, index) => {
+          lines.push(`Aferição ${index+1} (${measurement.datetime}): PA: ${measurement.pa}, Glicemia: ${measurement.glicemia}`);
+        });
+      } else {
+        lines.push("Nenhuma aferição registrada.");
+      }
+      lines.push("");
+      lines.push("Recomendações/Anotações Médicas:");
+      lines.push(savedData.anotacoes);
+      
+      lines.forEach(line => {
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
+        doc.text(line, 10, y);
+        y += 7;
+      });
+      
+      doc.save('dados_caderneta.pdf');
+    });
+
+    // Botão "Monitoramento" - exibe o modal para inserir uma nova aferição
+    document.getElementById('monitoramentoBtn').addEventListener('click', () => {
+      // Limpa os campos para nova aferição
+      document.getElementById('paMonitor').value = '';
+      document.getElementById('glicemiaMonitor').value = '';
+      document.getElementById('monitoramentoOverlay').style.display = 'block';
+      document.getElementById('monitoramentoScreen').style.display = 'block';
+    });
+
+    // Botão "Fechar" no modal de monitoramento
+    document.getElementById('closeMonitorBtn').addEventListener('click', () => {
+      document.getElementById('monitoramentoOverlay').style.display = 'none';
+      document.getElementById('monitoramentoScreen').style.display = 'none';
+    });
+
+    // Botão "Salvar Monitoramento" no modal
+    document.getElementById('saveMonitorBtn').addEventListener('click', () => {
+      const savedData = JSON.parse(localStorage.getItem('formData')) || {};
+      const measurement = {
+        pa: document.getElementById('paMonitor').value,
+        glicemia: document.getElementById('glicemiaMonitor').value,
+        datetime: new Date().toLocaleString('pt-BR')
+      };
+      if (!savedData.monitoramento) {
+        savedData.monitoramento = [];
+      }
+      savedData.monitoramento.push(measurement);
+      localStorage.setItem('formData', JSON.stringify(savedData));
+      const popup = document.getElementById('popup');
+      popup.textContent = "Monitoramento salvo com sucesso!";
+      popup.classList.add('show');
+      setTimeout(() => {
+        popup.classList.remove('show');
+        popup.textContent = "Dados salvos com sucesso!";
+      }, 3000);
+      document.getElementById('monitoramentoOverlay').style.display = 'none';
+      document.getElementById('monitoramentoScreen').style.display = 'none';
+      updateReviewScreen();
+    });
+
+    // Recuperar dados ao carregar a página (preenche o formulário, se houver dados salvos)
+    window.addEventListener('load', () => {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (savedData) {
+        document.getElementById('nome').value = savedData.nome || '';
+        document.getElementById('dataNascimento').value = savedData.dataNascimento || '';
+        document.getElementById('idade').value = savedData.idade || '';
+        document.getElementById('peso').value = savedData.peso || '';
+        document.getElementById('contato').value = savedData.contato || '';
+        document.getElementById('contatoEmergencia').value = savedData.contatoEmergencia || '';
+        document.getElementById('hipertensao').checked = savedData.doenças?.hipertensao || false;
+        document.getElementById('diabetes').checked = savedData.doenças?.diabetes || false;
+        document.getElementById('cardiopatias').checked = savedData.doenças?.cardiopatias || false;
+        document.getElementById('chagas').checked = savedData.doenças?.chagas || false;
+        document.getElementById('outrasDoencas').value = savedData.doenças?.outrasDoencas || '';
+        if (savedData.medicamentos && savedData.medicamentos.length) {
+          savedData.medicamentos.forEach((medicamento, index) => {
+            if (index === 0) {
+              document.querySelector('input[name="nomeMedicamento[]"]').value = medicamento.nome || '';
+              document.querySelector('input[name="doseMedicamento[]"]').value = medicamento.dose || '';
+              document.querySelector('input[name="posologiaMedicamento[]"]').value = medicamento.posologia || '';
+              document.querySelector('input[name="horarioMedicamento[]"]').value = medicamento.horario || '';
+            } else {
+              const newBlock = document.createElement('div');
+              newBlock.classList.add('medicamento');
+              newBlock.innerHTML = `
+                <label>Nome do Medicamento:</label>
+                <input type="text" name="nomeMedicamento[]" value="${medicamento.nome}">
+                <label>Dose:</label>
+                <input type="text" name="doseMedicamento[]" value="${medicamento.dose}">
+                <label>Posologia:</label>
+                <input type="text" name="posologiaMedicamento[]" value="${medicamento.posologia}">
+                <label>Horário:</label>
+                <input type="time" name="horarioMedicamento[]" value="${medicamento.horario}">
+              `;
+              document.getElementById('medicamentosContainer').appendChild(newBlock);
+            }
+          });
+        }
+        if (savedData.vacinas && savedData.vacinas.length) {
+          savedData.vacinas.forEach((vacina, index) => {
+            if (index === 0) {
+              document.querySelector('.nomeVacina').value = vacina.nome || '';
+              document.querySelector('.dataAplicacao').value = vacina.dataAplicacao || '';
+              document.querySelector('.loteVacina').value = vacina.lote || '';
+              document.querySelector('.observacoesVacina').value = vacina.observacoes || '';
+            } else {
+              const newBlock = document.createElement('div');
+              newBlock.classList.add('vacina-form');
+              newBlock.innerHTML = `
+                <label for="nomeVacina">Nome da Vacina:</label>
+                <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nome}">
+                <label for="dataAplicacao">Data de Aplicação:</label>
+                <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao}">
+                <label for="loteVacina">Lote:</label>
+                <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.lote}">
+                <label for="observacoesVacina">Observações:</label>
+                <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes}</textarea>
+              `;
+              document.getElementById('vacinasContainer').appendChild(newBlock);
+            }
+          });
+        }
+        // Não preenche os campos do modal de monitoramento, pois serão usados para nova aferição
+        document.getElementById('anotacoes').value = savedData.anotacoes || '';
+      }
+    });
   </script>
 </body>
 </html>
