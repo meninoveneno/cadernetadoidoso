@@ -22,6 +22,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
       border-radius: 12px;
+      position: relative; /* Adicionado para posicionar a imagem */
     }
     /* Tela inicial */
     #homeScreen {
@@ -44,8 +45,8 @@
     #homeScreen img {
       width: 97.5px; /* 35% menor que 150px */
       position: absolute; /* Posicionamento absoluto */
-      left: 20px; /* Distância da borda esquerda */
-      bottom: 20px; /* Distância da borda inferior */
+      right: 20px; /* Distância da borda direita */
+      top: 20px; /* Distância da borda superior */
     }
     #homeScreen button {
       padding: 12px 20px;
@@ -60,22 +61,6 @@
     }
     #homeScreen button:hover {
       background-color: #218838;
-    }
-    /* Barra de progresso */
-    .progress-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 10px;
-      background-color: #e9ecef;
-      z-index: 1000;
-    }
-    .progress-bar-inner {
-      height: 100%;
-      width: 0;
-      background-color: #007bff;
-      transition: width 0.5s ease;
     }
     /* Abas */
     .tabs {
@@ -168,6 +153,14 @@
     }
     #addMedicamento:hover, #addVacina:hover {
       background: #117a8b;
+    }
+    /* Botão de Monitoramento */
+    #monitoramentoBtn {
+      background-color: #ffc107; /* Amarelo */
+      color: #333;
+    }
+    #monitoramentoBtn:hover {
+      background-color: #e0a800; /* Amarelo escuro */
     }
     /* Popup de confirmação */
     .popup {
@@ -343,11 +336,6 @@
     <button id="startBtn">Iniciar</button>
   </div>
 
-  <!-- Barra de progresso -->
-  <div class="progress-bar">
-    <div class="progress-bar-inner"></div>
-  </div>
-
   <!-- Tela de Edição -->
   <div id="editScreen" class="container" style="display: none;">
     <!-- Menu de abas -->
@@ -512,7 +500,6 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
         document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
-        updateProgressBar(); // Atualiza a barra de progresso ao mudar de aba
       });
     });
 
@@ -537,8 +524,10 @@
 
     // Função para excluir um formulário de medicamento
     function deleteMedicamentoForm(button) {
-      const form = button.closest('.medicamento-form');
-      form.remove();
+      if (confirm("Tem certeza que deseja excluir este medicamento?")) {
+        const form = button.closest('.medicamento-form');
+        form.remove();
+      }
     }
 
     // Adicionar vacina dinamicamente
@@ -570,8 +559,10 @@
 
     // Função para excluir um formulário de vacina
     function deleteVacinaForm(button) {
-      const form = button.closest('.vacina-form');
-      form.remove();
+      if (confirm("Tem certeza que deseja excluir esta vacina?")) {
+        const form = button.closest('.vacina-form');
+        form.remove();
+      }
     }
 
     // Função para definir alarme com base nos horários dos medicamentos
@@ -727,10 +718,10 @@
       
       // Cabeçalho com identificação do paciente e data/hora
       const currentDate = new Date().toLocaleString('pt-BR');
-      doc.setFontSize(16);
+      doc.setFontSize(14); // Fonte menor
       doc.text(`Paciente: ${savedData.nome}`, 10, y);
       y += 10;
-      doc.setFontSize(12);
+      doc.setFontSize(12); // Fonte menor
       doc.text(`Data e Hora de Criação: ${currentDate}`, 10, y);
       y += 10;
       
@@ -946,31 +937,6 @@
         document.documentElement.msRequestFullscreen();
       }
     });
-
-    // Atualiza a barra de progresso conforme os dados são preenchidos
-    function updateProgressBar() {
-      const savedData = JSON.parse(localStorage.getItem('formData'));
-      if (!savedData) {
-        document.querySelector('.progress-bar-inner').style.width = '0%';
-        return;
-      }
-
-      const totalFields = 5; // Número total de seções de dados
-      let filledFields = 0;
-
-      if (savedData.nome) filledFields++;
-      if (savedData.vacinas && savedData.vacinas.length > 0) filledFields++;
-      if (savedData.doenças) filledFields++;
-      if (savedData.medicamentos && savedData.medicamentos.length > 0) filledFields++;
-      if (savedData.anotacoes) filledFields++;
-
-      const progress = (filledFields / totalFields) * 100;
-      document.querySelector('.progress-bar-inner').style.width = `${progress}%`;
-    }
-
-    // Atualiza a barra de progresso ao carregar a página e ao salvar dados
-    window.addEventListener('load', updateProgressBar);
-    document.getElementById('saveBtn').addEventListener('click', updateProgressBar);
   </script>
 </body>
 </html>
