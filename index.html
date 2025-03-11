@@ -42,7 +42,7 @@
       font-weight: 400;
     }
     #homeScreen img {
-      width: 150px;
+      width: 97.5px; /* 35% menor que 150px */
       position: absolute; /* Posicionamento absoluto */
       left: 20px; /* Distância da borda esquerda */
       bottom: 20px; /* Distância da borda inferior */
@@ -60,6 +60,22 @@
     }
     #homeScreen button:hover {
       background-color: #218838;
+    }
+    /* Barra de progresso */
+    .progress-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 10px;
+      background-color: #e9ecef;
+      z-index: 1000;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      width: 0;
+      background-color: #007bff;
+      transition: width 0.5s ease;
     }
     /* Abas */
     .tabs {
@@ -327,6 +343,11 @@
     <button id="startBtn">Iniciar</button>
   </div>
 
+  <!-- Barra de progresso -->
+  <div class="progress-bar">
+    <div class="progress-bar-inner"></div>
+  </div>
+
   <!-- Tela de Edição -->
   <div id="editScreen" class="container" style="display: none;">
     <!-- Menu de abas -->
@@ -427,7 +448,7 @@
 
   <!-- Tela de Revisão (visualização somente) -->
   <div id="reviewScreen" class="container" style="display: none;">
-    <h2>Resumo dos Dados Salvos</h2>
+    <h2>Dados do Idoso</h2> <!-- Alteração do nome da tela -->
     <div class="review-container">
       <h3>Identificação</h3>
       <div id="reviewIdentificacao"></div>
@@ -712,6 +733,10 @@
       doc.text(`Data e Hora de Criação: ${currentDate}`, 10, y);
       y += 10;
       
+      // Adiciona a logo no canto superior direito
+      const logoUrl = 'https://cdn-icons-png.flaticon.com/512/1742/1742554.png';
+      doc.addImage(logoUrl, 'PNG', 160, 10, 30, 30);
+      
       let lines = [];
       lines.push("Identificação:");
       lines.push(`Nome: ${savedData.nome}`);
@@ -910,6 +935,32 @@
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
     });
+
+    // Atualiza a barra de progresso conforme os dados são preenchidos
+    function updateProgressBar() {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (!savedData) {
+        document.querySelector('.progress-bar-inner').style.width = '0%';
+        return;
+      }
+
+      const totalFields = 6; // Número total de seções de dados
+      let filledFields = 0;
+
+      if (savedData.nome) filledFields++;
+      if (savedData.vacinas && savedData.vacinas.length > 0) filledFields++;
+      if (savedData.doenças) filledFields++;
+      if (savedData.medicamentos && savedData.medicamentos.length > 0) filledFields++;
+      if (savedData.monitoramento && savedData.monitoramento.length > 0) filledFields++;
+      if (savedData.anotacoes) filledFields++;
+
+      const progress = (filledFields / totalFields) * 100;
+      document.querySelector('.progress-bar-inner').style.width = `${progress}%`;
+    }
+
+    // Atualiza a barra de progresso ao carregar a página e ao salvar dados
+    window.addEventListener('load', updateProgressBar);
+    document.getElementById('saveBtn').addEventListener('click', updateProgressBar);
   </script>
 </body>
 </html>
