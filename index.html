@@ -259,7 +259,27 @@
       margin-top: 0;
       color: #007bff;
     }
+    /* Botão de alarme com ícone de relógio */
+    .alarm-btn {
+      background-color: #ffc107;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .alarm-btn:hover {
+      background-color: #e0a800;
+    }
+    .alarm-btn i {
+      font-size: 18px;
+    }
   </style>
+  <!-- Ícones do FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
   <!-- Tela inicial -->
@@ -357,7 +377,6 @@
       <form id="form-recomendacoes">
         <label for="anotacoes">Anotações Médicas:</label>
         <textarea id="anotacoes" name="anotacoes"></textarea>
-        <button type="button" id="shareBtn">Compartilhar com os filhos</button>
       </form>
     </div>
 
@@ -386,6 +405,11 @@
     <div class="review-container">
       <h3>Medicamentos em Uso</h3>
       <div id="reviewMedicamentos"></div>
+      <!-- Botão de alarme com ícone de relógio -->
+      <button class="alarm-btn" onclick="setMedicationAlarm()">
+        <i class="fas fa-clock"></i>
+        Definir alarme para medicações
+      </button>
     </div>
     <div class="review-container">
       <h3>Mapeamento de PA e Glicemia</h3>
@@ -481,6 +505,33 @@
     function deleteVacinaForm(button) {
       const form = button.closest('.vacina-form');
       form.remove();
+    }
+
+    // Função para definir alarme com base nos horários dos medicamentos
+    function setMedicationAlarm() {
+      const savedData = JSON.parse(localStorage.getItem('formData'));
+      if (!savedData || !savedData.medicamentos || savedData.medicamentos.length === 0) {
+        alert("Nenhum medicamento cadastrado.");
+        return;
+      }
+
+      const medicationTimes = savedData.medicamentos.map(med => med.horario);
+      const uniqueTimes = [...new Set(medicationTimes)]; // Remove horários duplicados
+
+      uniqueTimes.forEach(time => {
+        const [hours, minutes] = time.split(':');
+        const now = new Date();
+        const alarmTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes);
+
+        if (alarmTime > now) {
+          const timeout = alarmTime - now;
+          setTimeout(() => {
+            alert(`Hora de tomar o medicamento! Horário: ${time}`);
+          }, timeout);
+        }
+      });
+
+      alert("Alarmes configurados com sucesso!");
     }
 
     // Atualiza a tela de revisão com os dados salvos, incluindo o monitoramento
@@ -715,20 +766,6 @@
       document.getElementById('monitoramentoOverlay').style.display = 'none';
       document.getElementById('monitoramentoScreen').style.display = 'none';
       updateReviewScreen();
-    });
-
-    // Botão "Compartilhar com os filhos" - envia as anotações médicas via WhatsApp
-    document.getElementById('shareBtn').addEventListener('click', () => {
-      const savedData = JSON.parse(localStorage.getItem('formData'));
-      if (!savedData || !savedData.contatoEmergencia) {
-        alert("Nenhum contato de emergência cadastrado.");
-        return;
-      }
-
-      const message = `Anotações médicas:\n${savedData.anotacoes}`;
-      const phoneNumber = savedData.contatoEmergencia.replace(/\D/g, ''); // Remove caracteres não numéricos
-      const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
     });
 
     // Botão "Excluir todos os dados" - remove todos os dados salvos
