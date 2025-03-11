@@ -22,6 +22,30 @@
       padding: 30px;
       border-radius: 12px;
     }
+    /* Tela inicial */
+    #homeScreen {
+      text-align: center;
+      padding: 50px 20px;
+    }
+    #homeScreen h1 {
+      font-size: 36px;
+      color: #007bff;
+      margin-bottom: 20px;
+    }
+    #homeScreen button {
+      padding: 12px 20px;
+      border: none;
+      background: #28a745;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    #homeScreen button:hover {
+      background-color: #218838;
+    }
     /* Abas */
     .tabs {
       display: flex;
@@ -223,11 +247,29 @@
     .vacina-form .delete-btn:hover {
       background-color: #c82333;
     }
+    /* Containers para o resumo dos dados salvos */
+    .review-container {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .review-container h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
   </style>
 </head>
 <body>
+  <!-- Tela inicial -->
+  <div id="homeScreen" class="container">
+    <h1>Caderneta Virtual do Idoso</h1>
+    <button id="startBtn">Iniciar</button>
+  </div>
+
   <!-- Tela de Edição -->
-  <div id="editScreen" class="container">
+  <div id="editScreen" class="container" style="display: none;">
     <!-- Menu de abas -->
     <ul class="tabs">
       <li class="tab active" data-tab="identificacao">Identificação</li>
@@ -329,7 +371,30 @@
   <!-- Tela de Revisão (visualização somente) -->
   <div id="reviewScreen" class="container" style="display: none;">
     <h2>Resumo dos Dados Salvos</h2>
-    <div id="reviewContent"></div>
+    <div class="review-container">
+      <h3>Identificação</h3>
+      <div id="reviewIdentificacao"></div>
+    </div>
+    <div class="review-container">
+      <h3>Vacinação</h3>
+      <div id="reviewVacinacao"></div>
+    </div>
+    <div class="review-container">
+      <h3>Doenças Crônicas e Alergias</h3>
+      <div id="reviewDoencas"></div>
+    </div>
+    <div class="review-container">
+      <h3>Medicamentos em Uso</h3>
+      <div id="reviewMedicamentos"></div>
+    </div>
+    <div class="review-container">
+      <h3>Mapeamento de PA e Glicemia</h3>
+      <div id="reviewMonitoramento"></div>
+    </div>
+    <div class="review-container">
+      <h3>Recomendações/Anotações Médicas</h3>
+      <div id="reviewAnotacoes"></div>
+    </div>
     <div class="review-buttons">
       <button id="exportBtn">Exportar</button>
       <button id="monitoramentoBtn">Monitoramento</button>
@@ -421,56 +486,57 @@
     function updateReviewScreen() {
       const savedData = JSON.parse(localStorage.getItem('formData'));
       if (savedData) {
-        let content = `<h3>Identificação</h3>
-          <p><strong>Nome:</strong> ${savedData.nome}</p>
+        let identificacao = `<p><strong>Nome:</strong> ${savedData.nome}</p>
           <p><strong>Data de Nascimento:</strong> ${savedData.dataNascimento}</p>
           <p><strong>Idade:</strong> ${savedData.idade}</p>
           <p><strong>Peso (kg):</strong> ${savedData.peso}</p>
           <p><strong>Contato:</strong> ${savedData.contato}</p>
           <p><strong>Contato de Emergência:</strong> ${savedData.contatoEmergencia}</p>`;
-          
-        content += `<h3>Vacinação</h3>`;
+        document.getElementById('reviewIdentificacao').innerHTML = identificacao;
+
+        let vacinacao = '';
         if (savedData.vacinas && savedData.vacinas.length > 0) {
           savedData.vacinas.forEach((vacina, index) => {
-            content += `<p><strong>Vacina ${index+1}:</strong></p>
+            vacinacao += `<p><strong>Vacina ${index+1}:</strong></p>
               <p><strong>Nome:</strong> ${vacina.nome}</p>
               <p><strong>Data de Aplicação:</strong> ${vacina.dataAplicacao}</p>
               <p><strong>Lote:</strong> ${vacina.lote}</p>
               <p><strong>Observações:</strong> ${vacina.observacoes}</p>`;
           });
         } else {
-          content += `<p>Nenhuma vacina registrada.</p>`;
+          vacinacao += `<p>Nenhuma vacina registrada.</p>`;
         }
-          
-        content += `<h3>Doenças Crônicas e Alergias</h3>
-          <p><strong>Hipertensão:</strong> ${savedData.doenças && savedData.doenças.hipertensao ? 'Sim' : 'Não'}</p>
+        document.getElementById('reviewVacinacao').innerHTML = vacinacao;
+
+        let doencas = `<p><strong>Hipertensão:</strong> ${savedData.doenças && savedData.doenças.hipertensao ? 'Sim' : 'Não'}</p>
           <p><strong>Diabetes:</strong> ${savedData.doenças && savedData.doenças.diabetes ? 'Sim' : 'Não'}</p>
           <p><strong>Cardiopatias:</strong> ${savedData.doenças && savedData.doenças.cardiopatias ? 'Sim' : 'Não'}</p>
           <p><strong>Chagas:</strong> ${savedData.doenças && savedData.doenças.chagas ? 'Sim' : 'Não'}</p>
           <p><strong>Outras Doenças/Alergias:</strong> ${savedData.doenças ? savedData.doenças.outrasDoencas : ''}</p>`;
-          
-        content += `<h3>Medicamentos em Uso</h3>`;
+        document.getElementById('reviewDoencas').innerHTML = doencas;
+
+        let medicamentos = '';
         savedData.medicamentos.forEach((med, index) => {
-          content += `<p><strong>Medicamento ${index+1}:</strong></p>
+          medicamentos += `<p><strong>Medicamento ${index+1}:</strong></p>
             <p><strong>Nome:</strong> ${med.nome}</p>
             <p><strong>Dose:</strong> ${med.dose}</p>
             <p><strong>Posologia:</strong> ${med.posologia}</p>
             <p><strong>Horário:</strong> ${med.horario}</p>`;
         });
-          
-        content += `<h3>Mapeamento de PA e Glicemia</h3>`;
+        document.getElementById('reviewMedicamentos').innerHTML = medicamentos;
+
+        let monitoramento = '';
         if (savedData.monitoramento && savedData.monitoramento.length > 0) {
           savedData.monitoramento.forEach((measurement, index) => {
-            content += `<p><strong>Aferição ${index+1}:</strong> ${measurement.datetime} - PA: ${measurement.pa} | Glicemia: ${measurement.glicemia}</p>`;
+            monitoramento += `<p><strong>Aferição ${index+1}:</strong> ${measurement.datetime} - PA: ${measurement.pa} | Glicemia: ${measurement.glicemia}</p>`;
           });
         } else {
-          content += `<p>Nenhuma aferição registrada.</p>`;
+          monitoramento += `<p>Nenhuma aferição registrada.</p>`;
         }
-          
-        content += `<h3>Recomendações/Anotações Médicas</h3>
-          <p>${savedData.anotacoes}</p>`;
-          
-        document.getElementById('reviewContent').innerHTML = content;
+        document.getElementById('reviewMonitoramento').innerHTML = monitoramento;
+
+        let anotacoes = `<p>${savedData.anotacoes}</p>`;
+        document.getElementById('reviewAnotacoes').innerHTML = anotacoes;
       }
     }
 
@@ -725,6 +791,12 @@
         // Não preenche os campos do modal de monitoramento, pois serão usados para nova aferição
         document.getElementById('anotacoes').value = savedData.anotacoes || '';
       }
+    });
+
+    // Botão "Iniciar" na tela inicial
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('editScreen').style.display = 'block';
     });
   </script>
 </body>
