@@ -1,0 +1,16 @@
+{
+  "short_name": "Caderneta",
+  "name": "Caderneta Virtual do Idoso",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/1742/1742554.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#007bff",
+  "theme_color": "#007bff"
+}
