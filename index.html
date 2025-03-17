@@ -18,6 +18,7 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
+    /* Estilos mantidos intactos conforme original */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
     .container { max-width: 900px; margin: 20px auto; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 30px; border-radius: 12px; position: relative; }
     #homeScreen { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #007bff, #00bfff); color: #fff; border-radius: 12px; position: relative; }
@@ -71,6 +72,7 @@
   </style>
 </head>
 <body>
+  <!-- Estrutura HTML mantida intacta -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
@@ -223,7 +225,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Registro do Service Worker Atualizado
+    // Service Worker mantido intacto
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -236,7 +238,7 @@
       });
     }
 
-    // JavaScript original mantido
+    // Código original mantido
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -311,6 +313,89 @@
         document.documentElement.requestFullscreen();
       }
     });
+
+    // NOVO CÓDIGO ADICIONADO PARA FUNCIONALIDADE DO BOTÃO SALVAR
+    document.getElementById('saveBtn').addEventListener('click', () => {
+      const formData = {
+        identificacao: {
+          nome: document.getElementById('nome').value,
+          dataNascimento: document.getElementById('dataNascimento').value,
+          peso: document.getElementById('peso').value,
+          contato: document.getElementById('contato').value,
+          contatoEmergencia: document.getElementById('contatoEmergencia').value
+        },
+        vacinacao: Array.from(document.querySelectorAll('.vacina-form')).map(form => ({
+          nomeVacina: form.querySelector('.nomeVacina').value,
+          dataAplicacao: form.querySelector('.dataAplicacao').value,
+          loteVacina: form.querySelector('.loteVacina').value,
+          observacoes: form.querySelector('.observacoesVacina').value
+        })),
+        doencas: {
+          hipertensao: document.getElementById('hipertensao').checked,
+          diabetes: document.getElementById('diabetes').checked,
+          cardiopatias: document.getElementById('cardiopatias').checked,
+          chagas: document.getElementById('chagas').checked,
+          outras: document.getElementById('outrasDoencas').value
+        },
+        medicamentos: Array.from(document.querySelectorAll('.medicamento-form')).map(form => ({
+          nome: form.querySelector('input[name="nomeMedicamento[]"]').value,
+          dose: form.querySelector('input[name="doseMedicamento[]"]').value,
+          posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
+          horario: form.querySelector('input[name="horarioMedicamento[]"]').value
+        })),
+        anotacoes: document.getElementById('anotacoes').value
+      };
+
+      updateReviewScreen(formData);
+      document.getElementById('editScreen').style.display = 'none';
+      document.getElementById('reviewScreen').style.display = 'block';
+    });
+
+    function updateReviewScreen(data) {
+      // Identificação
+      document.getElementById('reviewIdentificacao').innerHTML = `
+        <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
+        <p><strong>Nascimento:</strong> ${data.identificacao.dataNascimento}</p>
+        <p><strong>Peso:</strong> ${data.identificacao.peso} kg</p>
+        <p><strong>Contato:</strong> ${data.identificacao.contato}</p>
+        <p><strong>Emergência:</strong> ${data.identificacao.contatoEmergencia}</p>
+      `;
+
+      // Vacinação
+      document.getElementById('reviewVacinacao').innerHTML = data.vacinacao.map(vacina => `
+        <div class="review-item">
+          <p><strong>${vacina.nomeVacina}</strong></p>
+          <p>Data: ${vacina.dataAplicacao}</p>
+          <p>Lote: ${vacina.loteVacina}</p>
+          <p>Observações: ${vacina.observacoes}</p>
+        </div>
+      `).join('');
+
+      // Doenças Crônicas
+      const doencas = [];
+      if(data.doencas.hipertensao) doencas.push('Hipertensão');
+      if(data.doencas.diabetes) doencas.push('Diabetes');
+      if(data.doencas.cardiopatias) doencas.push('Cardiopatias');
+      if(data.doencas.chagas) doencas.push('Chagas');
+      if(data.doencas.outras) doencas.push(data.doencas.outras);
+      document.getElementById('reviewDoencas').innerHTML = doencas.join(', ') || 'Nenhuma doença registrada';
+
+      // Medicamentos
+      document.getElementById('reviewMedicamentos').innerHTML = data.medicamentos.map(med => `
+        <div class="review-item">
+          <p><strong>${med.nome}</strong></p>
+          <p>Dose: ${med.dose}</p>
+          <p>Posologia: ${med.posologia}</p>
+          <p>Horário: ${med.horario}</p>
+        </div>
+      `).join('');
+
+      // Anotações
+      document.getElementById('reviewAnotacoes').innerHTML = data.anotacoes || 'Nenhuma anotação registrada';
+    }
+
+    // Restante do código original mantido
+    // ... (código relacionado ao monitoramento, exportação, etc)
   </script>
 </body>
 </html>
