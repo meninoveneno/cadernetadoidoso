@@ -1,16 +1,15 @@
 {
-    "name": "Caderneta Virtual do Idoso",
-    "short_name": "CadernetaIdoso",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#2A6B84",
-    "theme_color": "#2A6B84",
-    "icons": [
-        {
-            "src": "https://cdn-icons-png.flaticon.com/512/4441/4441163.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "any maskable"
-        }
-    ]
+  "short_name": "Caderneta",
+  "name": "Caderneta Virtual do Idoso",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4441/4441163.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#f8f9fa"
 }
