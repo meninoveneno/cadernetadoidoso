@@ -72,7 +72,6 @@
   </style>
 </head>
 <body>
-  <!-- Estrutura HTML mantida intacta -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
@@ -225,7 +224,6 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Service Worker mantido intacto
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -238,7 +236,6 @@
       });
     }
 
-    // Código original mantido
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -314,7 +311,6 @@
       }
     });
 
-    // NOVO CÓDIGO ADICIONADO PARA FUNCIONALIDADE DO BOTÃO SALVAR
     document.getElementById('saveBtn').addEventListener('click', () => {
       const formData = {
         identificacao: {
@@ -346,13 +342,13 @@
         anotacoes: document.getElementById('anotacoes').value
       };
 
+      localStorage.setItem('cadernetaData', JSON.stringify(formData));
       updateReviewScreen(formData);
       document.getElementById('editScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
     function updateReviewScreen(data) {
-      // Identificação
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
         <p><strong>Nascimento:</strong> ${data.identificacao.dataNascimento}</p>
@@ -361,7 +357,6 @@
         <p><strong>Emergência:</strong> ${data.identificacao.contatoEmergencia}</p>
       `;
 
-      // Vacinação
       document.getElementById('reviewVacinacao').innerHTML = data.vacinacao.map(vacina => `
         <div class="review-item">
           <p><strong>${vacina.nomeVacina}</strong></p>
@@ -371,7 +366,6 @@
         </div>
       `).join('');
 
-      // Doenças Crônicas
       const doencas = [];
       if(data.doencas.hipertensao) doencas.push('Hipertensão');
       if(data.doencas.diabetes) doencas.push('Diabetes');
@@ -380,7 +374,6 @@
       if(data.doencas.outras) doencas.push(data.doencas.outras);
       document.getElementById('reviewDoencas').innerHTML = doencas.join(', ') || 'Nenhuma doença registrada';
 
-      // Medicamentos
       document.getElementById('reviewMedicamentos').innerHTML = data.medicamentos.map(med => `
         <div class="review-item">
           <p><strong>${med.nome}</strong></p>
@@ -390,12 +383,121 @@
         </div>
       `).join('');
 
-      // Anotações
       document.getElementById('reviewAnotacoes').innerHTML = data.anotacoes || 'Nenhuma anotação registrada';
     }
 
-    // Restante do código original mantido
-    // ... (código relacionado ao monitoramento, exportação, etc)
+    // Funcionalidades dos botões
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(18);
+      doc.text('Caderneta Virtual do Idoso', 20, 20);
+      
+      const sections = document.querySelectorAll('.review-container');
+      let yPosition = 30;
+
+      sections.forEach(section => {
+        const title = section.querySelector('h3').innerText;
+        const content = section.querySelector('div').innerText;
+        
+        doc.setFontSize(14);
+        doc.text(title, 20, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(12);
+        const splitContent = doc.splitTextToSize(content, 170);
+        splitContent.forEach(line => {
+          doc.text(line, 20, yPosition);
+          yPosition += 7;
+        });
+        yPosition += 10;
+      });
+
+      doc.save('caderneta-idoso.pdf');
+    });
+
+    document.getElementById('monitoramentoBtn').addEventListener('click', () => {
+      document.getElementById('monitoramentoOverlay').style.display = 'block';
+      document.getElementById('monitoramentoScreen').style.display = 'block';
+    });
+
+    document.getElementById('closeMonitorBtn').addEventListener('click', () => {
+      document.getElementById('monitoramentoOverlay').style.display = 'none';
+      document.getElementById('monitoramentoScreen').style.display = 'none';
+    });
+
+    document.getElementById('saveMonitorBtn').addEventListener('click', () => {
+      const pa = document.getElementById('paMonitor').value;
+      const glicemia = document.getElementById('glicemiaMonitor').value;
+      
+      document.getElementById('reviewMonitoramento').innerHTML = `
+        <p><strong>Pressão Arterial:</strong> ${pa}</p>
+        <p><strong>Glicemia:</strong> ${glicemia} mg/dL</p>
+        <p><em>Registrado em: ${new Date().toLocaleString()}</em></p>
+      `;
+      
+      document.getElementById('monitoramentoOverlay').style.display = 'none';
+      document.getElementById('monitoramentoScreen').style.display = 'none';
+    });
+
+    document.getElementById('editBtn').addEventListener('click', () => {
+      document.getElementById('reviewScreen').style.display = 'none';
+      document.getElementById('editScreen').style.display = 'block';
+    });
+
+    document.getElementById('deleteAllBtn').addEventListener('click', () => {
+      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
+        localStorage.clear();
+        document.querySelectorAll('input, textarea').forEach(element => element.value = '');
+        document.querySelectorAll('.review-container div').forEach(div => div.innerHTML = '');
+      }
+    });
+
+    function setMedicationAlarm() {
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+
+      const medicamentos = document.querySelectorAll('.medicamento-form');
+      medicamentos.forEach(med => {
+        const horario = med.querySelector('input[name="horarioMedicamento[]"]').value;
+        const nome = med.querySelector('input[name="nomeMedicamento[]"]').value;
+        
+        if(horario && nome) {
+          const [hours, minutes] = horario.split(':');
+          const now = new Date();
+          const alarmTime = new Date();
+          alarmTime.setHours(hours);
+          alarmTime.setMinutes(minutes);
+          
+          if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
+
+          const timeout = alarmTime - now;
+          
+          setTimeout(() => {
+            if(Notification.permission === 'granted') {
+              new Notification('Hora da Medicação!', {
+                body: `Lembrete para tomar: ${nome}`,
+                icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png'
+              });
+            } else {
+              alert(`Hora de tomar ${nome}!`);
+            }
+          }, timeout);
+        }
+      });
+      alert('Alarmes configurados com sucesso!');
+    }
+
+    // Carregar dados salvos
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedData = localStorage.getItem('cadernetaData');
+      if(savedData) {
+        updateReviewScreen(JSON.parse(savedData));
+        document.getElementById('homeScreen').style.display = 'none';
+        document.getElementById('reviewScreen').style.display = 'block';
+      }
+    });
   </script>
 </body>
 </html>
