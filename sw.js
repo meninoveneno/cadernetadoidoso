@@ -1,9 +1,11 @@
-const CACHE_NAME = 'caderneta-v1';
+const CACHE_NAME = 'caderneta-v3';
 const ASSETS = [
   '/',
   '/index.html',
-  'https://cdn-icons-png.flaticon.com/512/4441/4441163.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'
+  'icon-192x192.png',
+  'icon-512x512.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
 ];
 
 self.addEventListener('install', (event) => {
