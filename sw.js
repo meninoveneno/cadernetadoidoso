@@ -1,8 +1,9 @@
-const CACHE_NAME = 'caderneta-v1';
+const CACHE_NAME = 'caderneta-idoso-v1';
 const ASSETS = [
     '/',
     '/index.html',
-    '/manifest.json',
+    '/styles.css',
+    '/app.js',
     'https://cdn-icons-png.flaticon.com/512/4441/4441163.png'
 ];
 
