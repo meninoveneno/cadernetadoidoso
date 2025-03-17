@@ -5,342 +5,61 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Caderneta Virtual do Idoso</title>
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1742/1742554.png">
-  <style>
-    /* Estilos modernos */
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      font-size: 16px;
-      margin: 0;
-      padding: 0;
-      background-color: #f8f9fa;
-      color: #333;
-    }
-    .container {
-      max-width: 900px;
-      margin: 20px auto;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 30px;
-      border-radius: 12px;
-      position: relative; /* Adicionado para posicionar a imagem */
-    }
-    /* Tela inicial */
-    #homeScreen {
-      text-align: center;
-      padding: 50px 20px;
-      background: linear-gradient(135deg, #007bff, #00bfff);
-      color: #fff;
-      border-radius: 12px;
-      position: relative; /* Adicionado para posicionar a imagem */
-    }
-    #homeScreen h1 {
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-    #homeScreen h2 {
-      font-size: 24px;
-      margin-bottom: 30px;
-      font-weight: 400;
-    }
-    #homeScreen img {
-      width: 73.125px; /* 25% menor que 97.5px */
-      position: absolute; /* Posicionamento absoluto */
-      left: 20px; /* Distância da borda esquerda */
-      bottom: 20px; /* Distância da borda inferior */
-    }
-    #homeScreen button {
-      padding: 12px 20px;
-      border: none;
-      background: #28a745;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background-color 0.3s;
-    }
-    #homeScreen button:hover {
-      background-color: #218838;
-    }
-    /* Abas */
-    .tabs {
-      display: flex;
-      overflow-x: auto;
-      padding: 0;
-      list-style: none;
-      border-bottom: 2px solid #e9ecef;
-      margin-bottom: 20px;
-    }
-    .tabs li {
-      text-align: center;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      background-color: #e9ecef;
-      border-radius: 8px 8px 0 0;
-      transition: all 0.3s ease;
-      flex-shrink: 0;
-      min-width: 120px;
-      margin-right: 8px;
-      color: #495057;
-    }
-    .tabs li.active {
-      background-color: #007bff;
-      color: white;
-      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
-    }
-    .tabs li:hover {
-      background-color: #0056b3;
-      color: white;
-    }
-    /* Conteúdo das abas */
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.5s ease-in-out;
-    }
-    .tab-content.active {
-      display: block;
-    }
-    /* Formulários */
-    form label {
-      display: block;
-      margin-top: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #495057;
-    }
-    form input,
-    form select,
-    form textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      border: 1px solid #ced4da;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: border-color 0.3s ease;
-    }
-    form input:focus,
-    form select:focus,
-    form textarea:focus {
-      border-color: #007bff;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-    }
-    form textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-    /* Botões */
-    .btn {
-      margin-top: 20px;
-      padding: 12px 20px;
-      border: none;
-      background: #28a745;
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: background-color 0.3s;
-      width: 100%;
-      max-width: 200px;
-    }
-    .btn:hover {
-      background-color: #218838;
-    }
-    #addMedicamento, #addVacina {
-      background: #17a2b8;
-      width: 100%;
-      max-width: 200px;
-    }
-    #addMedicamento:hover, #addVacina:hover {
-      background: #117a8b;
-    }
-    /* Botão de Monitoramento */
-    #monitoramentoBtn {
-      background-color: #ffc107; /* Amarelo */
-      color: #333;
-    }
-    #monitoramentoBtn:hover {
-      background-color: #e0a800; /* Amarelo escuro */
-    }
-    /* Popup de confirmação */
-    .popup {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #28a745;
-      color: #fff;
-      padding: 12px 20px;
-      border-radius: 8px;
-      font-size: 16px;
-      opacity: 0;
-      transition: opacity 0.5s;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    .popup.show {
-      opacity: 1;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    /* Responsividade */
-    @media(max-width: 600px) {
-      .tabs li {
-        font-size: 14px;
-        padding: 10px 15px;
-        min-width: 100px;
-      }
-      button, form input, form select, form textarea {
-        font-size: 14px;
-        padding: 8px;
-      }
-      form label {
-        font-size: 14px;
-      }
-      .review-buttons {
-        flex-direction: column;
-        gap: 10px;
-      }
-      .review-buttons .btn {
-        max-width: 100%;
-        width: 100%;
-      }
-    }
-    .review-buttons {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 20px;
-    }
-    /* Estilos do Modal de Monitoramento */
-    #monitoramentoOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 900;
-    }
-    #monitoramentoScreen {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      z-index: 1000;
-      display: none;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    #monitoramentoScreen h3 {
-      margin-top: 0;
-      color: #333;
-    }
-    #monitoramentoScreen button {
-      margin-top: 10px;
-      width: 48%;
-    }
-    /* Estilos para o formulário de vacinação */
-    .vacina-form {
-      border: 1px solid #e9ecef;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      background-color: #f8f9fa;
-    }
-    .vacina-form .form-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-    .vacina-form .form-row label {
-      flex: 1;
-    }
-    .vacina-form .form-row input,
-    .vacina-form .form-row textarea {
-      flex: 2;
-    }
-    .vacina-form .delete-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 10px;
-      transition: background-color 0.3s;
-    }
-    .vacina-form .delete-btn:hover {
-      background-color: #c82333;
-    }
-    /* Containers para o resumo dos dados salvos */
-    .review-container {
-      background: #f8f9fa;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-    .review-container h3 {
-      margin-top: 0;
-      color: #007bff;
-    }
-    /* Botão de alarme com ícone de relógio */
-    .alarm-btn {
-      background-color: #ffc107;
-      color: #333;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    .alarm-btn:hover {
-      background-color: #e0a800;
-    }
-    .alarm-btn i {
-      font-size: 18px;
-    }
-    /* Estilos para o formulário de medicamentos */
-    .medicamento-form {
-      border: 1px solid #e9ecef;
-      padding: 15px;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      background-color: #f8f9fa;
-    }
-    .medicamento-form .delete-btn {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-      margin-top: 10px;
-      transition: background-color 0.3s;
-    }
-    .medicamento-form .delete-btn:hover {
-      background-color: #c82333;
-    }
-  </style>
-  <!-- Ícones do FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
+    .container { max-width: 900px; margin: 20px auto; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 30px; border-radius: 12px; position: relative; }
+    #homeScreen { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #007bff, #00bfff); color: #fff; border-radius: 12px; position: relative; }
+    #homeScreen h1 { font-size: 36px; margin-bottom: 10px; }
+    #homeScreen h2 { font-size: 24px; margin-bottom: 30px; font-weight: 400; }
+    #homeScreen img { width: 73.125px; position: absolute; left: 20px; bottom: 20px; }
+    #homeScreen button { padding: 12px 20px; border: none; background: #28a745; color: #fff; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background-color 0.3s; }
+    #homeScreen button:hover { background-color: #218838; }
+    .tabs { display: flex; overflow-x: auto; padding: 0; list-style: none; border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
+    .tabs li { text-align: center; padding: 12px 20px; font-size: 16px; font-weight: 600; cursor: pointer; background-color: #e9ecef; border-radius: 8px 8px 0 0; transition: all 0.3s ease; flex-shrink: 0; min-width: 120px; margin-right: 8px; color: #495057; }
+    .tabs li.active { background-color: #007bff; color: white; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); }
+    .tabs li:hover { background-color: #0056b3; color: white; }
+    .tab-content { display: none; animation: fadeIn 0.5s ease-in-out; }
+    .tab-content.active { display: block; }
+    form label { display: block; margin-top: 12px; font-size: 16px; font-weight: 600; color: #495057; }
+    form input, form select, form textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
+    form input:focus, form select:focus, form textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); }
+    form textarea { resize: vertical; min-height: 100px; }
+    .btn { margin-top: 20px; padding: 12px 20px; border: none; background: #28a745; color: #fff; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background-color 0.3s; width: 100%; max-width: 200px; }
+    .btn:hover { background-color: #218838; }
+    #addMedicamento, #addVacina { background: #17a2b8; width: 100%; max-width: 200px; }
+    #addMedicamento:hover, #addVacina:hover { background: #117a8b; }
+    #monitoramentoBtn { background-color: #ffc107; color: #333; }
+    #monitoramentoBtn:hover { background-color: #e0a800; }
+    .popup { position: fixed; top: 20px; right: 20px; background: #28a745; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 16px; opacity: 0; transition: opacity 0.5s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+    .popup.show { opacity: 1; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @media(max-width: 600px) {
+      .tabs li { font-size: 14px; padding: 10px 15px; min-width: 100px; }
+      button, form input, form select, form textarea { font-size: 14px; padding: 8px; }
+      form label { font-size: 14px; }
+      .review-buttons { flex-direction: column; gap: 10px; }
+      .review-buttons .btn { max-width: 100%; width: 100%; }
+    }
+    .review-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+    #monitoramentoOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; z-index: 900; }
+    #monitoramentoScreen { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; border-radius: 12px; z-index: 1000; display: none; width: 90%; max-width: 400px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+    #monitoramentoScreen h3 { margin-top: 0; color: #333; }
+    #monitoramentoScreen button { margin-top: 10px; width: 48%; }
+    .vacina-form, .medicamento-form { border: 1px solid #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 8px; background-color: #f8f9fa; }
+    .vacina-form .form-row, .medicamento-form .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .vacina-form .form-row label, .medicamento-form .form-row label { flex: 1; }
+    .vacina-form .form-row input, .vacina-form .form-row textarea, .medicamento-form .form-row input, .medicamento-form .form-row textarea { flex: 2; }
+    .delete-btn { background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 10px; transition: background-color 0.3s; }
+    .delete-btn:hover { background-color: #c82333; }
+    .review-container { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
+    .review-container h3 { margin-top: 0; color: #007bff; }
+    .alarm-btn { background-color: #ffc107; color: #333; display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+    .alarm-btn:hover { background-color: #e0a800; }
+    .alarm-btn i { font-size: 18px; }
+  </style>
 </head>
 <body>
-  <!-- Tela inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
@@ -348,9 +67,7 @@
     <button id="startBtn">Iniciar</button>
   </div>
 
-  <!-- Tela de Edição -->
   <div id="editScreen" class="container" style="display: none;">
-    <!-- Menu de abas -->
     <ul class="tabs">
       <li class="tab active" data-tab="identificacao">Identificação</li>
       <li class="tab" data-tab="vacinacao">Vacinação</li>
@@ -359,7 +76,6 @@
       <li class="tab" data-tab="recomendacoes">Anotações</li>
     </ul>
 
-    <!-- Conteúdo das abas -->
     <div class="tab-content active" id="identificacao">
       <form id="form-identificacao">
         <label for="nome">Nome:</label>
@@ -377,7 +93,6 @@
 
     <div class="tab-content" id="vacinacao">
       <div id="vacinasContainer">
-        <!-- Formulário inicial para uma vacina -->
         <div class="vacina-form">
           <div class="form-row">
             <label for="nomeVacina">Nome da Vacina:</label>
@@ -415,7 +130,6 @@
     <div class="tab-content" id="medicamentos">
       <form id="form-medicamentos">
         <div id="medicamentosContainer">
-          <!-- Bloco inicial de medicamento -->
           <div class="medicamento-form">
             <label>Nome do Medicamento:</label>
             <input type="text" name="nomeMedicamento[]">
@@ -439,16 +153,12 @@
       </form>
     </div>
 
-    <!-- Botão Salvar Dados -->
     <button id="saveBtn" class="btn">Salvar Dados</button>
-
-    <!-- Popup de confirmação -->
     <div id="popup" class="popup">Dados salvos com sucesso!</div>
   </div>
 
-  <!-- Tela de Revisão (visualização somente) -->
   <div id="reviewScreen" class="container" style="display: none;">
-    <h2>Dados do Idoso</h2> <!-- Alteração do nome da tela -->
+    <h2>Dados do Idoso</h2>
     <div class="review-container">
       <h3>Identificação</h3>
       <div id="reviewIdentificacao"></div>
@@ -464,7 +174,6 @@
     <div class="review-container">
       <h3>Medicamentos em Uso</h3>
       <div id="reviewMedicamentos"></div>
-      <!-- Botão de alarme com ícone de relógio -->
       <button class="alarm-btn" onclick="setMedicationAlarm()">
         <i class="fas fa-clock"></i>
         Definir alarme para medicações
@@ -486,7 +195,6 @@
     </div>
   </div>
 
-  <!-- Modal de Monitoramento (PA e Glicemia) -->
   <div id="monitoramentoOverlay"></div>
   <div id="monitoramentoScreen">
     <h3>Mapeamento de PA e Glicemia</h3>
@@ -502,10 +210,8 @@
     </form>
   </div>
 
-  <!-- jsPDF (para gerar o PDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Lógica das abas
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -515,7 +221,6 @@
       });
     });
 
-    // Adicionar medicamento dinamicamente (novo bloco com campo "Horário")
     document.getElementById('addMedicamento').addEventListener('click', () => {
       const container = document.getElementById('medicamentosContainer');
       const newBlock = document.createElement('div');
@@ -534,7 +239,6 @@
       container.appendChild(newBlock);
     });
 
-    // Função para excluir um formulário de medicamento
     function deleteMedicamentoForm(button) {
       if (confirm("Tem certeza que deseja excluir este medicamento?")) {
         const form = button.closest('.medicamento-form');
@@ -542,7 +246,6 @@
       }
     }
 
-    // Adicionar vacina dinamicamente
     document.getElementById('addVacina').addEventListener('click', () => {
       const container = document.getElementById('vacinasContainer');
       const newBlock = document.createElement('div');
@@ -569,7 +272,6 @@
       container.appendChild(newBlock);
     });
 
-    // Função para excluir um formulário de vacina
     function deleteVacinaForm(button) {
       if (confirm("Tem certeza que deseja excluir esta vacina?")) {
         const form = button.closest('.vacina-form');
@@ -577,7 +279,6 @@
       }
     }
 
-    // Função para definir alarme com base nos horários dos medicamentos
     function setMedicationAlarm() {
       const savedData = JSON.parse(localStorage.getItem('formData'));
       if (!savedData || !savedData.medicamentos || savedData.medicamentos.length === 0) {
@@ -586,7 +287,7 @@
       }
 
       const medicationTimes = savedData.medicamentos.map(med => med.horario);
-      const uniqueTimes = [...new Set(medicationTimes)]; // Remove horários duplicados
+      const uniqueTimes = [...new Set(medicationTimes)];
 
       uniqueTimes.forEach(time => {
         const [hours, minutes] = time.split(':');
@@ -604,7 +305,6 @@
       alert("Alarmes configurados com sucesso!");
     }
 
-    // Atualiza a tela de revisão com os dados salvos, incluindo o monitoramento
     function updateReviewScreen() {
       const savedData = JSON.parse(localStorage.getItem('formData'));
       if (savedData) {
@@ -661,7 +361,6 @@
       }
     }
 
-    // Ao salvar, armazena os dados (exceto os novos monitoramentos) e navega para a tela de revisão
     document.getElementById('saveBtn').addEventListener('click', () => {
       const formData = {
         nome: document.getElementById('nome').value,
@@ -691,7 +390,6 @@
         anotacoes: document.getElementById('anotacoes').value
       };
 
-      // Preserva os monitoramentos já registrados, se houver
       const existingData = JSON.parse(localStorage.getItem('formData'));
       if (existingData && existingData.monitoramento) {
         formData.monitoramento = existingData.monitoramento;
@@ -701,25 +399,21 @@
       
       localStorage.setItem('formData', JSON.stringify(formData));
       
-      // Exibe popup de confirmação
       const popup = document.getElementById('popup');
       popup.textContent = "Dados salvos com sucesso!";
       popup.classList.add('show');
       setTimeout(() => popup.classList.remove('show'), 3000);
       
-      // Atualiza a tela de revisão e navega para ela
       updateReviewScreen();
       document.getElementById('editScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
-    // Botão "Editar" - volta para a tela de edição
     document.getElementById('editBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
     });
 
-    // Botão "Exportar" - gera o PDF com os dados salvos (incluindo os monitoramentos)
     document.getElementById('exportBtn').addEventListener('click', () => {
       const savedData = JSON.parse(localStorage.getItem('formData'));
       if (!savedData) return;
@@ -728,16 +422,14 @@
       const doc = new jsPDF();
       let y = 10;
       
-      // Cabeçalho com identificação do paciente e data/hora
       const currentDate = new Date().toLocaleString('pt-BR');
-      doc.setFontSize(14); // Fonte menor
+      doc.setFontSize(14);
       doc.text(`Paciente: ${savedData.nome}`, 10, y);
       y += 10;
-      doc.setFontSize(12); // Fonte menor
+      doc.setFontSize(12);
       doc.text(`Data e Hora de Criação: ${currentDate}`, 10, y);
       y += 10;
       
-      // Adiciona a logo no canto superior direito
       const logoUrl = 'https://cdn-icons-png.flaticon.com/512/1742/1742554.png';
       doc.addImage(logoUrl, 'PNG', 160, 10, 30, 30);
       
@@ -802,22 +494,18 @@
       doc.save('dados_caderneta.pdf');
     });
 
-    // Botão "Monitoramento" - exibe o modal para inserir uma nova aferição
     document.getElementById('monitoramentoBtn').addEventListener('click', () => {
-      // Limpa os campos para nova aferição
       document.getElementById('paMonitor').value = '';
       document.getElementById('glicemiaMonitor').value = '';
       document.getElementById('monitoramentoOverlay').style.display = 'block';
       document.getElementById('monitoramentoScreen').style.display = 'block';
     });
 
-    // Botão "Fechar" no modal de monitoramento
     document.getElementById('closeMonitorBtn').addEventListener('click', () => {
       document.getElementById('monitoramentoOverlay').style.display = 'none';
       document.getElementById('monitoramentoScreen').style.display = 'none';
     });
 
-    // Botão "Salvar Monitoramento" no modal
     document.getElementById('saveMonitorBtn').addEventListener('click', () => {
       const savedData = JSON.parse(localStorage.getItem('formData')) || {};
       const measurement = {
@@ -842,7 +530,6 @@
       updateReviewScreen();
     });
 
-    // Botão "Excluir todos os dados" - remove todos os dados salvos
     document.getElementById('deleteAllBtn').addEventListener('click', () => {
       if (confirm("Tem certeza que deseja excluir todos os dados salvos?")) {
         localStorage.removeItem('formData');
@@ -851,7 +538,6 @@
       }
     });
 
-    // Recuperar dados ao carregar a página (preenche o formulário, se houver dados salvos)
     window.addEventListener('load', () => {
       const savedData = JSON.parse(localStorage.getItem('formData'));
       if (savedData) {
@@ -923,10 +609,8 @@
             }
           });
         }
-        // Não preenche os campos do modal de monitoramento, pois serão usados para nova aferição
         document.getElementById('anotacoes').value = savedData.anotacoes || '';
 
-        // Direciona automaticamente para a tela de revisão se houver dados salvos
         document.getElementById('homeScreen').style.display = 'none';
         document.getElementById('editScreen').style.display = 'none';
         document.getElementById('reviewScreen').style.display = 'block';
@@ -934,18 +618,16 @@
       }
     });
 
-    // Botão "Iniciar" na tela inicial
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
-      // Entrar em tela cheia
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
-      } else if (document.documentElement.mozRequestFullScreen) { // Firefox
+      } else if (document.documentElement.mozRequestFullScreen) {
         document.documentElement.mozRequestFullScreen();
-      } else if (document.documentElement.webkitRequestFullscreen) { // Chrome, Safari e Opera
+      } else if (document.documentElement.webkitRequestFullscreen) {
         document.documentElement.webkitRequestFullscreen();
-      } else if (document.documentElement.msRequestFullscreen) { // IE/Edge
+      } else if (document.documentElement.msRequestFullscreen) {
         document.documentElement.msRequestFullscreen();
       }
     });
