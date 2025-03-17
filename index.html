@@ -339,7 +339,8 @@
           posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
           horario: form.querySelector('input[name="horarioMedicamento[]"]').value
         })),
-        anotacoes: document.getElementById('anotacoes').value
+        anotacoes: document.getElementById('anotacoes').value,
+        monitoramento: JSON.parse(localStorage.getItem('cadernetaData'))?.monitoramento || []
       };
 
       localStorage.setItem('cadernetaData', JSON.stringify(formData));
@@ -384,9 +385,16 @@
       `).join('');
 
       document.getElementById('reviewAnotacoes').innerHTML = data.anotacoes || 'Nenhuma anotação registrada';
+
+      document.getElementById('reviewMonitoramento').innerHTML = data.monitoramento?.map(entry => `
+        <div class="review-item">
+          <p><strong>Pressão Arterial:</strong> ${entry.pa}</p>
+          <p><strong>Glicemia:</strong> ${entry.glicemia} mg/dL</p>
+          <p><em>Registrado em: ${new Date(entry.timestamp).toLocaleString()}</em></p>
+        </div>
+      `).join('') || 'Nenhum registro de monitoramento';
     }
 
-    // Funcionalidades dos botões
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -430,11 +438,23 @@
       const pa = document.getElementById('paMonitor').value;
       const glicemia = document.getElementById('glicemiaMonitor').value;
       
-      document.getElementById('reviewMonitoramento').innerHTML = `
-        <p><strong>Pressão Arterial:</strong> ${pa}</p>
-        <p><strong>Glicemia:</strong> ${glicemia} mg/dL</p>
-        <p><em>Registrado em: ${new Date().toLocaleString()}</em></p>
-      `;
+      const savedData = JSON.parse(localStorage.getItem('cadernetaData')) || {
+        identificacao: {},
+        vacinacao: [],
+        doencas: {},
+        medicamentos: [],
+        anotacoes: '',
+        monitoramento: []
+      };
+
+      savedData.monitoramento.push({
+        pa: pa,
+        glicemia: glicemia,
+        timestamp: new Date().toISOString()
+      });
+
+      localStorage.setItem('cadernetaData', JSON.stringify(savedData));
+      updateReviewScreen(savedData);
       
       document.getElementById('monitoramentoOverlay').style.display = 'none';
       document.getElementById('monitoramentoScreen').style.display = 'none';
@@ -489,7 +509,6 @@
       alert('Alarmes configurados com sucesso!');
     }
 
-    // Carregar dados salvos
     document.addEventListener('DOMContentLoaded', () => {
       const savedData = localStorage.getItem('cadernetaData');
       if(savedData) {
