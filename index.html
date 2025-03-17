@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   
-  <!-- Configurações PWA -->
+  <!-- Configurações PWA Atualizadas -->
   <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -12,9 +12,9 @@
   
   <title>Caderneta Virtual do Idoso</title>
   
-  <!-- Ícones PWA -->
-  <link rel="icon" type="image/png" href="icon-192x192.png">
-  <link rel="apple-touch-icon" href="icon-192x192.png">
+  <!-- Ícones PWA Atualizados -->
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
@@ -74,7 +74,7 @@
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
-    <img src="icon-192x192.png" alt="Logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/4441/4441163.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -223,7 +223,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Registro do Service Worker
+    // Registro do Service Worker Atualizado
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -303,9 +303,6 @@
         form.remove();
       }
     }
-
-    // Restante do JavaScript original mantido...
-    // [Todas as funções originais preservadas: setMedicationAlarm, updateReviewScreen, etc.]
 
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
