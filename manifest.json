@@ -1,6 +1,6 @@
 {
   "name": "Caderneta Virtual do Idoso",
-  "short_name": "CadernetaIdoso",
+  "short_name": "Caderneta do Idoso",
   "start_url": "/",
   "display": "standalone",
   "theme_color": "#007bff",
