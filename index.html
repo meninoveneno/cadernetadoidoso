@@ -3,10 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#007bff"> <!-- Cor da barra de endereço no modo PWA -->
+  <meta name="description" content="Caderneta Virtual do Idoso - Cuidar hoje para viver melhor amanhã!">
   <title>Caderneta Virtual do Idoso</title>
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/1742/1742554.png">
+  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
+  <link rel="manifest" href="manifest.json"> <!-- Arquivo de manifesto PWA -->
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png"> <!-- Ícone para iOS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
+    /* Estilos modernos */
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
     .container { max-width: 900px; margin: 20px auto; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 30px; border-radius: 12px; position: relative; }
     #homeScreen { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #007bff, #00bfff); color: #fff; border-radius: 12px; position: relative; }
@@ -60,13 +65,15 @@
   </style>
 </head>
 <body>
+  <!-- Tela inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
-    <img src="https://cdn-icons-png.flaticon.com/512/1742/1742554.png" alt="Logo">
+    <img src="https://cdn-icons-png.flaticon.com/512/4441/4441163.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
+  <!-- Tela de Edição -->
   <div id="editScreen" class="container" style="display: none;">
     <ul class="tabs">
       <li class="tab active" data-tab="identificacao">Identificação</li>
@@ -76,6 +83,7 @@
       <li class="tab" data-tab="recomendacoes">Anotações</li>
     </ul>
 
+    <!-- Conteúdo das abas -->
     <div class="tab-content active" id="identificacao">
       <form id="form-identificacao">
         <label for="nome">Nome:</label>
@@ -157,6 +165,7 @@
     <div id="popup" class="popup">Dados salvos com sucesso!</div>
   </div>
 
+  <!-- Tela de Revisão -->
   <div id="reviewScreen" class="container" style="display: none;">
     <h2>Dados do Idoso</h2>
     <div class="review-container">
@@ -195,6 +204,7 @@
     </div>
   </div>
 
+  <!-- Modal de Monitoramento -->
   <div id="monitoramentoOverlay"></div>
   <div id="monitoramentoScreen">
     <h3>Mapeamento de PA e Glicemia</h3>
@@ -210,8 +220,10 @@
     </form>
   </div>
 
+  <!-- jsPDF (para gerar o PDF) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
+    // Lógica das abas
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -221,6 +233,7 @@
       });
     });
 
+    // Adicionar medicamento dinamicamente
     document.getElementById('addMedicamento').addEventListener('click', () => {
       const container = document.getElementById('medicamentosContainer');
       const newBlock = document.createElement('div');
@@ -246,6 +259,7 @@
       }
     }
 
+    // Adicionar vacina dinamicamente
     document.getElementById('addVacina').addEventListener('click', () => {
       const container = document.getElementById('vacinasContainer');
       const newBlock = document.createElement('div');
@@ -430,7 +444,7 @@
       doc.text(`Data e Hora de Criação: ${currentDate}`, 10, y);
       y += 10;
       
-      const logoUrl = 'https://cdn-icons-png.flaticon.com/512/1742/1742554.png';
+      const logoUrl = 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png';
       doc.addImage(logoUrl, 'PNG', 160, 10, 30, 30);
       
       let lines = [];
@@ -631,6 +645,21 @@
         document.documentElement.msRequestFullscreen();
       }
     });
+  </script>
+
+  <!-- Service Worker para PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('ServiceWorker registrado com sucesso:', registration);
+          })
+          .catch(error => {
+            console.log('Falha ao registrar ServiceWorker:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
