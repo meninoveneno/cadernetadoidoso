@@ -104,7 +104,7 @@
     .user-item {
       padding: 12px;
       border-bottom: 1px solid #eee;
-      cursor: pointer; /* Adicionado */
+      cursor: pointer;
       transition: background 0.2s;
     }
     .user-item:hover {
@@ -666,7 +666,77 @@
     });
 
     // Editar
-    document.getElementById('editBtn').addEventListener('click', () => {
+    document.getElementById('editBtn').addEventListener('click', async () => {
+      const username = localStorage.getItem('currentUser');
+      if(username) {
+        const userData = await loadUserData(username);
+        if(userData) {
+          // Preencher formulário de identificação
+          document.getElementById('nome').value = userData.identificacao.nome;
+          document.getElementById('dataNascimento').value = userData.identificacao.dataNascimento;
+          document.getElementById('peso').value = userData.identificacao.peso;
+          document.getElementById('contato').value = userData.identificacao.contato;
+          document.getElementById('contatoEmergencia').value = userData.identificacao.contatoEmergencia;
+
+          // Preencher doenças crônicas
+          document.getElementById('hipertensao').checked = userData.doencas.hipertensao;
+          document.getElementById('diabetes').checked = userData.doencas.diabetes;
+          document.getElementById('cardiopatias').checked = userData.doencas.cardiopatias;
+          document.getElementById('chagas').checked = userData.doencas.chagas;
+          document.getElementById('outrasDoencas').value = userData.doencas.outras || '';
+
+          // Preencher medicamentos
+          const medicamentosContainer = document.getElementById('medicamentosContainer');
+          medicamentosContainer.innerHTML = '';
+          userData.medicamentos.forEach(med => {
+            const newMed = document.createElement('div');
+            newMed.classList.add('medicamento-form');
+            newMed.innerHTML = `
+              <label>Nome do Medicamento:</label>
+              <input type="text" name="nomeMedicamento[]" value="${med.nome}">
+              <label>Dose:</label>
+              <input type="text" name="doseMedicamento[]" value="${med.dose}">
+              <label>Posologia:</label>
+              <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
+              <label>Horário:</label>
+              <input type="time" name="horarioMedicamento[]" value="${med.horario}">
+              <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+            `;
+            medicamentosContainer.appendChild(newMed);
+          });
+
+          // Preencher vacinas
+          const vacinasContainer = document.getElementById('vacinasContainer');
+          vacinasContainer.innerHTML = '';
+          userData.vacinacao.forEach(vacina => {
+            const newVacina = document.createElement('div');
+            newVacina.classList.add('vacina-form');
+            newVacina.innerHTML = `
+              <div class="form-row">
+                <label>Nome da Vacina:</label>
+                <input type="text" class="nomeVacina" value="${vacina.nomeVacina}">
+              </div>
+              <div class="form-row">
+                <label>Data de Aplicação:</label>
+                <input type="date" class="dataAplicacao" value="${vacina.dataAplicacao}">
+              </div>
+              <div class="form-row">
+                <label>Lote:</label>
+                <input type="text" class="loteVacina" value="${vacina.loteVacina}">
+              </div>
+              <div class="form-row">
+                <label>Observações:</label>
+                <textarea class="observacoesVacina">${vacina.observacoes}</textarea>
+              </div>
+              <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+            `;
+            vacinasContainer.appendChild(newVacina);
+          });
+
+          // Preencher anotações
+          document.getElementById('anotacoes').value = userData.anotacoes || '';
+        }
+      }
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
     });
@@ -791,37 +861,92 @@
       const isMedUser = document.getElementById('medicalAccessScreen').style.display === 'block';
       
       document.getElementById('userDetailContent').innerHTML = `
-        <div class="${isMedUser ? 'editable-field' : ''}" data-field="identificacao.nome">
-          <h3>Identificação</h3>
+        <div class="editable-field" data-field="identificacao.nome">
+          <h3>Identificação Completa</h3>
           <p>Nome: ${userData.identificacao.nome}</p>
-          ${isMedUser ? `<input type="text" class="edit-input" value="${userData.identificacao.nome}" style="display: none;">` : ''}
-        </div>
-
-        <div class="${isMedUser ? 'editable-field' : ''}" data-field="identificacao.peso">
+          <p>Nascimento: ${userData.identificacao.dataNascimento}</p>
+          <p>Contato: ${userData.identificacao.contato}</p>
           <p>Peso: ${userData.identificacao.peso} kg</p>
-          ${isMedUser ? `<input type="number" class="edit-input" value="${userData.identificacao.peso}" style="display: none;">` : ''}
+          ${isMedUser ? `
+            <input type="text" class="edit-input" value="${userData.identificacao.nome}" style="display: none;">
+            <input type="date" class="edit-input" value="${userData.identificacao.dataNascimento}" style="display: none;">
+            <input type="tel" class="edit-input" value="${userData.identificacao.contato}" style="display: none;">
+            <input type="number" class="edit-input" value="${userData.identificacao.peso}" style="display: none;">
+          ` : ''}
         </div>
 
-        <div class="${isMedUser ? 'editable-field' : ''}" data-field="anotacoes">
+        <div class="editable-field" data-field="vacinacao">
+          <h3>Vacinação</h3>
+          ${userData.vacinacao.map((vacina, index) => `
+            <div data-index="${index}">
+              <p><strong>${vacina.nomeVacina}</strong></p>
+              <p>Data: ${vacina.dataAplicacao} - Lote: ${vacina.loteVacina}</p>
+              <p>Observações: ${vacina.observacoes}</p>
+              ${isMedUser ? `
+                <input type="text" class="edit-input" value="${vacina.nomeVacina}" style="display: none;">
+                <input type="date" class="edit-input" value="${vacina.dataAplicacao}" style="display: none;">
+                <input type="text" class="edit-input" value="${vacina.loteVacina}" style="display: none;">
+                <textarea class="edit-input" style="display: none;">${vacina.observacoes}</textarea>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="editable-field" data-field="doencas">
+          <h3>Histórico Clínico</h3>
+          <p>Doenças Crônicas: ${getDoencasList(userData.doencas)}</p>
+          <p>Alergias: ${userData.doencas.outras || 'Nenhuma'}</p>
+          ${isMedUser ? `
+            <div class="edit-input" style="display: none;">
+              <label><input type="checkbox" ${userData.doencas.hipertensao ? 'checked' : ''}> Hipertensão</label>
+              <label><input type="checkbox" ${userData.doencas.diabetes ? 'checked' : ''}> Diabetes</label>
+              <label><input type="checkbox" ${userData.doencas.cardiopatias ? 'checked' : ''}> Cardiopatias</label>
+              <label><input type="checkbox" ${userData.doencas.chagas ? 'checked' : ''}> Chagas</label>
+              <input type="text" value="${userData.doencas.outras || ''}" placeholder="Outras doenças/alergias">
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="editable-field" data-field="monitoramento">
+          <h3>Monitoramento</h3>
+          ${userData.monitoramento?.map(entry => `
+            <p>PA: ${entry.pa} - Glicemia: ${entry.glicemia} (${new Date(entry.timestamp).toLocaleDateString()})</p>
+          `).join('') || 'Nenhum registro'}
+        </div>
+
+        <div class="editable-field" data-field="anotacoes">
           <h3>Anotações Médicas</h3>
           <p>${userData.anotacoes || 'Nenhuma anotação'}</p>
           ${isMedUser ? `<textarea class="edit-input" style="display: none;">${userData.anotacoes || ''}</textarea>` : ''}
         </div>
 
-        <h3>Medicações</h3>
-        ${userData.medicamentos.map((med, index) => `
-          <div class="editable-field" data-field="medicamentos" data-index="${index}">
-            <p><strong>${med.nome}</strong> - ${med.dose} (${med.posologia})</p>
-            ${isMedUser ? `
-              <input type="text" class="edit-input" value="${med.nome}" placeholder="Nome" style="display: none;">
-              <input type="text" class="edit-input" value="${med.dose}" placeholder="Dose" style="display: none;">
-              <input type="text" class="edit-input" value="${med.posologia}" placeholder="Posologia" style="display: none;">
-            ` : ''}
-          </div>
-        `).join('')}
+        <div class="editable-field" data-field="medicamentos">
+          <h3>Medicações</h3>
+          ${userData.medicamentos.map((med, index) => `
+            <div data-index="${index}">
+              <p><strong>${med.nome}</strong> - ${med.dose} (${med.posologia})</p>
+              <p>Horário: ${med.horario}</p>
+              ${isMedUser ? `
+                <input type="text" class="edit-input" value="${med.nome}" style="display: none;">
+                <input type="text" class="edit-input" value="${med.dose}" style="display: none;">
+                <input type="text" class="edit-input" value="${med.posologia}" style="display: none;">
+                <input type="time" class="edit-input" value="${med.horario}" style="display: none;">
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
       `;
 
       if(isEditing) toggleEditMode(true);
+    }
+
+    function getDoencasList(doencas) {
+      const lista = [];
+      if(doencas.hipertensao) lista.push('Hipertensão');
+      if(doencas.diabetes) lista.push('Diabetes');
+      if(doencas.cardiopatias) lista.push('Cardiopatias');
+      if(doencas.chagas) lista.push('Chagas');
+      return lista.join(', ') || 'Nenhuma';
     }
 
     function toggleEditMode(forceUpdate = false) {
@@ -860,7 +985,25 @@
           updates[`medicamentos.${index}`] = {
             nome: inputs[0].value,
             dose: inputs[1].value,
-            posologia: inputs[2].value
+            posologia: inputs[2].value,
+            horario: inputs[3].value
+          };
+        } else if(fieldPath === 'vacinacao') {
+          const index = field.dataset.index;
+          updates[`vacinacao.${index}`] = {
+            nomeVacina: inputs[0].value,
+            dataAplicacao: inputs[1].value,
+            loteVacina: inputs[2].value,
+            observacoes: inputs[3].value
+          };
+        } else if(fieldPath === 'doencas') {
+          const checkboxes = field.querySelectorAll('input[type="checkbox"]');
+          updates['doencas'] = {
+            hipertensao: checkboxes[0].checked,
+            diabetes: checkboxes[1].checked,
+            cardiopatias: checkboxes[2].checked,
+            chagas: checkboxes[3].checked,
+            outras: field.querySelector('input[type="text"]').value
           };
         } else {
           updates[fieldPath] = inputs[0].value;
