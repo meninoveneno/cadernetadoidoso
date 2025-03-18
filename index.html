@@ -849,29 +849,37 @@
       currentEditingUser = userId;
       if(unsubscribeUser) unsubscribeUser();
       
-      unsubscribeUser = db.collection('usuarios').doc(userId).onSnapshot(doc => {
-        const userData = doc.data();
-        renderUserDetail(userData);
-        document.getElementById('medicalAccessScreen').style.display = 'none';
-        document.getElementById('userDetailScreen').style.display = 'block';
-      });
+      try {
+        const doc = await db.collection('usuarios').doc(userId).get();
+        if(doc.exists) {
+          renderUserDetail(doc.data());
+          document.getElementById('medicalAccessScreen').style.display = 'none';
+          document.getElementById('userDetailScreen').style.display = 'block';
+          
+          unsubscribeUser = db.collection('usuarios').doc(userId).onSnapshot(doc => {
+            if(doc.exists) renderUserDetail(doc.data());
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao carregar detalhes:', error);
+        showPopup('Erro ao carregar dados do paciente!', true);
+      }
     }
 
     function renderUserDetail(userData) {
-      const isMedUser = document.getElementById('medicalAccessScreen').style.display === 'block';
-      
-      document.getElementById('userDetailContent').innerHTML = `
-        <div class="editable-field" data-field="identificacao.nome">
+      const detailContent = document.getElementById('userDetailContent');
+      detailContent.innerHTML = `
+        <div class="editable-field" data-field="identificacao">
           <h3>Identificação Completa</h3>
           <p>Nome: ${userData.identificacao.nome}</p>
           <p>Nascimento: ${userData.identificacao.dataNascimento}</p>
           <p>Contato: ${userData.identificacao.contato}</p>
           <p>Peso: ${userData.identificacao.peso} kg</p>
-          ${isMedUser ? `
-            <input type="text" class="edit-input" value="${userData.identificacao.nome}" style="display: none;">
-            <input type="date" class="edit-input" value="${userData.identificacao.dataNascimento}" style="display: none;">
-            <input type="tel" class="edit-input" value="${userData.identificacao.contato}" style="display: none;">
-            <input type="number" class="edit-input" value="${userData.identificacao.peso}" style="display: none;">
+          ${isEditing ? `
+            <input type="text" class="edit-input" value="${userData.identificacao.nome}">
+            <input type="date" class="edit-input" value="${userData.identificacao.dataNascimento}">
+            <input type="tel" class="edit-input" value="${userData.identificacao.contato}">
+            <input type="number" class="edit-input" value="${userData.identificacao.peso}">
           ` : ''}
         </div>
 
@@ -880,13 +888,14 @@
           ${userData.vacinacao.map((vacina, index) => `
             <div data-index="${index}">
               <p><strong>${vacina.nomeVacina}</strong></p>
-              <p>Data: ${vacina.dataAplicacao} - Lote: ${vacina.loteVacina}</p>
+              <p>Data: ${vacina.dataAplicacao}</p>
+              <p>Lote: ${vacina.loteVacina}</p>
               <p>Observações: ${vacina.observacoes}</p>
-              ${isMedUser ? `
-                <input type="text" class="edit-input" value="${vacina.nomeVacina}" style="display: none;">
-                <input type="date" class="edit-input" value="${vacina.dataAplicacao}" style="display: none;">
-                <input type="text" class="edit-input" value="${vacina.loteVacina}" style="display: none;">
-                <textarea class="edit-input" style="display: none;">${vacina.observacoes}</textarea>
+              ${isEditing ? `
+                <input type="text" class="edit-input" value="${vacina.nomeVacina}">
+                <input type="date" class="edit-input" value="${vacina.dataAplicacao}">
+                <input type="text" class="edit-input" value="${vacina.loteVacina}">
+                <textarea class="edit-input">${vacina.observacoes}</textarea>
               ` : ''}
             </div>
           `).join('')}
@@ -896,8 +905,8 @@
           <h3>Histórico Clínico</h3>
           <p>Doenças Crônicas: ${getDoencasList(userData.doencas)}</p>
           <p>Alergias: ${userData.doencas.outras || 'Nenhuma'}</p>
-          ${isMedUser ? `
-            <div class="edit-input" style="display: none;">
+          ${isEditing ? `
+            <div class="edit-input">
               <label><input type="checkbox" ${userData.doencas.hipertensao ? 'checked' : ''}> Hipertensão</label>
               <label><input type="checkbox" ${userData.doencas.diabetes ? 'checked' : ''}> Diabetes</label>
               <label><input type="checkbox" ${userData.doencas.cardiopatias ? 'checked' : ''}> Cardiopatias</label>
@@ -917,7 +926,7 @@
         <div class="editable-field" data-field="anotacoes">
           <h3>Anotações Médicas</h3>
           <p>${userData.anotacoes || 'Nenhuma anotação'}</p>
-          ${isMedUser ? `<textarea class="edit-input" style="display: none;">${userData.anotacoes || ''}</textarea>` : ''}
+          ${isEditing ? `<textarea class="edit-input">${userData.anotacoes || ''}</textarea>` : ''}
         </div>
 
         <div class="editable-field" data-field="medicamentos">
@@ -926,11 +935,11 @@
             <div data-index="${index}">
               <p><strong>${med.nome}</strong> - ${med.dose} (${med.posologia})</p>
               <p>Horário: ${med.horario}</p>
-              ${isMedUser ? `
-                <input type="text" class="edit-input" value="${med.nome}" style="display: none;">
-                <input type="text" class="edit-input" value="${med.dose}" style="display: none;">
-                <input type="text" class="edit-input" value="${med.posologia}" style="display: none;">
-                <input type="time" class="edit-input" value="${med.horario}" style="display: none;">
+              ${isEditing ? `
+                <input type="text" class="edit-input" value="${med.nome}">
+                <input type="text" class="edit-input" value="${med.dose}">
+                <input type="text" class="edit-input" value="${med.posologia}">
+                <input type="time" class="edit-input" value="${med.horario}">
               ` : ''}
             </div>
           `).join('')}
@@ -957,19 +966,13 @@
         const inputs = field.querySelectorAll('.edit-input');
         const displays = field.querySelectorAll('p, h3');
         
-        if(isEditing) {
-          field.classList.add('editing');
-          inputs.forEach(input => input.style.display = 'block');
-          displays.forEach(d => d.style.display = 'none');
-        } else {
-          field.classList.remove('editing');
-          inputs.forEach(input => input.style.display = 'none');
-          displays.forEach(d => d.style.display = 'block');
-        }
+        inputs.forEach(input => input.style.display = isEditing ? 'block' : 'none');
+        displays.forEach(d => d.style.display = isEditing ? 'none' : 'block');
+        field.classList.toggle('editing', isEditing);
       });
 
-      document.getElementById('editUserBtn').style.display = isEditing ? 'none' : 'inline-block';
-      document.getElementById('saveUserBtn').style.display = isEditing ? 'inline-block' : 'none';
+      document.getElementById('editUserBtn').style.display = isEditing ? 'none' : 'block';
+      document.getElementById('saveUserBtn').style.display = isEditing ? 'block' : 'none';
     }
 
     async function saveUserChanges() {
@@ -980,33 +983,46 @@
         const fieldPath = field.dataset.field;
         const inputs = field.querySelectorAll('.edit-input');
         
-        if(fieldPath === 'medicamentos') {
-          const index = field.dataset.index;
-          updates[`medicamentos.${index}`] = {
-            nome: inputs[0].value,
-            dose: inputs[1].value,
-            posologia: inputs[2].value,
-            horario: inputs[3].value
-          };
-        } else if(fieldPath === 'vacinacao') {
-          const index = field.dataset.index;
-          updates[`vacinacao.${index}`] = {
-            nomeVacina: inputs[0].value,
-            dataAplicacao: inputs[1].value,
-            loteVacina: inputs[2].value,
-            observacoes: inputs[3].value
-          };
-        } else if(fieldPath === 'doencas') {
+        if(fieldPath === 'identificacao') {
+          updates['identificacao.nome'] = inputs[0].value;
+          updates['identificacao.dataNascimento'] = inputs[1].value;
+          updates['identificacao.contato'] = inputs[2].value;
+          updates['identificacao.peso'] = inputs[3].value;
+        }
+        else if(fieldPath === 'vacinacao') {
+          updates.vacinacao = [];
+          field.querySelectorAll('div[data-index]').forEach(vacinaDiv => {
+            const vacinaInputs = vacinaDiv.querySelectorAll('.edit-input');
+            updates.vacinacao.push({
+              nomeVacina: vacinaInputs[0].value,
+              dataAplicacao: vacinaInputs[1].value,
+              loteVacina: vacinaInputs[2].value,
+              observacoes: vacinaInputs[3].value
+            });
+          });
+        }
+        else if(fieldPath === 'doencas') {
           const checkboxes = field.querySelectorAll('input[type="checkbox"]');
-          updates['doencas'] = {
-            hipertensao: checkboxes[0].checked,
-            diabetes: checkboxes[1].checked,
-            cardiopatias: checkboxes[2].checked,
-            chagas: checkboxes[3].checked,
-            outras: field.querySelector('input[type="text"]').value
-          };
-        } else {
-          updates[fieldPath] = inputs[0].value;
+          updates['doencas.hipertensao'] = checkboxes[0].checked;
+          updates['doencas.diabetes'] = checkboxes[1].checked;
+          updates['doencas.cardiopatias'] = checkboxes[2].checked;
+          updates['doencas.chagas'] = checkboxes[3].checked;
+          updates['doencas.outras'] = field.querySelector('input[type="text"]').value;
+        }
+        else if(fieldPath === 'anotacoes') {
+          updates.anotacoes = inputs[0].value;
+        }
+        else if(fieldPath === 'medicamentos') {
+          updates.medicamentos = [];
+          field.querySelectorAll('div[data-index]').forEach(medDiv => {
+            const medInputs = medDiv.querySelectorAll('.edit-input');
+            updates.medicamentos.push({
+              nome: medInputs[0].value,
+              dose: medInputs[1].value,
+              posologia: medInputs[2].value,
+              horario: medInputs[3].value
+            });
+          });
         }
       });
 
