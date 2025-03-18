@@ -73,6 +73,49 @@
     .alarm-btn { background-color: #ffc107; color: #333; display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
     .alarm-btn:hover { background-color: #e0a800; }
     .alarm-btn i { font-size: 18px; }
+
+    /* Novos estilos para acesso médico */
+    #medicalLoginScreen, #medicalAccessScreen, #userDetailScreen {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .medical-search {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .user-list {
+      max-height: 400px;
+      overflow-y: auto;
+      margin: 15px 0;
+    }
+    .user-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .user-item:hover {
+      background-color: #f8f9fa;
+    }
+    .medical-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
   </style>
 
   <!-- Firebase Configuration -->
@@ -222,8 +265,37 @@
     <div class="review-buttons">
       <button id="exportBtn" class="btn">Exportar</button>
       <button id="monitoramentoBtn" class="btn">Monitoramento</button>
+      <button id="medicalAccessBtn" class="btn">Acesso Médico</button>
       <button id="editBtn" class="btn">Editar</button>
       <button id="deleteAllBtn" class="btn">Excluir todos os dados</button>
+    </div>
+  </div>
+
+  <!-- Telas de acesso médico -->
+  <div id="medicalLoginScreen">
+    <h2>Acesso Médico</h2>
+    <input type="text" id="medUsername" placeholder="Usuário" class="medical-search">
+    <input type="password" id="medPassword" placeholder="Senha" class="medical-search">
+    <div class="medical-buttons">
+      <button id="medLoginBtn" class="btn">Entrar</button>
+      <button id="medBackBtn" class="btn">Voltar</button>
+    </div>
+  </div>
+
+  <div id="medicalAccessScreen">
+    <h2>Acesso Médico</h2>
+    <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
+    <div class="user-list" id="userList"></div>
+    <div class="medical-buttons">
+      <button id="medLogoutBtn" class="btn">Sair</button>
+    </div>
+  </div>
+
+  <div id="userDetailScreen">
+    <h2>Detalhes do Paciente</h2>
+    <div id="userDetailContent"></div>
+    <div class="medical-buttons">
+      <button onclick="closeUserDetail()" class="btn">Voltar</button>
     </div>
   </div>
 
@@ -349,7 +421,7 @@
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
 
-    // Restante do código original mantido intacto
+    // Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -362,6 +434,7 @@
       });
     }
 
+    // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -371,6 +444,7 @@
       });
     });
 
+    // Medicamentos
     document.getElementById('addMedicamento').addEventListener('click', () => {
       const container = document.getElementById('medicamentosContainer');
       const newBlock = document.createElement('div');
@@ -396,6 +470,7 @@
       }
     }
 
+    // Vacinas
     document.getElementById('addVacina').addEventListener('click', () => {
       const container = document.getElementById('vacinasContainer');
       const newBlock = document.createElement('div');
@@ -429,6 +504,7 @@
       }
     }
 
+    // Iniciar
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
@@ -437,6 +513,7 @@
       }
     });
 
+    // Atualizar tela de revisão
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -483,6 +560,7 @@
       `).join('') || 'Nenhum registro de monitoramento';
     }
 
+    // Exportar PDF
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -512,6 +590,7 @@
       doc.save('caderneta-idoso.pdf');
     });
 
+    // Monitoramento
     document.getElementById('monitoramentoBtn').addEventListener('click', () => {
       document.getElementById('monitoramentoOverlay').style.display = 'block';
       document.getElementById('monitoramentoScreen').style.display = 'block';
@@ -551,11 +630,13 @@
       }
     });
 
+    // Editar
     document.getElementById('editBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
     });
 
+    // Alarmes
     function setMedicationAlarm() {
       if (Notification.permission !== 'granted') {
         Notification.requestPermission();
@@ -592,6 +673,7 @@
       alert('Alarmes configurados com sucesso!');
     }
 
+    // Carregar dados ao iniciar
     document.addEventListener('DOMContentLoaded', async () => {
       const username = localStorage.getItem('currentUser');
       if(username) {
@@ -602,6 +684,92 @@
           document.getElementById('reviewScreen').style.display = 'block';
         }
       }
+    });
+
+    // Acesso Médico
+    document.getElementById('medicalAccessBtn').addEventListener('click', () => {
+      document.getElementById('reviewScreen').style.display = 'none';
+      document.getElementById('medicalLoginScreen').style.display = 'block';
+    });
+
+    document.getElementById('medBackBtn').addEventListener('click', () => {
+      document.getElementById('medicalLoginScreen').style.display = 'none';
+      document.getElementById('reviewScreen').style.display = 'block';
+    });
+
+    document.getElementById('medLoginBtn').addEventListener('click', () => {
+      const username = document.getElementById('medUsername').value;
+      const password = document.getElementById('medPassword').value;
+      
+      if(username === 'admin' && password === 'admin123') {
+        document.getElementById('medicalLoginScreen').style.display = 'none';
+        loadMedicalAccess();
+      } else {
+        alert('Credenciais inválidas!');
+      }
+    });
+
+    async function loadMedicalAccess() {
+      document.getElementById('medicalAccessScreen').style.display = 'block';
+      const usersSnapshot = await db.collection('usuarios').get();
+      const users = [];
+      usersSnapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
+      
+      displayUsers(users);
+      
+      document.getElementById('userSearch').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = users.filter(user => 
+          user.identificacao.nome.toLowerCase().includes(term) ||
+          user.id.toLowerCase().includes(term)
+        );
+        displayUsers(filtered);
+      });
+    }
+
+    function displayUsers(users) {
+      const userList = document.getElementById('userList');
+      userList.innerHTML = users.map(user => `
+        <div class="user-item" onclick="showUserDetail('${user.id}')">
+          ${user.identificacao.nome} (${user.id})
+        </div>
+      `).join('');
+    }
+
+    async function showUserDetail(userId) {
+      const doc = await db.collection('usuarios').doc(userId).get();
+      const userData = doc.data();
+      
+      document.getElementById('userDetailContent').innerHTML = `
+        <h3>Identificação</h3>
+        <p>Nome: ${userData.identificacao.nome}</p>
+        <p>Data Nascimento: ${userData.identificacao.dataNascimento}</p>
+        <p>Contato: ${userData.identificacao.contato}</p>
+        <p>Contato Emergência: ${userData.identificacao.contatoEmergencia}</p>
+
+        <h3>Saúde</h3>
+        <p>Doenças: ${Object.entries(userData.doencas).filter(([k,v]) => v).map(([k]) => k).join(', ')}</p>
+        <p>Medicações: ${userData.medicamentos.length} registradas</p>
+        <p>Vacinas: ${userData.vacinacao.length} aplicadas</p>
+
+        <h3>Monitoramento</h3>
+        ${userData.monitoramento?.map(m => `
+          <p>PA: ${m.pa} | Glicemia: ${m.glicemia} (${new Date(m.timestamp).toLocaleDateString()})</p>
+        `).join('') || 'Nenhum registro'}
+      `;
+      
+      document.getElementById('medicalAccessScreen').style.display = 'none';
+      document.getElementById('userDetailScreen').style.display = 'block';
+    }
+
+    function closeUserDetail() {
+      document.getElementById('userDetailScreen').style.display = 'none';
+      document.getElementById('medicalAccessScreen').style.display = 'block';
+    }
+
+    document.getElementById('medLogoutBtn').addEventListener('click', () => {
+      document.getElementById('medicalAccessScreen').style.display = 'none';
+      document.getElementById('reviewScreen').style.display = 'block';
     });
   </script>
 </body>
