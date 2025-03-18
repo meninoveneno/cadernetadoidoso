@@ -16,6 +16,10 @@
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
   
+  <!-- Firebase Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* Estilos mantidos intactos conforme original */
@@ -70,6 +74,22 @@
     .alarm-btn:hover { background-color: #e0a800; }
     .alarm-btn i { font-size: 18px; }
   </style>
+
+  <!-- Firebase Configuration -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
+      authDomain: "cadernetavirtualdoidoso.firebaseapp.com",
+      projectId: "cadernetavirtualdoidoso",
+      storageBucket: "cadernetavirtualdoidoso.appspot.com",
+      messagingSenderId: "374078415962",
+      appId: "1:374078415962:web:8d8566388ee8336f986463"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
   <div id="homeScreen" class="container">
@@ -224,6 +244,112 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
+    // Firebase Functions
+    function generateUsername(nome, dataNascimento) {
+      const firstName = nome.split(' ')[0].toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+      const cleanDate = dataNascimento.replace(/-/g, '');
+      return `${firstName}${cleanDate}`;
+    }
+
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+      const nome = document.getElementById('nome').value;
+      const dataNascimento = document.getElementById('dataNascimento').value;
+      
+      if(!nome || !dataNascimento) {
+        alert('Nome e data de nascimento são obrigatórios!');
+        return;
+      }
+
+      const username = generateUsername(nome, dataNascimento);
+      
+      const formData = {
+        identificacao: {
+          nome: nome,
+          dataNascimento: dataNascimento,
+          peso: document.getElementById('peso').value,
+          contato: document.getElementById('contato').value,
+          contatoEmergencia: document.getElementById('contatoEmergencia').value
+        },
+        vacinacao: Array.from(document.querySelectorAll('.vacina-form')).map(form => ({
+          nomeVacina: form.querySelector('.nomeVacina').value,
+          dataAplicacao: form.querySelector('.dataAplicacao').value,
+          loteVacina: form.querySelector('.loteVacina').value,
+          observacoes: form.querySelector('.observacoesVacina').value
+        })),
+        doencas: {
+          hipertensao: document.getElementById('hipertensao').checked,
+          diabetes: document.getElementById('diabetes').checked,
+          cardiopatias: document.getElementById('cardiopatias').checked,
+          chagas: document.getElementById('chagas').checked,
+          outras: document.getElementById('outrasDoencas').value
+        },
+        medicamentos: Array.from(document.querySelectorAll('.medicamento-form')).map(form => ({
+          nome: form.querySelector('input[name="nomeMedicamento[]"]').value,
+          dose: form.querySelector('input[name="doseMedicamento[]"]').value,
+          posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
+          horario: form.querySelector('input[name="horarioMedicamento[]"]').value
+        })),
+        anotacoes: document.getElementById('anotacoes').value,
+        monitoramento: []
+      };
+
+      try {
+        await db.collection('usuarios').doc(username).set(formData);
+        localStorage.setItem('currentUser', username);
+        
+        updateReviewScreen(formData);
+        document.getElementById('editScreen').style.display = 'none';
+        document.getElementById('reviewScreen').style.display = 'block';
+        
+        showPopup('Dados salvos com sucesso!');
+      } catch (error) {
+        console.error('Erro ao salvar dados:', error);
+        showPopup('Erro ao salvar dados!', true);
+      }
+    });
+
+    async function loadUserData(username) {
+      try {
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (doc.exists) {
+          return doc.data();
+        }
+        return null;
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        return null;
+      }
+    }
+
+    document.getElementById('deleteAllBtn').addEventListener('click', async () => {
+      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
+        const username = localStorage.getItem('currentUser');
+        if(username) {
+          try {
+            await db.collection('usuarios').doc(username).delete();
+            localStorage.removeItem('currentUser');
+            document.querySelectorAll('input, textarea').forEach(element => element.value = '');
+            document.querySelectorAll('.review-container div').forEach(div => div.innerHTML = '');
+            showPopup('Dados excluídos com sucesso!');
+          } catch (error) {
+            console.error('Erro ao excluir dados:', error);
+            showPopup('Erro ao excluir dados!', true);
+          }
+        }
+      }
+    });
+
+    function showPopup(message, isError = false) {
+      const popup = document.getElementById('popup');
+      popup.textContent = message;
+      popup.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+      popup.classList.add('show');
+      setTimeout(() => popup.classList.remove('show'), 3000);
+    }
+
+    // Restante do código original mantido intacto
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -311,44 +437,6 @@
       }
     });
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      const formData = {
-        identificacao: {
-          nome: document.getElementById('nome').value,
-          dataNascimento: document.getElementById('dataNascimento').value,
-          peso: document.getElementById('peso').value,
-          contato: document.getElementById('contato').value,
-          contatoEmergencia: document.getElementById('contatoEmergencia').value
-        },
-        vacinacao: Array.from(document.querySelectorAll('.vacina-form')).map(form => ({
-          nomeVacina: form.querySelector('.nomeVacina').value,
-          dataAplicacao: form.querySelector('.dataAplicacao').value,
-          loteVacina: form.querySelector('.loteVacina').value,
-          observacoes: form.querySelector('.observacoesVacina').value
-        })),
-        doencas: {
-          hipertensao: document.getElementById('hipertensao').checked,
-          diabetes: document.getElementById('diabetes').checked,
-          cardiopatias: document.getElementById('cardiopatias').checked,
-          chagas: document.getElementById('chagas').checked,
-          outras: document.getElementById('outrasDoencas').value
-        },
-        medicamentos: Array.from(document.querySelectorAll('.medicamento-form')).map(form => ({
-          nome: form.querySelector('input[name="nomeMedicamento[]"]').value,
-          dose: form.querySelector('input[name="doseMedicamento[]"]').value,
-          posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
-          horario: form.querySelector('input[name="horarioMedicamento[]"]').value
-        })),
-        anotacoes: document.getElementById('anotacoes').value,
-        monitoramento: JSON.parse(localStorage.getItem('cadernetaData'))?.monitoramento || []
-      };
-
-      localStorage.setItem('cadernetaData', JSON.stringify(formData));
-      updateReviewScreen(formData);
-      document.getElementById('editScreen').style.display = 'none';
-      document.getElementById('reviewScreen').style.display = 'block';
-    });
-
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -434,43 +522,38 @@
       document.getElementById('monitoramentoScreen').style.display = 'none';
     });
 
-    document.getElementById('saveMonitorBtn').addEventListener('click', () => {
+    document.getElementById('saveMonitorBtn').addEventListener('click', async () => {
       const pa = document.getElementById('paMonitor').value;
       const glicemia = document.getElementById('glicemiaMonitor').value;
       
-      const savedData = JSON.parse(localStorage.getItem('cadernetaData')) || {
-        identificacao: {},
-        vacinacao: [],
-        doencas: {},
-        medicamentos: [],
-        anotacoes: '',
-        monitoramento: []
-      };
+      const username = localStorage.getItem('currentUser');
+      if(!username) return;
 
-      savedData.monitoramento.push({
-        pa: pa,
-        glicemia: glicemia,
-        timestamp: new Date().toISOString()
-      });
-
-      localStorage.setItem('cadernetaData', JSON.stringify(savedData));
-      updateReviewScreen(savedData);
-      
-      document.getElementById('monitoramentoOverlay').style.display = 'none';
-      document.getElementById('monitoramentoScreen').style.display = 'none';
+      try {
+        const userRef = db.collection('usuarios').doc(username);
+        await userRef.update({
+          monitoramento: firebase.firestore.FieldValue.arrayUnion({
+            pa: pa,
+            glicemia: glicemia,
+            timestamp: new Date().toISOString()
+          })
+        });
+        
+        const data = await loadUserData(username);
+        updateReviewScreen(data);
+        showPopup('Monitoramento salvo!');
+        
+        document.getElementById('monitoramentoOverlay').style.display = 'none';
+        document.getElementById('monitoramentoScreen').style.display = 'none';
+      } catch (error) {
+        console.error('Erro ao salvar monitoramento:', error);
+        showPopup('Erro ao salvar monitoramento!', true);
+      }
     });
 
     document.getElementById('editBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
-    });
-
-    document.getElementById('deleteAllBtn').addEventListener('click', () => {
-      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
-        localStorage.clear();
-        document.querySelectorAll('input, textarea').forEach(element => element.value = '');
-        document.querySelectorAll('.review-container div').forEach(div => div.innerHTML = '');
-      }
     });
 
     function setMedicationAlarm() {
@@ -509,12 +592,15 @@
       alert('Alarmes configurados com sucesso!');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedData = localStorage.getItem('cadernetaData');
-      if(savedData) {
-        updateReviewScreen(JSON.parse(savedData));
-        document.getElementById('homeScreen').style.display = 'none';
-        document.getElementById('reviewScreen').style.display = 'block';
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('currentUser');
+      if(username) {
+        const data = await loadUserData(username);
+        if(data) {
+          updateReviewScreen(data);
+          document.getElementById('homeScreen').style.display = 'none';
+          document.getElementById('reviewScreen').style.display = 'block';
+        }
       }
     });
   </script>
