@@ -3,79 +3,328 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  
-  <!-- Configurações PWA Atualizadas -->
   <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
-  
   <title>Caderneta Virtual do Idoso</title>
-  
-  <!-- Ícones PWA Atualizados -->
   <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
-  
-  <!-- Firebase Scripts -->
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Estilos mantidos intactos conforme original */
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 16px; margin: 0; padding: 0; background-color: #f8f9fa; color: #333; }
-    .container { max-width: 900px; margin: 20px auto; background: #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); padding: 30px; border-radius: 12px; position: relative; }
-    #homeScreen { text-align: center; padding: 50px 20px; background: linear-gradient(135deg, #007bff, #00bfff); color: #fff; border-radius: 12px; position: relative; }
-    #homeScreen h1 { font-size: 36px; margin-bottom: 10px; }
-    #homeScreen h2 { font-size: 24px; margin-bottom: 30px; font-weight: 400; }
-    #homeScreen img { width: 73.125px; position: absolute; left: 20px; bottom: 20px; }
-    #homeScreen button { padding: 12px 20px; border: none; background: #28a745; color: #fff; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background-color 0.3s; }
-    #homeScreen button:hover { background-color: #218838; }
-    .tabs { display: flex; overflow-x: auto; padding: 0; list-style: none; border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
-    .tabs li { text-align: center; padding: 12px 20px; font-size: 16px; font-weight: 600; cursor: pointer; background-color: #e9ecef; border-radius: 8px 8px 0 0; transition: all 0.3s ease; flex-shrink: 0; min-width: 120px; margin-right: 8px; color: #495057; }
-    .tabs li.active { background-color: #007bff; color: white; box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2); }
-    .tabs li:hover { background-color: #0056b3; color: white; }
-    .tab-content { display: none; animation: fadeIn 0.5s ease-in-out; }
-    .tab-content.active { display: block; }
-    form label { display: block; margin-top: 12px; font-size: 16px; font-weight: 600; color: #495057; }
-    form input, form select, form textarea { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
-    form input:focus, form select:focus, form textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); }
-    form textarea { resize: vertical; min-height: 100px; }
-    .btn { margin-top: 20px; padding: 12px 20px; border: none; background: #28a745; color: #fff; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: background-color 0.3s; width: 100%; max-width: 200px; }
-    .btn:hover { background-color: #218838; }
-    #addMedicamento, #addVacina { background: #17a2b8; width: 100%; max-width: 200px; }
-    #addMedicamento:hover, #addVacina:hover { background: #117a8b; }
-    #monitoramentoBtn { background-color: #ffc107; color: #333; }
-    #monitoramentoBtn:hover { background-color: #e0a800; }
-    .popup { position: fixed; top: 20px; right: 20px; background: #28a745; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 16px; opacity: 0; transition: opacity 0.5s; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    .popup.show { opacity: 1; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    @media(max-width: 600px) {
-      .tabs li { font-size: 14px; padding: 10px 15px; min-width: 100px; }
-      button, form input, form select, form textarea { font-size: 14px; padding: 8px; }
-      form label { font-size: 14px; }
-      .review-buttons { flex-direction: column; gap: 10px; }
-      .review-buttons .btn { max-width: 100%; width: 100%; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 16px;
+      margin: 0;
+      padding: 0;
+      background-color: #f8f9fa;
+      color: #333;
     }
-    .review-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-    #monitoramentoOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; z-index: 900; }
-    #monitoramentoScreen { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #fff; padding: 20px; border-radius: 12px; z-index: 1000; display: none; width: 90%; max-width: 400px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-    #monitoramentoScreen h3 { margin-top: 0; color: #333; }
-    #monitoramentoScreen button { margin-top: 10px; width: 48%; }
-    .vacina-form, .medicamento-form { border: 1px solid #e9ecef; padding: 15px; margin-bottom: 15px; border-radius: 8px; background-color: #f8f9fa; }
-    .vacina-form .form-row, .medicamento-form .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
-    .vacina-form .form-row label, .medicamento-form .form-row label { flex: 1; }
-    .vacina-form .form-row input, .vacina-form .form-row textarea, .medicamento-form .form-row input, .medicamento-form .form-row textarea { flex: 2; }
-    .delete-btn { background-color: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 10px; transition: background-color 0.3s; }
-    .delete-btn:hover { background-color: #c82333; }
-    .review-container { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); }
-    .review-container h3 { margin-top: 0; color: #007bff; }
-    .alarm-btn { background-color: #ffc107; color: #333; display: flex; align-items: center; gap: 8px; padding: 10px 15px; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
-    .alarm-btn:hover { background-color: #e0a800; }
-    .alarm-btn i { font-size: 18px; }
-
-    /* Novos estilos para acesso médico - MODIFICADO */
-    #medicalLoginScreen, #medicalAccessScreen, #userDetailScreen {
+    .container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 30px;
+      border-radius: 12px;
+      position: relative;
+    }
+    #homeScreen {
+      text-align: center;
+      padding: 50px 20px;
+      background: linear-gradient(135deg, #007bff, #00bfff);
+      color: #fff;
+      border-radius: 12px;
+      position: relative;
+    }
+    #homeScreen h1 {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+    #homeScreen h2 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      font-weight: 400;
+    }
+    #homeScreen img {
+      width: 73.125px;
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+    }
+    #homeScreen button {
+      padding: 12px 20px;
+      border: none;
+      background: #28a745;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+    }
+    #homeScreen button:hover {
+      background-color: #218838;
+    }
+    .tabs {
+      display: flex;
+      overflow-x: auto;
+      padding: 0;
+      list-style: none;
+      border-bottom: 2px solid #e9ecef;
+      margin-bottom: 20px;
+    }
+    .tabs li {
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: #e9ecef;
+      border-radius: 8px 8px 0 0;
+      transition: all 0.3s ease;
+      flex-shrink: 0;
+      min-width: 120px;
+      margin-right: 8px;
+      color: #495057;
+    }
+    .tabs li.active {
+      background-color: #007bff;
+      color: white;
+      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+    }
+    .tabs li:hover {
+      background-color: #0056b3;
+      color: white;
+    }
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    form label {
+      display: block;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
+    }
+    form input,
+    form select,
+    form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease;
+    }
+    form input:focus,
+    form select:focus,
+    form textarea:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+    form textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    .btn {
+      margin-top: 20px;
+      padding: 12px 20px;
+      border: none;
+      background: #28a745;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: background-color 0.3s;
+      width: 100%;
+      max-width: 200px;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    #addMedicamento,
+    #addVacina {
+      background: #17a2b8;
+      width: 100%;
+      max-width: 200px;
+    }
+    #addMedicamento:hover,
+    #addVacina:hover {
+      background: #117a8b;
+    }
+    #monitoramentoBtn {
+      background-color: #ffc107;
+      color: #333;
+    }
+    #monitoramentoBtn:hover {
+      background-color: #e0a800;
+    }
+    .popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .popup.show {
+      opacity: 1;
+    }
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    @media (max-width: 600px) {
+      .tabs li {
+        font-size: 14px;
+        padding: 10px 15px;
+        min-width: 100px;
+      }
+      button,
+      form input,
+      form select,
+      form textarea {
+        font-size: 14px;
+        padding: 8px;
+      }
+      form label {
+        font-size: 14px;
+      }
+      .review-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .review-buttons .btn {
+        max-width: 100%;
+        width: 100%;
+      }
+    }
+    .review-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    #monitoramentoOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 900;
+    }
+    #monitoramentoScreen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      z-index: 1000;
+      display: none;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    #monitoramentoScreen h3 {
+      margin-top: 0;
+      color: #333;
+    }
+    #monitoramentoScreen button {
+      margin-top: 10px;
+      width: 48%;
+    }
+    .vacina-form,
+    .medicamento-form {
+      border: 1px solid #e9ecef;
+      padding: 15px;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    .vacina-form .form-row,
+    .medicamento-form .form-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .vacina-form .form-row label,
+    .medicamento-form .form-row label {
+      flex: 1;
+    }
+    .vacina-form .form-row input,
+    .vacina-form .form-row textarea,
+    .medicamento-form .form-row input,
+    .medicamento-form .form-row textarea {
+      flex: 2;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+    .delete-btn:hover {
+      background-color: #c82333;
+    }
+    .review-container {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .review-container h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    .alarm-btn {
+      background-color: #ffc107;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .alarm-btn:hover {
+      background-color: #e0a800;
+    }
+    .alarm-btn i {
+      font-size: 18px;
+    }
+    #medicalLoginScreen,
+    #medicalAccessScreen,
+    #userDetailScreen {
       display: none;
       position: fixed;
       top: 50%;
@@ -84,10 +333,61 @@
       background: white;
       padding: 20px;
       border-radius: 12px;
-      width: 90%;
-      max-width: 600px;
+      width: 95%;
+      max-width: 800px;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    #userDetailTabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      margin-bottom: 20px;
+    }
+    .detail-tab {
+      padding: 12px;
+      text-align: center;
+      background: #e9ecef;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+    .detail-tab.active {
+      background: #007bff;
+      color: white;
+    }
+    .detail-tab-content {
+      display: none;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    .detail-tab-content.active {
+      display: block;
+    }
+    .compact-form {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    .scrollable-detail {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    @media (max-width: 600px) {
+      #userDetailTabs {
+        grid-template-columns: 1fr;
+      }
+      .detail-tab {
+        font-size: 13px;
+        padding: 10px;
+      }
+      .compact-form {
+        grid-template-columns: 1fr;
+      }
     }
     .medical-search {
       width: 100%;
@@ -116,21 +416,13 @@
       justify-content: flex-end;
       margin-top: 20px;
     }
-    #userDetailContent {
-      max-height: 60vh;
-      overflow-y: auto;
-      padding: 15px;
-      border: 1px solid #eee;
-      border-radius: 8px;
-      margin: 15px 0;
-    }
     .editable-field {
       border: 1px solid transparent;
       padding: 5px;
       margin: 5px 0;
       transition: all 0.3s;
     }
-    .editable-field.editing {
+    .editing .editable-field {
       border-color: #007bff;
       background-color: #f8f9fa;
     }
@@ -147,23 +439,11 @@
     .btn-danger:hover {
       background-color: #c82333;
     }
+    .add-item-btn {
+      margin: 10px 0;
+      background: #17a2b8;
+    }
   </style>
-
-  <!-- Firebase Configuration -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
-      authDomain: "cadernetavirtualdoidoso.firebaseapp.com",
-      projectId: "cadernetavirtualdoidoso",
-      storageBucket: "cadernetavirtualdoidoso.appspot.com",
-      messagingSenderId: "374078415962",
-      appId: "1:374078415962:web:8d8566388ee8336f986463"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
 </head>
 <body>
   <div id="homeScreen" class="container">
@@ -302,7 +582,6 @@
     </div>
   </div>
 
-  <!-- Telas de acesso médico -->
   <div id="medicalLoginScreen">
     <h2>Acesso Médico</h2>
     <input type="text" id="medUsername" placeholder="Usuário" class="medical-search">
@@ -318,13 +597,25 @@
     <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
     <div class="user-list" id="userList"></div>
     <div class="medical-buttons">
+      <button id="createNewPatientBtn" class="btn">Criar Novo Paciente</button>
       <button id="medLogoutBtn" class="btn">Sair</button>
     </div>
   </div>
 
   <div id="userDetailScreen">
     <h2>Detalhes do Paciente</h2>
-    <div id="userDetailContent"></div>
+    <div id="userDetailTabs">
+      <div class="detail-tab active" data-tab="detail-identificacao">Identificação</div>
+      <div class="detail-tab" data-tab="detail-vacinacao">Vacinação</div>
+      <div class="detail-tab" data-tab="detail-doencas">Doenças</div>
+      <div class="detail-tab" data-tab="detail-medicamentos">Medicamentos</div>
+      <div class="detail-tab" data-tab="detail-anotacoes">Anotações</div>
+    </div>
+    
+    <div class="scrollable-detail">
+      <div id="userDetailContent"></div>
+    </div>
+
     <div class="medical-buttons">
       <button id="editUserBtn" class="btn" onclick="toggleEditMode()">Editar</button>
       <button id="saveUserBtn" class="btn" style="display: none;" onclick="saveUserChanges()">Salvar</button>
@@ -350,14 +641,29 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Firebase Functions - MODIFICADO
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
+      authDomain: "cadernetavirtualdoidoso.firebaseapp.com",
+      projectId: "cadernetavirtualdoidoso",
+      storageBucket: "cadernetavirtualdoidoso.appspot.com",
+      messagingSenderId: "374078415962",
+      appId: "1:374078415962:web:8d8566388ee8336f986463"
+    };
+
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '')  // Remove todos os espaços
+        .replace(/\s+/g, '')
         .replace(/[^a-z0-9]/g, '');
       const cleanDate = dataNascimento.replace(/-/g, '');
       return normalized + cleanDate;
+    }
+
+    function generateCode() {
+      return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     document.getElementById('saveBtn').addEventListener('click', async () => {
@@ -417,6 +723,108 @@
       }
     });
 
+    document.getElementById('createNewPatientBtn').addEventListener('click', async () => {
+      const code = generateCode();
+      const newPatientData = {
+        codigoPaciente: code,
+        identificacao: {
+          nome: `Paciente ${code}`,
+          dataNascimento: '',
+          peso: '',
+          contato: '',
+          contatoEmergencia: ''
+        },
+        vacinacao: [],
+        doencas: {
+          hipertensao: false,
+          diabetes: false,
+          cardiopatias: false,
+          chagas: false,
+          outras: ''
+        },
+        medicamentos: [],
+        anotacoes: '',
+        monitoramento: []
+      };
+
+      try {
+        await db.collection('usuarios').doc(code).set(newPatientData);
+        showPopup(`Novo paciente criado com código: ${code}`);
+        loadMedicalAccess();
+      } catch (error) {
+        console.error('Erro ao criar novo paciente:', error);
+        showPopup('Erro ao criar novo paciente!', true);
+      }
+    });
+
+    document.getElementById('nome').addEventListener('input', async (e) => {
+      const code = e.target.value;
+      if (code.length === 4) {
+        const userData = await loadUserData(code);
+        if (userData) {
+          document.getElementById('nome').value = userData.identificacao.nome;
+          document.getElementById('dataNascimento').value = userData.identificacao.dataNascimento;
+          document.getElementById('peso').value = userData.identificacao.peso;
+          document.getElementById('contato').value = userData.identificacao.contato;
+          document.getElementById('contatoEmergencia').value = userData.identificacao.contatoEmergencia;
+
+          document.getElementById('hipertensao').checked = userData.doencas.hipertensao;
+          document.getElementById('diabetes').checked = userData.doencas.diabetes;
+          document.getElementById('cardiopatias').checked = userData.doencas.cardiopatias;
+          document.getElementById('chagas').checked = userData.doencas.chagas;
+          document.getElementById('outrasDoencas').value = userData.doencas.outras || '';
+
+          const medicamentosContainer = document.getElementById('medicamentosContainer');
+          medicamentosContainer.innerHTML = '';
+          userData.medicamentos.forEach(med => {
+            const newMed = document.createElement('div');
+            newMed.classList.add('medicamento-form');
+            newMed.innerHTML = `
+              <label>Nome do Medicamento:</label>
+              <input type="text" name="nomeMedicamento[]" value="${med.nome}">
+              <label>Dose:</label>
+              <input type="text" name="doseMedicamento[]" value="${med.dose}">
+              <label>Posologia:</label>
+              <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
+              <label>Horário:</label>
+              <input type="time" name="horarioMedicamento[]" value="${med.horario}">
+              <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+            `;
+            medicamentosContainer.appendChild(newMed);
+          });
+
+          const vacinasContainer = document.getElementById('vacinasContainer');
+          vacinasContainer.innerHTML = '';
+          userData.vacinacao.forEach(vacina => {
+            const newVacina = document.createElement('div');
+            newVacina.classList.add('vacina-form');
+            newVacina.innerHTML = `
+              <div class="form-row">
+                <label>Nome da Vacina:</label>
+                <input type="text" class="nomeVacina" value="${vacina.nomeVacina}">
+              </div>
+              <div class="form-row">
+                <label>Data de Aplicação:</label>
+                <input type="date" class="dataAplicacao" value="${vacina.dataAplicacao}">
+              </div>
+              <div class="form-row">
+                <label>Lote:</label>
+                <input type="text" class="loteVacina" value="${vacina.loteVacina}">
+              </div>
+              <div class="form-row">
+                <label>Observações:</label>
+                <textarea class="observacoesVacina">${vacina.observacoes}</textarea>
+              </div>
+              <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+            `;
+            vacinasContainer.appendChild(newVacina);
+          });
+
+          document.getElementById('anotacoes').value = userData.anotacoes || '';
+        }
+      }
+    });
+
     async function loadUserData(username) {
       try {
         const doc = await db.collection('usuarios').doc(username).get();
@@ -456,7 +864,6 @@
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
 
-    // Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
@@ -469,7 +876,6 @@
       });
     }
 
-    // Tabs
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -479,7 +885,6 @@
       });
     });
 
-    // Medicamentos
     document.getElementById('addMedicamento').addEventListener('click', () => {
       const container = document.getElementById('medicamentosContainer');
       const newBlock = document.createElement('div');
@@ -505,7 +910,6 @@
       }
     }
 
-    // Vacinas
     document.getElementById('addVacina').addEventListener('click', () => {
       const container = document.getElementById('vacinasContainer');
       const newBlock = document.createElement('div');
@@ -539,7 +943,6 @@
       }
     }
 
-    // Iniciar
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
@@ -548,7 +951,6 @@
       }
     });
 
-    // Atualizar tela de revisão
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -595,7 +997,6 @@
       `).join('') || 'Nenhum registro de monitoramento';
     }
 
-    // Exportar PDF
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -625,7 +1026,6 @@
       doc.save('caderneta-idoso.pdf');
     });
 
-    // Monitoramento
     document.getElementById('monitoramentoBtn').addEventListener('click', () => {
       document.getElementById('monitoramentoOverlay').style.display = 'block';
       document.getElementById('monitoramentoScreen').style.display = 'block';
@@ -665,27 +1065,23 @@
       }
     });
 
-    // Editar
     document.getElementById('editBtn').addEventListener('click', async () => {
       const username = localStorage.getItem('currentUser');
       if(username) {
         const userData = await loadUserData(username);
         if(userData) {
-          // Preencher formulário de identificação
           document.getElementById('nome').value = userData.identificacao.nome;
           document.getElementById('dataNascimento').value = userData.identificacao.dataNascimento;
           document.getElementById('peso').value = userData.identificacao.peso;
           document.getElementById('contato').value = userData.identificacao.contato;
           document.getElementById('contatoEmergencia').value = userData.identificacao.contatoEmergencia;
 
-          // Preencher doenças crônicas
           document.getElementById('hipertensao').checked = userData.doencas.hipertensao;
           document.getElementById('diabetes').checked = userData.doencas.diabetes;
           document.getElementById('cardiopatias').checked = userData.doencas.cardiopatias;
           document.getElementById('chagas').checked = userData.doencas.chagas;
           document.getElementById('outrasDoencas').value = userData.doencas.outras || '';
 
-          // Preencher medicamentos
           const medicamentosContainer = document.getElementById('medicamentosContainer');
           medicamentosContainer.innerHTML = '';
           userData.medicamentos.forEach(med => {
@@ -705,7 +1101,6 @@
             medicamentosContainer.appendChild(newMed);
           });
 
-          // Preencher vacinas
           const vacinasContainer = document.getElementById('vacinasContainer');
           vacinasContainer.innerHTML = '';
           userData.vacinacao.forEach(vacina => {
@@ -733,7 +1128,6 @@
             vacinasContainer.appendChild(newVacina);
           });
 
-          // Preencher anotações
           document.getElementById('anotacoes').value = userData.anotacoes || '';
         }
       }
@@ -741,7 +1135,6 @@
       document.getElementById('editScreen').style.display = 'block';
     });
 
-    // Alarmes
     function setMedicationAlarm() {
       if (Notification.permission !== 'granted') {
         Notification.requestPermission();
@@ -778,7 +1171,6 @@
       alert('Alarmes configurados com sucesso!');
     }
 
-    // Carregar dados ao iniciar
     document.addEventListener('DOMContentLoaded', async () => {
       const username = localStorage.getItem('currentUser');
       if(username) {
@@ -791,7 +1183,6 @@
       }
     });
 
-    // Acesso Médico - MODIFICADO
     document.getElementById('medicalAccessBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('medicalLoginScreen').style.display = 'block';
@@ -844,6 +1235,7 @@
     let currentEditingUser = null;
     let isEditing = false;
     let unsubscribeUser = null;
+    let currentUserData = null;
 
     async function showUserDetail(userId) {
       currentEditingUser = userId;
@@ -852,12 +1244,16 @@
       try {
         const doc = await db.collection('usuarios').doc(userId).get();
         if(doc.exists) {
-          renderUserDetail(doc.data());
+          currentUserData = doc.data();
+          renderUserDetail(currentUserData);
           document.getElementById('medicalAccessScreen').style.display = 'none';
           document.getElementById('userDetailScreen').style.display = 'block';
           
           unsubscribeUser = db.collection('usuarios').doc(userId).onSnapshot(doc => {
-            if(doc.exists) renderUserDetail(doc.data());
+            if(doc.exists) {
+              currentUserData = doc.data();
+              renderUserDetail(currentUserData);
+            }
           });
         }
       } catch (error) {
@@ -869,165 +1265,268 @@
     function renderUserDetail(userData) {
       const detailContent = document.getElementById('userDetailContent');
       detailContent.innerHTML = `
-        <div class="editable-field" data-field="identificacao">
-          <h3>Identificação Completa</h3>
-          <p>Nome: ${userData.identificacao.nome}</p>
-          <p>Nascimento: ${userData.identificacao.dataNascimento}</p>
-          <p>Contato: ${userData.identificacao.contato}</p>
-          <p>Peso: ${userData.identificacao.peso} kg</p>
-          ${isEditing ? `
-            <input type="text" class="edit-input" value="${userData.identificacao.nome}">
-            <input type="date" class="edit-input" value="${userData.identificacao.dataNascimento}">
-            <input type="tel" class="edit-input" value="${userData.identificacao.contato}">
-            <input type="number" class="edit-input" value="${userData.identificacao.peso}">
-          ` : ''}
+        <div class="detail-tab-content active" id="detail-identificacao">
+          <div class="compact-form">
+            <div class="form-row">
+              <label>Nome:</label>
+              ${isEditing ? 
+                `<input type="text" class="edit-input" data-field="identificacao.nome" value="${userData.identificacao.nome}">` : 
+                `<span>${userData.identificacao.nome}</span>`
+              }
+            </div>
+            <div class="form-row">
+              <label>Nascimento:</label>
+              ${isEditing ? 
+                `<input type="date" class="edit-input" data-field="identificacao.dataNascimento" value="${userData.identificacao.dataNascimento}">` : 
+                `<span>${userData.identificacao.dataNascimento}</span>`
+              }
+            </div>
+            <div class="form-row">
+              <label>Contato:</label>
+              ${isEditing ? 
+                `<input type="tel" class="edit-input" data-field="identificacao.contato" value="${userData.identificacao.contato}">` : 
+                `<span>${userData.identificacao.contato}</span>`
+              }
+            </div>
+            <div class="form-row">
+              <label>Peso:</label>
+              ${isEditing ? 
+                `<input type="number" class="edit-input" data-field="identificacao.peso" value="${userData.identificacao.peso}">` : 
+                `<span>${userData.identificacao.peso}</span>`
+              }
+            </div>
+          </div>
         </div>
 
-        <div class="editable-field" data-field="vacinacao">
-          <h3>Vacinação</h3>
+        <div class="detail-tab-content" id="detail-vacinacao">
           ${userData.vacinacao.map((vacina, index) => `
-            <div data-index="${index}">
-              <p><strong>${vacina.nomeVacina}</strong></p>
-              <p>Data: ${vacina.dataAplicacao}</p>
-              <p>Lote: ${vacina.loteVacina}</p>
-              <p>Observações: ${vacina.observacoes}</p>
-              ${isEditing ? `
-                <input type="text" class="edit-input" value="${vacina.nomeVacina}">
-                <input type="date" class="edit-input" value="${vacina.dataAplicacao}">
-                <input type="text" class="edit-input" value="${vacina.loteVacina}">
-                <textarea class="edit-input">${vacina.observacoes}</textarea>
-              ` : ''}
+            <div class="vacina-form" data-index="${index}">
+              <div class="form-row">
+                <label>Vacina:</label>
+                ${isEditing ? 
+                  `<input type="text" class="edit-input" data-field="vacinacao[${index}].nomeVacina" value="${vacina.nomeVacina}">` : 
+                  `<span>${vacina.nomeVacina}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Data:</label>
+                ${isEditing ? 
+                  `<input type="date" class="edit-input" data-field="vacinacao[${index}].dataAplicacao" value="${vacina.dataAplicacao}">` : 
+                  `<span>${vacina.dataAplicacao}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Lote:</label>
+                ${isEditing ? 
+                  `<input type="text" class="edit-input" data-field="vacinacao[${index}].loteVacina" value="${vacina.loteVacina}">` : 
+                  `<span>${vacina.loteVacina}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Observações:</label>
+                ${isEditing ? 
+                  `<textarea class="edit-input" data-field="vacinacao[${index}].observacoes">${vacina.observacoes}</textarea>` : 
+                  `<span>${vacina.observacoes}</span>`
+                }
+              </div>
+              ${isEditing ? `<button class="delete-btn" onclick="this.closest('.vacina-form').remove()">Excluir</button>` : ''}
             </div>
           `).join('')}
+          ${isEditing ? `<button class="btn add-item-btn" onclick="addNewVacina()">+ Nova Vacina</button>` : ''}
         </div>
 
-        <div class="editable-field" data-field="doencas">
-          <h3>Histórico Clínico</h3>
-          <p>Doenças Crônicas: ${getDoencasList(userData.doencas)}</p>
-          <p>Alergias: ${userData.doencas.outras || 'Nenhuma'}</p>
-          ${isEditing ? `
-            <div class="edit-input">
-              <label><input type="checkbox" ${userData.doencas.hipertensao ? 'checked' : ''}> Hipertensão</label>
-              <label><input type="checkbox" ${userData.doencas.diabetes ? 'checked' : ''}> Diabetes</label>
-              <label><input type="checkbox" ${userData.doencas.cardiopatias ? 'checked' : ''}> Cardiopatias</label>
-              <label><input type="checkbox" ${userData.doencas.chagas ? 'checked' : ''}> Chagas</label>
-              <input type="text" value="${userData.doencas.outras || ''}" placeholder="Outras doenças/alergias">
+        <div class="detail-tab-content" id="detail-doencas">
+          <div class="compact-form">
+            <div class="form-row">
+              <label>Hipertensão:</label>
+              <input type="checkbox" ${userData.doencas.hipertensao ? 'checked' : ''} 
+                ${isEditing ? 'data-field="doencas.hipertensao"' : 'disabled'}>
             </div>
-          ` : ''}
+            <div class="form-row">
+              <label>Diabetes:</label>
+              <input type="checkbox" ${userData.doencas.diabetes ? 'checked' : ''} 
+                ${isEditing ? 'data-field="doencas.diabetes"' : 'disabled'}>
+            </div>
+            <div class="form-row">
+              <label>Cardiopatias:</label>
+              <input type="checkbox" ${userData.doencas.cardiopatias ? 'checked' : ''} 
+                ${isEditing ? 'data-field="doencas.cardiopatias"' : 'disabled'}>
+            </div>
+            <div class="form-row">
+              <label>Chagas:</label>
+              <input type="checkbox" ${userData.doencas.chagas ? 'checked' : ''} 
+                ${isEditing ? 'data-field="doencas.chagas"' : 'disabled'}>
+            </div>
+            <div class="form-row">
+              <label>Outras:</label>
+              ${isEditing ? 
+                `<input type="text" class="edit-input" data-field="doencas.outras" value="${userData.doencas.outras || ''}">` : 
+                `<span>${userData.doencas.outras || 'Nenhuma'}</span>`
+              }
+            </div>
+          </div>
         </div>
 
-        <div class="editable-field" data-field="monitoramento">
-          <h3>Monitoramento</h3>
-          ${userData.monitoramento?.map(entry => `
-            <p>PA: ${entry.pa} - Glicemia: ${entry.glicemia} (${new Date(entry.timestamp).toLocaleDateString()})</p>
-          `).join('') || 'Nenhum registro'}
-        </div>
-
-        <div class="editable-field" data-field="anotacoes">
-          <h3>Anotações Médicas</h3>
-          <p>${userData.anotacoes || 'Nenhuma anotação'}</p>
-          ${isEditing ? `<textarea class="edit-input">${userData.anotacoes || ''}</textarea>` : ''}
-        </div>
-
-        <div class="editable-field" data-field="medicamentos">
-          <h3>Medicações</h3>
+        <div class="detail-tab-content" id="detail-medicamentos">
           ${userData.medicamentos.map((med, index) => `
-            <div data-index="${index}">
-              <p><strong>${med.nome}</strong> - ${med.dose} (${med.posologia})</p>
-              <p>Horário: ${med.horario}</p>
-              ${isEditing ? `
-                <input type="text" class="edit-input" value="${med.nome}">
-                <input type="text" class="edit-input" value="${med.dose}">
-                <input type="text" class="edit-input" value="${med.posologia}">
-                <input type="time" class="edit-input" value="${med.horario}">
-              ` : ''}
+            <div class="medicamento-form" data-index="${index}">
+              <div class="form-row">
+                <label>Medicamento:</label>
+                ${isEditing ? 
+                  `<input type="text" class="edit-input" data-field="medicamentos[${index}].nome" value="${med.nome}">` : 
+                  `<span>${med.nome}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Dose:</label>
+                ${isEditing ? 
+                  `<input type="text" class="edit-input" data-field="medicamentos[${index}].dose" value="${med.dose}">` : 
+                  `<span>${med.dose}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Posologia:</label>
+                ${isEditing ? 
+                  `<input type="text" class="edit-input" data-field="medicamentos[${index}].posologia" value="${med.posologia}">` : 
+                  `<span>${med.posologia}</span>`
+                }
+              </div>
+              <div class="form-row">
+                <label>Horário:</label>
+                ${isEditing ? 
+                  `<input type="time" class="edit-input" data-field="medicamentos[${index}].horario" value="${med.horario}">` : 
+                  `<span>${med.horario}</span>`
+                }
+              </div>
+              ${isEditing ? `<button class="delete-btn" onclick="this.closest('.medicamento-form').remove()">Excluir</button>` : ''}
             </div>
           `).join('')}
+          ${isEditing ? `<button class="btn add-item-btn" onclick="addNewMedicamento()">+ Novo Medicamento</button>` : ''}
+        </div>
+
+        <div class="detail-tab-content" id="detail-anotacoes">
+          <div class="form-row">
+            ${isEditing ? 
+              `<textarea class="edit-input" data-field="anotacoes">${userData.anotacoes || ''}</textarea>` : 
+              `<span>${userData.anotacoes || 'Nenhuma anotação'}</span>`
+            }
+          </div>
         </div>
       `;
 
-      if(isEditing) toggleEditMode(true);
-    }
-
-    function getDoencasList(doencas) {
-      const lista = [];
-      if(doencas.hipertensao) lista.push('Hipertensão');
-      if(doencas.diabetes) lista.push('Diabetes');
-      if(doencas.cardiopatias) lista.push('Cardiopatias');
-      if(doencas.chagas) lista.push('Chagas');
-      return lista.join(', ') || 'Nenhuma';
-    }
-
-    function toggleEditMode(forceUpdate = false) {
-      isEditing = forceUpdate ? true : !isEditing;
-      const fields = document.querySelectorAll('.editable-field');
-      
-      fields.forEach(field => {
-        const inputs = field.querySelectorAll('.edit-input');
-        const displays = field.querySelectorAll('p, h3');
-        
-        inputs.forEach(input => input.style.display = isEditing ? 'block' : 'none');
-        displays.forEach(d => d.style.display = isEditing ? 'none' : 'block');
-        field.classList.toggle('editing', isEditing);
+      document.querySelectorAll('.detail-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab).classList.add('active');
+        });
       });
+    }
 
+    function addNewMedicamento() {
+      const container = document.querySelector('#detail-medicamentos');
+      const newIndex = container.querySelectorAll('.medicamento-form').length;
+      
+      const newMed = document.createElement('div');
+      newMed.className = 'medicamento-form';
+      newMed.innerHTML = `
+        <div class="form-row">
+          <label>Medicamento:</label>
+          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].nome">
+        </div>
+        <div class="form-row">
+          <label>Dose:</label>
+          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].dose">
+        </div>
+        <div class="form-row">
+          <label>Posologia:</label>
+          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].posologia">
+        </div>
+        <div class="form-row">
+          <label>Horário:</label>
+          <input type="time" class="edit-input" data-field="medicamentos[${newIndex}].horario">
+        </div>
+        <button class="delete-btn" onclick="this.closest('.medicamento-form').remove()">Excluir</button>
+      `;
+      container.insertBefore(newMed, container.lastElementChild);
+    }
+
+    function addNewVacina() {
+      const container = document.querySelector('#detail-vacinacao');
+      const newIndex = container.querySelectorAll('.vacina-form').length;
+      
+      const newVac = document.createElement('div');
+      newVac.className = 'vacina-form';
+      newVac.innerHTML = `
+        <div class="form-row">
+          <label>Vacina:</label>
+          <input type="text" class="edit-input" data-field="vacinacao[${newIndex}].nomeVacina">
+        </div>
+        <div class="form-row">
+          <label>Data:</label>
+          <input type="date" class="edit-input" data-field="vacinacao[${newIndex}].dataAplicacao">
+        </div>
+        <div class="form-row">
+          <label>Lote:</label>
+          <input type="text" class="edit-input" data-field="vacinacao[${newIndex}].loteVacina">
+        </div>
+        <div class="form-row">
+          <label>Observações:</label>
+          <textarea class="edit-input" data-field="vacinacao[${newIndex}].observacoes"></textarea>
+        </div>
+        <button class="delete-btn" onclick="this.closest('.vacina-form').remove()">Excluir</button>
+      `;
+      container.insertBefore(newVac, container.lastElementChild);
+    }
+
+    function toggleEditMode() {
+      isEditing = !isEditing;
       document.getElementById('editUserBtn').style.display = isEditing ? 'none' : 'block';
       document.getElementById('saveUserBtn').style.display = isEditing ? 'block' : 'none';
+      renderUserDetail(currentUserData);
     }
 
     async function saveUserChanges() {
       const updates = {};
-      const fields = document.querySelectorAll('.editable-field.editing');
-      
-      fields.forEach(field => {
-        const fieldPath = field.dataset.field;
-        const inputs = field.querySelectorAll('.edit-input');
-        
-        if(fieldPath === 'identificacao') {
-          updates['identificacao.nome'] = inputs[0].value;
-          updates['identificacao.dataNascimento'] = inputs[1].value;
-          updates['identificacao.contato'] = inputs[2].value;
-          updates['identificacao.peso'] = inputs[3].value;
-        }
-        else if(fieldPath === 'vacinacao') {
-          updates.vacinacao = [];
-          field.querySelectorAll('div[data-index]').forEach(vacinaDiv => {
-            const vacinaInputs = vacinaDiv.querySelectorAll('.edit-input');
-            updates.vacinacao.push({
-              nomeVacina: vacinaInputs[0].value,
-              dataAplicacao: vacinaInputs[1].value,
-              loteVacina: vacinaInputs[2].value,
-              observacoes: vacinaInputs[3].value
-            });
-          });
-        }
-        else if(fieldPath === 'doencas') {
-          const checkboxes = field.querySelectorAll('input[type="checkbox"]');
-          updates['doencas.hipertensao'] = checkboxes[0].checked;
-          updates['doencas.diabetes'] = checkboxes[1].checked;
-          updates['doencas.cardiopatias'] = checkboxes[2].checked;
-          updates['doencas.chagas'] = checkboxes[3].checked;
-          updates['doencas.outras'] = field.querySelector('input[type="text"]').value;
-        }
-        else if(fieldPath === 'anotacoes') {
-          updates.anotacoes = inputs[0].value;
-        }
-        else if(fieldPath === 'medicamentos') {
-          updates.medicamentos = [];
-          field.querySelectorAll('div[data-index]').forEach(medDiv => {
-            const medInputs = medDiv.querySelectorAll('.edit-input');
-            updates.medicamentos.push({
-              nome: medInputs[0].value,
-              dose: medInputs[1].value,
-              posologia: medInputs[2].value,
-              horario: medInputs[3].value
-            });
-          });
-        }
+      const userRef = db.collection('usuarios').doc(currentEditingUser);
+
+      // Identificação
+      document.querySelectorAll('#detail-identificacao .edit-input').forEach(input => {
+        updates[input.dataset.field] = input.value;
       });
 
+      // Doenças
+      document.querySelectorAll('#detail-doencas input[type="checkbox"]').forEach(checkbox => {
+        updates[checkbox.dataset.field] = checkbox.checked;
+      });
+      const outrasDoencas = document.querySelector('#detail-doencas input[type="text"]');
+      if(outrasDoencas) updates['doencas.outras'] = outrasDoencas.value;
+
+      // Vacinas
+      document.querySelectorAll('#detail-vacinacao .vacina-form').forEach((form, index) => {
+        const inputs = form.querySelectorAll('.edit-input');
+        inputs.forEach(input => {
+          const field = input.dataset.field.replace('[0]', `[${index}]`);
+          updates[field] = input.value;
+        });
+      });
+
+      // Medicamentos
+      document.querySelectorAll('#detail-medicamentos .medicamento-form').forEach((form, index) => {
+        const inputs = form.querySelectorAll('.edit-input');
+        inputs.forEach(input => {
+          const field = input.dataset.field.replace('[0]', `[${index}]`);
+          updates[field] = input.value;
+        });
+      });
+
+      // Anotações
+      const anotacoes = document.querySelector('#detail-anotacoes textarea')?.value || '';
+      updates.anotacoes = anotacoes;
+
       try {
-        await db.collection('usuarios').doc(currentEditingUser).update(updates);
+        await userRef.update(updates);
         showPopup('Alterações salvas com sucesso!');
         toggleEditMode();
       } catch (error) {
@@ -1059,30 +1558,6 @@
     document.getElementById('medLogoutBtn').addEventListener('click', () => {
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
-    });
-
-    // Atualização em tempo real
-    function setupRealtimeUpdates(username) {
-      return db.collection('usuarios').doc(username).onSnapshot(doc => {
-        if(doc.exists) {
-          const data = doc.data();
-          updateReviewScreen(data);
-        }
-      });
-    }
-
-    // Modificar o carregamento inicial para incluir atualizações em tempo real
-    document.addEventListener('DOMContentLoaded', async () => {
-      const username = localStorage.getItem('currentUser');
-      if(username) {
-        const data = await loadUserData(username);
-        if(data) {
-          updateReviewScreen(data);
-          setupRealtimeUpdates(username);
-          document.getElementById('homeScreen').style.display = 'none';
-          document.getElementById('reviewScreen').style.display = 'block';
-        }
-      }
     });
   </script>
 </body>
