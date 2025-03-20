@@ -666,6 +666,7 @@
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
+    // ================== FUNÇÃO DE SALVAMENTO PRINCIPAL ==================
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const nome = document.getElementById('nome').value;
       const dataNascimento = document.getElementById('dataNascimento').value;
@@ -1487,46 +1488,52 @@
       renderUserDetail(currentUserData);
     }
 
+    // ================== FUNÇÃO DE SALVAMENTO DE EDIÇÕES ==================
     async function saveUserChanges() {
-      const updates = {};
-      const userRef = db.collection('usuarios').doc(currentEditingUser);
-
-      // Identificação
-      document.querySelectorAll('#detail-identificacao .edit-input').forEach(input => {
-        updates[input.dataset.field] = input.value;
-      });
-
-      // Doenças
-      document.querySelectorAll('#detail-doencas input[type="checkbox"]').forEach(checkbox => {
-        updates[checkbox.dataset.field] = checkbox.checked;
-      });
-      const outrasDoencas = document.querySelector('#detail-doencas input[type="text"]');
-      if(outrasDoencas) updates['doencas.outras'] = outrasDoencas.value;
-
-      // Vacinas
-      document.querySelectorAll('#detail-vacinacao .vacina-form').forEach((form, index) => {
-        const inputs = form.querySelectorAll('.edit-input');
-        inputs.forEach(input => {
-          const field = input.dataset.field.replace('[0]', `[${index}]`);
-          updates[field] = input.value;
-        });
-      });
-
-      // Medicamentos
-      document.querySelectorAll('#detail-medicamentos .medicamento-form').forEach((form, index) => {
-        const inputs = form.querySelectorAll('.edit-input');
-        inputs.forEach(input => {
-          const field = input.dataset.field.replace('[0]', `[${index}]`);
-          updates[field] = input.value;
-        });
-      });
-
-      // Anotações
-      const anotacoes = document.querySelector('#detail-anotacoes textarea')?.value || '';
-      updates.anotacoes = anotacoes;
-
       try {
-        await userRef.update(updates);
+        const userRef = db.collection('usuarios').doc(currentEditingUser);
+        const updatedData = { ...currentUserData };
+
+        // Atualizar identificação
+        updatedData.identificacao = {
+          nome: document.querySelector('[data-field="identificacao.nome"]')?.value || '',
+          dataNascimento: document.querySelector('[data-field="identificacao.dataNascimento"]')?.value || '',
+          contato: document.querySelector('[data-field="identificacao.contato"]')?.value || '',
+          peso: document.querySelector('[data-field="identificacao.peso"]')?.value || '',
+          contatoEmergencia: document.querySelector('[data-field="identificacao.contatoEmergencia"]')?.value || ''
+        };
+
+        // Atualizar doenças
+        updatedData.doencas = {
+          hipertensao: document.querySelector('[data-field="doencas.hipertensao"]')?.checked || false,
+          diabetes: document.querySelector('[data-field="doencas.diabetes"]')?.checked || false,
+          cardiopatias: document.querySelector('[data-field="doencas.cardiopatias"]')?.checked || false,
+          chagas: document.querySelector('[data-field="doencas.chagas"]')?.checked || false,
+          outras: document.querySelector('[data-field="doencas.outras"]')?.value || ''
+        };
+
+        // Atualizar vacinas
+        updatedData.vacinacao = Array.from(document.querySelectorAll('#detail-vacinacao .vacina-form')).map(form => ({
+          nomeVacina: form.querySelector('[data-field$=".nomeVacina"]')?.value || '',
+          dataAplicacao: form.querySelector('[data-field$=".dataAplicacao"]')?.value || '',
+          loteVacina: form.querySelector('[data-field$=".loteVacina"]')?.value || '',
+          observacoes: form.querySelector('[data-field$=".observacoes"]')?.value || ''
+        }));
+
+        // Atualizar medicamentos
+        updatedData.medicamentos = Array.from(document.querySelectorAll('#detail-medicamentos .medicamento-form')).map(form => ({
+          nome: form.querySelector('[data-field$=".nome"]')?.value || '',
+          dose: form.querySelector('[data-field$=".dose"]')?.value || '',
+          posologia: form.querySelector('[data-field$=".posologia"]')?.value || '',
+          horario: form.querySelector('[data-field$=".horario"]')?.value || ''
+        }));
+
+        // Atualizar anotações
+        updatedData.anotacoes = document.querySelector('[data-field="anotacoes"]')?.value || '';
+
+        // Salvamento completo
+        await userRef.set(updatedData, { merge: true });
+        
         showPopup('Alterações salvas com sucesso!');
         toggleEditMode();
       } catch (error) {
