@@ -446,6 +446,7 @@
   </style>
 </head>
 <body>
+  <!-- Tela Inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
@@ -453,6 +454,7 @@
     <button id="startBtn">Iniciar</button>
   </div>
 
+  <!-- Tela de Edição -->
   <div id="editScreen" class="container" style="display: none;">
     <ul class="tabs">
       <li class="tab active" data-tab="identificacao">Identificação</li>
@@ -462,6 +464,7 @@
       <li class="tab" data-tab="recomendacoes">Anotações</li>
     </ul>
 
+    <!-- Conteúdo das Abas -->
     <div class="tab-content active" id="identificacao">
       <form id="form-identificacao">
         <label for="nome">Nome:</label>
@@ -543,6 +546,7 @@
     <div id="popup" class="popup">Dados salvos com sucesso!</div>
   </div>
 
+  <!-- Tela de Revisão -->
   <div id="reviewScreen" class="container" style="display: none;">
     <h2>Dados do Idoso</h2>
     <div class="review-container">
@@ -582,6 +586,7 @@
     </div>
   </div>
 
+  <!-- Tela de Login Médico -->
   <div id="medicalLoginScreen">
     <h2>Acesso Médico</h2>
     <input type="text" id="medUsername" placeholder="Usuário" class="medical-search">
@@ -592,6 +597,7 @@
     </div>
   </div>
 
+  <!-- Tela de Acesso Médico -->
   <div id="medicalAccessScreen">
     <h2>Acesso Médico</h2>
     <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
@@ -602,6 +608,7 @@
     </div>
   </div>
 
+  <!-- Tela de Detalhes do Paciente -->
   <div id="userDetailScreen">
     <h2>Detalhes do Paciente</h2>
     <div id="userDetailTabs">
@@ -624,6 +631,7 @@
     </div>
   </div>
 
+  <!-- Overlay e Tela de Monitoramento -->
   <div id="monitoramentoOverlay"></div>
   <div id="monitoramentoScreen">
     <h3>Mapeamento de PA e Glicemia</h3>
@@ -653,6 +661,7 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
+    // Funções Auxiliares
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -666,7 +675,84 @@
       return Math.floor(1000 + Math.random() * 9000).toString();
     }
 
-    // ================== FUNÇÃO DE SALVAMENTO PRINCIPAL ==================
+    // Event Listeners
+    document.getElementById('startBtn').addEventListener('click', () => {
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('editScreen').style.display = 'block';
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      }
+    });
+
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
+      });
+    });
+
+    document.getElementById('addMedicamento').addEventListener('click', () => {
+      const container = document.getElementById('medicamentosContainer');
+      const newBlock = document.createElement('div');
+      newBlock.classList.add('medicamento-form');
+      newBlock.innerHTML = `
+        <label>Nome do Medicamento:</label>
+        <input type="text" name="nomeMedicamento[]">
+        <label>Dose:</label>
+        <input type="text" name="doseMedicamento[]">
+        <label>Posologia:</label>
+        <input type="text" name="posologiaMedicamento[]">
+        <label>Horário:</label>
+        <input type="time" name="horarioMedicamento[]">
+        <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+      `;
+      container.appendChild(newBlock);
+    });
+
+    document.getElementById('addVacina').addEventListener('click', () => {
+      const container = document.getElementById('vacinasContainer');
+      const newBlock = document.createElement('div');
+      newBlock.classList.add('vacina-form');
+      newBlock.innerHTML = `
+        <div class="form-row">
+          <label>Nome da Vacina:</label>
+          <input type="text" class="nomeVacina" name="nomeVacina[]">
+        </div>
+        <div class="form-row">
+          <label>Data de Aplicação:</label>
+          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+        </div>
+        <div class="form-row">
+          <label>Lote:</label>
+          <input type="text" class="loteVacina" name="loteVacina[]">
+        </div>
+        <div class="form-row">
+          <label>Observações:</label>
+          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+        </div>
+        <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+      `;
+      container.appendChild(newBlock);
+    });
+
+    // Funções de Deleção
+    function deleteMedicamentoForm(button) {
+      if (confirm("Tem certeza que deseja excluir este medicamento?")) {
+        const form = button.closest('.medicamento-form');
+        form.remove();
+      }
+    }
+
+    function deleteVacinaForm(button) {
+      if (confirm("Tem certeza que deseja excluir esta vacina?")) {
+        const form = button.closest('.vacina-form');
+        form.remove();
+      }
+    }
+
+    // Salvamento Principal
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const nome = document.getElementById('nome').value;
       const dataNascimento = document.getElementById('dataNascimento').value;
@@ -724,234 +810,7 @@
       }
     });
 
-    document.getElementById('createNewPatientBtn').addEventListener('click', async () => {
-      const code = generateCode();
-      const newPatientData = {
-        codigoPaciente: code,
-        identificacao: {
-          nome: `Paciente ${code}`,
-          dataNascimento: '',
-          peso: '',
-          contato: '',
-          contatoEmergencia: ''
-        },
-        vacinacao: [],
-        doencas: {
-          hipertensao: false,
-          diabetes: false,
-          cardiopatias: false,
-          chagas: false,
-          outras: ''
-        },
-        medicamentos: [],
-        anotacoes: '',
-        monitoramento: []
-      };
-
-      try {
-        await db.collection('usuarios').doc(code).set(newPatientData);
-        showPopup(`Novo paciente criado com código: ${code}`);
-        loadMedicalAccess();
-      } catch (error) {
-        console.error('Erro ao criar novo paciente:', error);
-        showPopup('Erro ao criar novo paciente!', true);
-      }
-    });
-
-    document.getElementById('nome').addEventListener('input', async (e) => {
-      const code = e.target.value;
-      if (code.length === 4) {
-        const userData = await loadUserData(code);
-        if (userData) {
-          document.getElementById('nome').value = userData.identificacao.nome;
-          document.getElementById('dataNascimento').value = userData.identificacao.dataNascimento;
-          document.getElementById('peso').value = userData.identificacao.peso;
-          document.getElementById('contato').value = userData.identificacao.contato;
-          document.getElementById('contatoEmergencia').value = userData.identificacao.contatoEmergencia;
-
-          document.getElementById('hipertensao').checked = userData.doencas.hipertensao;
-          document.getElementById('diabetes').checked = userData.doencas.diabetes;
-          document.getElementById('cardiopatias').checked = userData.doencas.cardiopatias;
-          document.getElementById('chagas').checked = userData.doencas.chagas;
-          document.getElementById('outrasDoencas').value = userData.doencas.outras || '';
-
-          const medicamentosContainer = document.getElementById('medicamentosContainer');
-          medicamentosContainer.innerHTML = '';
-          userData.medicamentos.forEach(med => {
-            const newMed = document.createElement('div');
-            newMed.classList.add('medicamento-form');
-            newMed.innerHTML = `
-              <label>Nome do Medicamento:</label>
-              <input type="text" name="nomeMedicamento[]" value="${med.nome}">
-              <label>Dose:</label>
-              <input type="text" name="doseMedicamento[]" value="${med.dose}">
-              <label>Posologia:</label>
-              <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
-              <label>Horário:</label>
-              <input type="time" name="horarioMedicamento[]" value="${med.horario}">
-              <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
-            `;
-            medicamentosContainer.appendChild(newMed);
-          });
-
-          const vacinasContainer = document.getElementById('vacinasContainer');
-          vacinasContainer.innerHTML = '';
-          userData.vacinacao.forEach(vacina => {
-            const newVacina = document.createElement('div');
-            newVacina.classList.add('vacina-form');
-            newVacina.innerHTML = `
-              <div class="form-row">
-                <label>Nome da Vacina:</label>
-                <input type="text" class="nomeVacina" value="${vacina.nomeVacina}">
-              </div>
-              <div class="form-row">
-                <label>Data de Aplicação:</label>
-                <input type="date" class="dataAplicacao" value="${vacina.dataAplicacao}">
-              </div>
-              <div class="form-row">
-                <label>Lote:</label>
-                <input type="text" class="loteVacina" value="${vacina.loteVacina}">
-              </div>
-              <div class="form-row">
-                <label>Observações:</label>
-                <textarea class="observacoesVacina">${vacina.observacoes}</textarea>
-              </div>
-              <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
-            `;
-            vacinasContainer.appendChild(newVacina);
-          });
-
-          document.getElementById('anotacoes').value = userData.anotacoes || '';
-        }
-      }
-    });
-
-    async function loadUserData(username) {
-      try {
-        const doc = await db.collection('usuarios').doc(username).get();
-        if (doc.exists) {
-          return doc.data();
-        }
-        return null;
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        return null;
-      }
-    }
-
-    document.getElementById('deleteAllBtn').addEventListener('click', async () => {
-      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
-        const username = localStorage.getItem('currentUser');
-        if(username) {
-          try {
-            await db.collection('usuarios').doc(username).delete();
-            localStorage.removeItem('currentUser');
-            document.querySelectorAll('input, textarea').forEach(element => element.value = '');
-            document.querySelectorAll('.review-container div').forEach(div => div.innerHTML = '');
-            showPopup('Dados excluídos com sucesso!');
-          } catch (error) {
-            console.error('Erro ao excluir dados:', error);
-            showPopup('Erro ao excluir dados!', true);
-          }
-        }
-      }
-    });
-
-    function showPopup(message, isError = false) {
-      const popup = document.getElementById('popup');
-      popup.textContent = message;
-      popup.style.backgroundColor = isError ? '#dc3545' : '#28a745';
-      popup.classList.add('show');
-      setTimeout(() => popup.classList.remove('show'), 3000);
-    }
-
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-          .then(registration => {
-            console.log('Service Worker registrado:', registration.scope);
-          })
-          .catch(error => {
-            console.log('Falha no registro:', error);
-          });
-      });
-    }
-
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.getAttribute('data-tab')).classList.add('active');
-      });
-    });
-
-    document.getElementById('addMedicamento').addEventListener('click', () => {
-      const container = document.getElementById('medicamentosContainer');
-      const newBlock = document.createElement('div');
-      newBlock.classList.add('medicamento-form');
-      newBlock.innerHTML = `
-        <label>Nome do Medicamento:</label>
-        <input type="text" name="nomeMedicamento[]">
-        <label>Dose:</label>
-        <input type="text" name="doseMedicamento[]">
-        <label>Posologia:</label>
-        <input type="text" name="posologiaMedicamento[]">
-        <label>Horário:</label>
-        <input type="time" name="horarioMedicamento[]">
-        <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
-      `;
-      container.appendChild(newBlock);
-    });
-
-    function deleteMedicamentoForm(button) {
-      if (confirm("Tem certeza que deseja excluir este medicamento?")) {
-        const form = button.closest('.medicamento-form');
-        form.remove();
-      }
-    }
-
-    document.getElementById('addVacina').addEventListener('click', () => {
-      const container = document.getElementById('vacinasContainer');
-      const newBlock = document.createElement('div');
-      newBlock.classList.add('vacina-form');
-      newBlock.innerHTML = `
-        <div class="form-row">
-          <label for="nomeVacina">Nome da Vacina:</label>
-          <input type="text" class="nomeVacina" name="nomeVacina[]">
-        </div>
-        <div class="form-row">
-          <label for="dataAplicacao">Data de Aplicação:</label>
-          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
-        </div>
-        <div class="form-row">
-          <label for="loteVacina">Lote:</label>
-          <input type="text" class="loteVacina" name="loteVacina[]">
-        </div>
-        <div class="form-row">
-          <label for="observacoesVacina">Observações:</label>
-          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
-        </div>
-        <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
-      `;
-      container.appendChild(newBlock);
-    });
-
-    function deleteVacinaForm(button) {
-      if (confirm("Tem certeza que deseja excluir esta vacina?")) {
-        const form = button.closest('.vacina-form');
-        form.remove();
-      }
-    }
-
-    document.getElementById('startBtn').addEventListener('click', () => {
-      document.getElementById('homeScreen').style.display = 'none';
-      document.getElementById('editScreen').style.display = 'block';
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      }
-    });
-
+    // Atualização da Tela de Revisão
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -998,6 +857,7 @@
       `).join('') || 'Nenhum registro de monitoramento';
     }
 
+    // Exportar para PDF
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -1027,6 +887,7 @@
       doc.save('caderneta-idoso.pdf');
     });
 
+    // Monitoramento
     document.getElementById('monitoramentoBtn').addEventListener('click', () => {
       document.getElementById('monitoramentoOverlay').style.display = 'block';
       document.getElementById('monitoramentoScreen').style.display = 'block';
@@ -1066,124 +927,7 @@
       }
     });
 
-    document.getElementById('editBtn').addEventListener('click', async () => {
-      const username = localStorage.getItem('currentUser');
-      if(username) {
-        const userData = await loadUserData(username);
-        if(userData) {
-          document.getElementById('nome').value = userData.identificacao.nome;
-          document.getElementById('dataNascimento').value = userData.identificacao.dataNascimento;
-          document.getElementById('peso').value = userData.identificacao.peso;
-          document.getElementById('contato').value = userData.identificacao.contato;
-          document.getElementById('contatoEmergencia').value = userData.identificacao.contatoEmergencia;
-
-          document.getElementById('hipertensao').checked = userData.doencas.hipertensao;
-          document.getElementById('diabetes').checked = userData.doencas.diabetes;
-          document.getElementById('cardiopatias').checked = userData.doencas.cardiopatias;
-          document.getElementById('chagas').checked = userData.doencas.chagas;
-          document.getElementById('outrasDoencas').value = userData.doencas.outras || '';
-
-          const medicamentosContainer = document.getElementById('medicamentosContainer');
-          medicamentosContainer.innerHTML = '';
-          userData.medicamentos.forEach(med => {
-            const newMed = document.createElement('div');
-            newMed.classList.add('medicamento-form');
-            newMed.innerHTML = `
-              <label>Nome do Medicamento:</label>
-              <input type="text" name="nomeMedicamento[]" value="${med.nome}">
-              <label>Dose:</label>
-              <input type="text" name="doseMedicamento[]" value="${med.dose}">
-              <label>Posologia:</label>
-              <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
-              <label>Horário:</label>
-              <input type="time" name="horarioMedicamento[]" value="${med.horario}">
-              <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
-            `;
-            medicamentosContainer.appendChild(newMed);
-          });
-
-          const vacinasContainer = document.getElementById('vacinasContainer');
-          vacinasContainer.innerHTML = '';
-          userData.vacinacao.forEach(vacina => {
-            const newVacina = document.createElement('div');
-            newVacina.classList.add('vacina-form');
-            newVacina.innerHTML = `
-              <div class="form-row">
-                <label>Nome da Vacina:</label>
-                <input type="text" class="nomeVacina" value="${vacina.nomeVacina}">
-              </div>
-              <div class="form-row">
-                <label>Data de Aplicação:</label>
-                <input type="date" class="dataAplicacao" value="${vacina.dataAplicacao}">
-              </div>
-              <div class="form-row">
-                <label>Lote:</label>
-                <input type="text" class="loteVacina" value="${vacina.loteVacina}">
-              </div>
-              <div class="form-row">
-                <label>Observações:</label>
-                <textarea class="observacoesVacina">${vacina.observacoes}</textarea>
-              </div>
-              <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
-            `;
-            vacinasContainer.appendChild(newVacina);
-          });
-
-          document.getElementById('anotacoes').value = userData.anotacoes || '';
-        }
-      }
-      document.getElementById('reviewScreen').style.display = 'none';
-      document.getElementById('editScreen').style.display = 'block';
-    });
-
-    function setMedicationAlarm() {
-      if (Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      }
-
-      const medicamentos = document.querySelectorAll('.medicamento-form');
-      medicamentos.forEach(med => {
-        const horario = med.querySelector('input[name="horarioMedicamento[]"]').value;
-        const nome = med.querySelector('input[name="nomeMedicamento[]"]').value;
-        
-        if(horario && nome) {
-          const [hours, minutes] = horario.split(':');
-          const now = new Date();
-          const alarmTime = new Date();
-          alarmTime.setHours(hours);
-          alarmTime.setMinutes(minutes);
-          
-          if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
-
-          const timeout = alarmTime - now;
-          
-          setTimeout(() => {
-            if(Notification.permission === 'granted') {
-              new Notification('Hora da Medicação!', {
-                body: `Lembrete para tomar: ${nome}`,
-                icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png'
-              });
-            } else {
-              alert(`Hora de tomar ${nome}!`);
-            }
-          }, timeout);
-        }
-      });
-      alert('Alarmes configurados com sucesso!');
-    }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      const username = localStorage.getItem('currentUser');
-      if(username) {
-        const data = await loadUserData(username);
-        if(data) {
-          updateReviewScreen(data);
-          document.getElementById('homeScreen').style.display = 'none';
-          document.getElementById('reviewScreen').style.display = 'block';
-        }
-      }
-    });
-
+    // Acesso Médico
     document.getElementById('medicalAccessBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('medicalLoginScreen').style.display = 'block';
@@ -1233,6 +977,7 @@
       `).join('');
     }
 
+    // Detalhes do Usuário
     let currentEditingUser = null;
     let isEditing = false;
     let unsubscribeUser = null;
@@ -1425,6 +1170,7 @@
       });
     }
 
+    // Funções de Edição
     function addNewMedicamento() {
       const container = document.querySelector('#detail-medicamentos');
       const newIndex = container.querySelectorAll('.medicamento-form').length;
@@ -1488,7 +1234,7 @@
       renderUserDetail(currentUserData);
     }
 
-    // ================== FUNÇÃO DE SALVAMENTO DE EDIÇÕES ==================
+    // Salvamento de Edições
     async function saveUserChanges() {
       try {
         const userRef = db.collection('usuarios').doc(currentEditingUser);
@@ -1534,6 +1280,10 @@
         // Salvamento completo
         await userRef.set(updatedData, { merge: true });
         
+        // Atualiza o estado local e renderiza novamente
+        currentUserData = updatedData;
+        renderUserDetail(currentUserData);
+
         showPopup('Alterações salvas com sucesso!');
         toggleEditMode();
       } catch (error) {
@@ -1542,6 +1292,7 @@
       }
     }
 
+    // Excluir Usuário
     async function deleteUser() {
       if(confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
         try {
@@ -1562,10 +1313,96 @@
       document.getElementById('medicalAccessScreen').style.display = 'block';
     }
 
+    // Logout Médico
     document.getElementById('medLogoutBtn').addEventListener('click', () => {
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
     });
+
+    // Alarmes de Medicação
+    function setMedicationAlarm() {
+      if (Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+
+      const medicamentos = document.querySelectorAll('.medicamento-form');
+      medicamentos.forEach(med => {
+        const horario = med.querySelector('input[name="horarioMedicamento[]"]').value;
+        const nome = med.querySelector('input[name="nomeMedicamento[]"]').value;
+        
+        if(horario && nome) {
+          const [hours, minutes] = horario.split(':');
+          const now = new Date();
+          const alarmTime = new Date();
+          alarmTime.setHours(hours);
+          alarmTime.setMinutes(minutes);
+          
+          if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
+
+          const timeout = alarmTime - now;
+          
+          setTimeout(() => {
+            if(Notification.permission === 'granted') {
+              new Notification('Hora da Medicação!', {
+                body: `Lembrete para tomar: ${nome}`,
+                icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png'
+              });
+            } else {
+              alert(`Hora de tomar ${nome}!`);
+            }
+          }, timeout);
+        }
+      });
+      alert('Alarmes configurados com sucesso!');
+    }
+
+    // Carregar Dados ao Iniciar
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('currentUser');
+      if(username) {
+        const data = await loadUserData(username);
+        if(data) {
+          updateReviewScreen(data);
+          document.getElementById('homeScreen').style.display = 'none';
+          document.getElementById('reviewScreen').style.display = 'block';
+        }
+      }
+    });
+
+    // Funções Auxiliares
+    async function loadUserData(username) {
+      try {
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (doc.exists) {
+          return doc.data();
+        }
+        return null;
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        return null;
+      }
+    }
+
+    function showPopup(message, isError = false) {
+      const popup = document.getElementById('popup');
+      popup.textContent = message;
+      popup.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+      popup.classList.add('show');
+      setTimeout(() => popup.classList.remove('show'), 3000);
+    }
+
+    // Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('Service Worker registrado:', registration.scope);
+          })
+          .catch(error => {
+            console.log('Falha no registro:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
