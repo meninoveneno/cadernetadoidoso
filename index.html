@@ -672,6 +672,8 @@
       if(reviewUnsubscribe) reviewUnsubscribe();
       return db.collection('usuarios').doc(username).onSnapshot(doc => {
         if(doc.exists) updateReviewScreen(doc.data());
+      }, error => {
+        console.error('Erro na escuta em tempo real:', error);
       });
     }
 
