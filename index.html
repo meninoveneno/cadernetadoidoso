@@ -464,7 +464,6 @@
       <li class="tab" data-tab="recomendacoes">Anotações</li>
     </ul>
 
-    <!-- Conteúdo das Abas -->
     <div class="tab-content active" id="identificacao">
       <form id="form-identificacao">
         <label for="nome">Nome:</label>
@@ -661,7 +660,22 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Funções Auxiliares
+    // Variáveis de estado
+    let currentDetailTab = 'detail-identificacao';
+    let reviewUnsubscribe = null;
+    let userDetailUnsubscribe = null;
+    let currentEditingUser = null;
+    let isEditing = false;
+
+    // Atualização em tempo real
+    function setupRealtimeUpdates(username) {
+      if(reviewUnsubscribe) reviewUnsubscribe();
+      return db.collection('usuarios').doc(username).onSnapshot(doc => {
+        if(doc.exists) updateReviewScreen(doc.data());
+      });
+    }
+
+    // Funções auxiliares originais
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -737,7 +751,7 @@
       container.appendChild(newBlock);
     });
 
-    // Funções de Deleção
+    // Funções de deleção
     function deleteMedicamentoForm(button) {
       if (confirm("Tem certeza que deseja excluir este medicamento?")) {
         const form = button.closest('.medicamento-form');
@@ -752,7 +766,7 @@
       }
     }
 
-    // Salvamento Principal
+    // Salvamento principal
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const nome = document.getElementById('nome').value;
       const dataNascimento = document.getElementById('dataNascimento').value;
@@ -799,7 +813,7 @@
         await db.collection('usuarios').doc(username).set(formData);
         localStorage.setItem('currentUser', username);
         
-        updateReviewScreen(formData);
+        reviewUnsubscribe = setupRealtimeUpdates(username);
         document.getElementById('editScreen').style.display = 'none';
         document.getElementById('reviewScreen').style.display = 'block';
         
@@ -810,7 +824,7 @@
       }
     });
 
-    // Atualização da Tela de Revisão
+    // Atualização da tela de revisão
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -977,15 +991,10 @@
       `).join('');
     }
 
-    // Detalhes do Usuário
-    let currentEditingUser = null;
-    let isEditing = false;
-    let unsubscribeUser = null;
-    let currentUserData = null;
-
+    // Detalhes do usuário
     async function showUserDetail(userId) {
       currentEditingUser = userId;
-      if(unsubscribeUser) unsubscribeUser();
+      if(userDetailUnsubscribe) userDetailUnsubscribe();
       
       try {
         const doc = await db.collection('usuarios').doc(userId).get();
@@ -995,7 +1004,7 @@
           document.getElementById('medicalAccessScreen').style.display = 'none';
           document.getElementById('userDetailScreen').style.display = 'block';
           
-          unsubscribeUser = db.collection('usuarios').doc(userId).onSnapshot(doc => {
+          userDetailUnsubscribe = db.collection('usuarios').doc(userId).onSnapshot(doc => {
             if(doc.exists) {
               currentUserData = doc.data();
               renderUserDetail(currentUserData);
@@ -1160,17 +1169,32 @@
         </div>
       `;
 
+      // CORREÇÃO DAS ABAS
       document.querySelectorAll('.detail-tab').forEach(tab => {
         tab.addEventListener('click', () => {
+          // Remove todas as classes active
           document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
+          
+          // Adiciona active na aba clicada
           tab.classList.add('active');
-          document.getElementById(tab.dataset.tab).classList.add('active');
+          
+          // Mostra o conteúdo correspondente
+          const targetTab = tab.dataset.tab;
+          document.getElementById(targetTab).classList.add('active');
+          currentDetailTab = targetTab;
         });
       });
+
+      // Mantém a aba selecionada
+      const activeTab = document.querySelector(`.detail-tab[data-tab="${currentDetailTab}"]`);
+      if(activeTab) {
+        activeTab.classList.add('active');
+        document.getElementById(currentDetailTab).classList.add('active');
+      }
     }
 
-    // Funções de Edição
+    // Funções de edição
     function addNewMedicamento() {
       const container = document.querySelector('#detail-medicamentos');
       const newIndex = container.querySelectorAll('.medicamento-form').length;
@@ -1234,13 +1258,11 @@
       renderUserDetail(currentUserData);
     }
 
-    // Salvamento de Edições
     async function saveUserChanges() {
       try {
         const userRef = db.collection('usuarios').doc(currentEditingUser);
         const updatedData = { ...currentUserData };
 
-        // Atualizar identificação
         updatedData.identificacao = {
           nome: document.querySelector('[data-field="identificacao.nome"]')?.value || '',
           dataNascimento: document.querySelector('[data-field="identificacao.dataNascimento"]')?.value || '',
@@ -1249,7 +1271,6 @@
           contatoEmergencia: document.querySelector('[data-field="identificacao.contatoEmergencia"]')?.value || ''
         };
 
-        // Atualizar doenças
         updatedData.doencas = {
           hipertensao: document.querySelector('[data-field="doencas.hipertensao"]')?.checked || false,
           diabetes: document.querySelector('[data-field="doencas.diabetes"]')?.checked || false,
@@ -1258,7 +1279,6 @@
           outras: document.querySelector('[data-field="doencas.outras"]')?.value || ''
         };
 
-        // Atualizar vacinas
         updatedData.vacinacao = Array.from(document.querySelectorAll('#detail-vacinacao .vacina-form')).map(form => ({
           nomeVacina: form.querySelector('[data-field$=".nomeVacina"]')?.value || '',
           dataAplicacao: form.querySelector('[data-field$=".dataAplicacao"]')?.value || '',
@@ -1266,7 +1286,6 @@
           observacoes: form.querySelector('[data-field$=".observacoes"]')?.value || ''
         }));
 
-        // Atualizar medicamentos
         updatedData.medicamentos = Array.from(document.querySelectorAll('#detail-medicamentos .medicamento-form')).map(form => ({
           nome: form.querySelector('[data-field$=".nome"]')?.value || '',
           dose: form.querySelector('[data-field$=".dose"]')?.value || '',
@@ -1274,16 +1293,12 @@
           horario: form.querySelector('[data-field$=".horario"]')?.value || ''
         }));
 
-        // Atualizar anotações
         updatedData.anotacoes = document.querySelector('[data-field="anotacoes"]')?.value || '';
 
-        // Salvamento completo
         await userRef.set(updatedData, { merge: true });
         
-        // Atualiza o estado local e renderiza novamente
         currentUserData = updatedData;
         renderUserDetail(currentUserData);
-
         showPopup('Alterações salvas com sucesso!');
         toggleEditMode();
       } catch (error) {
@@ -1292,7 +1307,6 @@
       }
     }
 
-    // Excluir Usuário
     async function deleteUser() {
       if(confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
         try {
@@ -1308,18 +1322,16 @@
     }
 
     function closeUserDetail() {
-      if(unsubscribeUser) unsubscribeUser();
+      if(userDetailUnsubscribe) userDetailUnsubscribe();
       document.getElementById('userDetailScreen').style.display = 'none';
       document.getElementById('medicalAccessScreen').style.display = 'block';
     }
 
-    // Logout Médico
     document.getElementById('medLogoutBtn').addEventListener('click', () => {
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
-    // Alarmes de Medicação
     function setMedicationAlarm() {
       if (Notification.permission !== 'granted') {
         Notification.requestPermission();
@@ -1356,10 +1368,10 @@
       alert('Alarmes configurados com sucesso!');
     }
 
-    // Carregar Dados ao Iniciar
     document.addEventListener('DOMContentLoaded', async () => {
       const username = localStorage.getItem('currentUser');
       if(username) {
+        reviewUnsubscribe = setupRealtimeUpdates(username);
         const data = await loadUserData(username);
         if(data) {
           updateReviewScreen(data);
@@ -1369,7 +1381,6 @@
       }
     });
 
-    // Funções Auxiliares
     async function loadUserData(username) {
       try {
         const doc = await db.collection('usuarios').doc(username).get();
@@ -1391,7 +1402,6 @@
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
 
-    // Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
