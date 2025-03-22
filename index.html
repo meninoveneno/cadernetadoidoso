@@ -1567,6 +1567,29 @@
       const newNome = document.getElementById('newNome').value;
       const newDataNascimento = document.getElementById('newDataNascimento').value;
       const newCode = document.getElementById('newCode').value;
+
+      const newVacinas = Array.from(document.querySelectorAll('#newVacinasContainer .vacina-form')).map(form => ({
+        nomeVacina: form.querySelector('.nomeVacina').value,
+        dataAplicacao: form.querySelector('.dataAplicacao').value,
+        loteVacina: form.querySelector('.loteVacina').value,
+        observacoes: form.querySelector('.observacoesVacina').value
+      }));
+
+      const newDoencas = {
+        hipertensao: document.getElementById('newHipertensao').checked,
+        diabetes: document.getElementById('newDiabetes').checked,
+        cardiopatias: document.getElementById('newCardiopatias').checked,
+        chagas: document.getElementById('newChagas').checked,
+        outras: document.getElementById('newOutrasDoencas').value
+      };
+
+      const newMedicamentos = Array.from(document.querySelectorAll('#newMedicamentosContainer .medicamento-form')).map(form => ({
+        nome: form.querySelector('input[name="nomeMedicamento[]"]').value,
+        dose: form.querySelector('input[name="doseMedicamento[]"]').value,
+        posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
+        horario: form.querySelector('input[name="horarioMedicamento[]"]').value
+      }));
+
       const newAnotacoes = document.getElementById('newAnotacoes').value;
 
       if (!newNome || !newDataNascimento || !newCode) {
@@ -1581,6 +1604,9 @@
             dataNascimento: newDataNascimento,
             codigo: newCode
           },
+          vacinacao: newVacinas,
+          doencas: newDoencas,
+          medicamentos: newMedicamentos,
           anotacoes: newAnotacoes,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
@@ -1608,6 +1634,100 @@
           
           document.getElementById('reviewScreen').style.display = 'none';
           document.getElementById('editScreen').style.display = 'block';
+        }
+      }
+    });
+
+    document.getElementById('deleteAllBtn').addEventListener('click', async () => {
+      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
+        try {
+          const username = localStorage.getItem('currentUser');
+          await db.collection('usuarios').doc(username).delete();
+          localStorage.removeItem('currentUser');
+          showPopup('Todos os dados foram excluídos com sucesso!');
+          document.getElementById('reviewScreen').style.display = 'none';
+          document.getElementById('homeScreen').style.display = 'block';
+        } catch (error) {
+          console.error('Erro ao excluir dados:', error);
+          showPopup('Erro ao excluir dados!', true);
+        }
+      }
+    });
+
+    document.getElementById('nome').addEventListener('blur', async function() {
+      const inputCode = this.value.trim();
+      
+      if(inputCode.length === 4 && /^\d{4}$/.test(inputCode)) {
+        try {
+          const doc = await db.collection('usuarios').doc(inputCode).get();
+          
+          if(doc.exists) {
+            const data = doc.data();
+            document.getElementById('nome').value = data.identificacao.nome;
+            document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
+            document.getElementById('peso').value = data.identificacao.peso || '';
+            document.getElementById('contato').value = data.identificacao.contato || '';
+            document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia || '';
+            
+            const vacinasContainer = document.getElementById('vacinasContainer');
+            vacinasContainer.innerHTML = '';
+            data.vacinacao.forEach(vacina => {
+              const newVacina = document.createElement('div');
+              newVacina.className = 'vacina-form';
+              newVacina.innerHTML = `
+                <div class="form-row">
+                  <label>Nome da Vacina:</label>
+                  <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nomeVacina}">
+                </div>
+                <div class="form-row">
+                  <label>Data de Aplicação:</label>
+                  <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao}">
+                </div>
+                <div class="form-row">
+                  <label>Lote:</label>
+                  <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.loteVacina}">
+                </div>
+                <div class="form-row">
+                  <label>Observações:</label>
+                  <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes}</textarea>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+              `;
+              vacinasContainer.appendChild(newVacina);
+            });
+
+            const medicamentosContainer = document.getElementById('medicamentosContainer');
+            medicamentosContainer.innerHTML = '';
+            data.medicamentos.forEach(med => {
+              const newMed = document.createElement('div');
+              newMed.className = 'medicamento-form';
+              newMed.innerHTML = `
+                <label>Nome do Medicamento:</label>
+                <input type="text" name="nomeMedicamento[]" value="${med.nome}">
+                <label>Dose:</label>
+                <input type="text" name="doseMedicamento[]" value="${med.dose}">
+                <label>Posologia:</label>
+                <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
+                <label>Horário:</label>
+                <input type="time" name="horarioMedicamento[]" value="${med.horario}">
+                <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+              `;
+              medicamentosContainer.appendChild(newMed);
+            });
+
+            document.getElementById('hipertensao').checked = data.doencas.hipertensao;
+            document.getElementById('diabetes').checked = data.doencas.diabetes;
+            document.getElementById('cardiopatias').checked = data.doencas.cardiopatias;
+            document.getElementById('chagas').checked = data.doencas.chagas;
+            document.getElementById('outrasDoencas').value = data.doencas.outras || '';
+
+            document.getElementById('anotacoes').value = data.anotacoes || '';
+            
+            showPopup('Dados carregados com sucesso!');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar dados:', error);
+          showPopup('Código não encontrado!', true);
         }
       }
     });
