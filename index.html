@@ -475,6 +475,12 @@
       margin: 10px 0;
       background: #17a2b8;
     }
+    .code-input {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      width: 100px;
+    }
   </style>
 </head>
 <body>
@@ -668,6 +674,9 @@
     <h2>Criar Novo Paciente</h2>
     <ul class="tabs">
       <li class="tab active" data-tab="new-identificacao">Identificação</li>
+      <li class="tab" data-tab="new-vacinacao">Vacinação</li>
+      <li class="tab" data-tab="new-doencas">Doenças</li>
+      <li class="tab" data-tab="new-medicamentos">Medicamentos</li>
       <li class="tab" data-tab="new-anotacoes">Anotações</li>
     </ul>
 
@@ -680,6 +689,59 @@
         <label for="newCode">Código (4 dígitos):</label>
         <input type="text" id="newCode" name="newCode" pattern="\d{4}" title="Digite um código de 4 dígitos" required>
       </form>
+    </div>
+
+    <div class="tab-content" id="new-vacinacao">
+      <div id="newVacinasContainer">
+        <div class="vacina-form">
+          <div class="form-row">
+            <label>Nome da Vacina:</label>
+            <input type="text" class="nomeVacina" name="nomeVacina[]">
+          </div>
+          <div class="form-row">
+            <label>Data de Aplicação:</label>
+            <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+          </div>
+          <div class="form-row">
+            <label>Lote:</label>
+            <input type="text" class="loteVacina" name="loteVacina[]">
+          </div>
+          <div class="form-row">
+            <label>Observações:</label>
+            <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+          </div>
+          <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="addNewVacina('newVacinasContainer')">Adicionar Vacina</button>
+    </div>
+
+    <div class="tab-content" id="new-doencas">
+      <form id="newDoencasForm">
+        <label><input type="checkbox" id="newHipertensao" name="hipertensao"> Hipertensão</label>
+        <label><input type="checkbox" id="newDiabetes" name="diabetes"> Diabetes</label>
+        <label><input type="checkbox" id="newCardiopatias" name="cardiopatias"> Cardiopatias</label>
+        <label><input type="checkbox" id="newChagas" name="chagas"> Chagas</label>
+        <label for="newOutrasDoencas">Outras Doenças/Alergias:</label>
+        <input type="text" id="newOutrasDoencas" name="outrasDoencas">
+      </form>
+    </div>
+
+    <div class="tab-content" id="new-medicamentos">
+      <div id="newMedicamentosContainer">
+        <div class="medicamento-form">
+          <label>Nome do Medicamento:</label>
+          <input type="text" name="nomeMedicamento[]">
+          <label>Dose:</label>
+          <input type="text" name="doseMedicamento[]">
+          <label>Posologia:</label>
+          <input type="text" name="posologiaMedicamento[]">
+          <label>Horário:</label>
+          <input type="time" name="horarioMedicamento[]">
+          <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="addNewMedicamento('newMedicamentosContainer')">Adicionar Medicamento</button>
     </div>
 
     <div class="tab-content" id="new-anotacoes">
@@ -942,7 +1004,7 @@
 
         await userRef.update({ monitoramento: updatedMonitoramento });
         showPopup('Registro de monitoramento excluído com sucesso!');
-        updateReviewScreen(userDoc.data());
+        updateReviewScreen({ ...userDoc.data(), monitoramento: updatedMonitoramento });
       } catch (error) {
         console.error('Erro ao excluir registro de monitoramento:', error);
         showPopup('Erro ao excluir registro de monitoramento!', true);
