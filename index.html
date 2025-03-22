@@ -987,15 +987,12 @@
           <p><strong>Pressão Arterial:</strong> ${entry.pa}</p>
           <p><strong>Glicemia:</strong> ${entry.glicemia} mg/dL</p>
           <p><em>Registrado em: ${new Date(entry.timestamp).toLocaleString()}</em></p>
-          <button class="delete-btn" onclick="deleteMonitoramentoEntry('${entry.timestamp}')">Excluir</button>
+          <button class="delete-btn" onclick="deleteMonitoramentoEntry('${localStorage.getItem('currentUser')}', '${entry.timestamp}')">Excluir</button>
         </div>
       `).join('') || 'Nenhum registro de monitoramento';
     }
 
-    async function deleteMonitoramentoEntry(timestamp) {
-      const username = localStorage.getItem('currentUser');
-      if(!username) return;
-
+    async function deleteMonitoramentoEntry(username, timestamp) {
       try {
         const userRef = db.collection('usuarios').doc(username);
         const userDoc = await userRef.get();
@@ -1004,7 +1001,13 @@
 
         await userRef.update({ monitoramento: updatedMonitoramento });
         showPopup('Registro de monitoramento excluído com sucesso!');
-        updateReviewScreen({ ...userDoc.data(), monitoramento: updatedMonitoramento });
+        
+        if (username === localStorage.getItem('currentUser')) {
+          updateReviewScreen({ ...userDoc.data(), monitoramento: updatedMonitoramento });
+        } else {
+          currentUserData.monitoramento = updatedMonitoramento;
+          renderUserDetail(currentUserData);
+        }
       } catch (error) {
         console.error('Erro ao excluir registro de monitoramento:', error);
         showPopup('Erro ao excluir registro de monitoramento!', true);
@@ -1312,7 +1315,7 @@
                 <strong>Glicemia:</strong> ${entry.glicemia}<br>
                 <em>${new Date(entry.timestamp).toLocaleString()}</em>
               </div>
-              <button class="delete-monitoramento-btn" onclick="deleteMonitoramentoEntry('${entry.timestamp}')">
+              <button class="delete-monitoramento-btn" onclick="deleteMonitoramentoEntry('${currentEditingUser}', '${entry.timestamp}')">
                 Excluir
               </button>
             </div>
@@ -1338,60 +1341,48 @@
       }
     }
 
-    function addNewMedicamento() {
-      const container = document.querySelector('#detail-medicamentos');
-      const newIndex = container.querySelectorAll('.medicamento-form').length;
-      
+    function addNewMedicamento(containerId) {
+      const container = document.getElementById(containerId);
       const newMed = document.createElement('div');
       newMed.className = 'medicamento-form';
       newMed.innerHTML = `
-        <div class="form-row">
-          <label>Medicamento:</label>
-          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].nome">
-        </div>
-        <div class="form-row">
-          <label>Dose:</label>
-          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].dose">
-        </div>
-        <div class="form-row">
-          <label>Posologia:</label>
-          <input type="text" class="edit-input" data-field="medicamentos[${newIndex}].posologia">
-        </div>
-        <div class="form-row">
-          <label>Horário:</label>
-          <input type="time" class="edit-input" data-field="medicamentos[${newIndex}].horario">
-        </div>
-        <button class="delete-btn" onclick="this.closest('.medicamento-form').remove()">Excluir</button>
+        <label>Nome do Medicamento:</label>
+        <input type="text" name="nomeMedicamento[]">
+        <label>Dose:</label>
+        <input type="text" name="doseMedicamento[]">
+        <label>Posologia:</label>
+        <input type="text" name="posologiaMedicamento[]">
+        <label>Horário:</label>
+        <input type="time" name="horarioMedicamento[]">
+        <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
       `;
-      container.insertBefore(newMed, container.lastElementChild);
+      container.appendChild(newMed);
     }
 
-    function addNewVacina() {
-      const container = document.querySelector('#detail-vacinacao');
-      const newIndex = container.querySelectorAll('.vacina-form').length;
-      
+    function addNewVacina(containerId) {
+      const container = document.getElementById(containerId);
       const newVac = document.createElement('div');
       newVac.className = 'vacina-form';
       newVac.innerHTML = `
         <div class="form-row">
-          <label>Vacina:</label>
-          <input type="text" class="edit-input" data-field="vacinacao[${newIndex}].nomeVacina">
+          <label>Nome da Vacina:</label>
+          <input type="text" class="nomeVacina" name="nomeVacina[]">
         </div>
         <div class="form-row">
-          <label>Data:</label>
-          <input type="date" class="edit-input" data-field="vacinacao[${newIndex}].dataAplicacao">
+          <label>Data de Aplicação:</label>
+          <input type="date" class="dataAplicacao" name="dataAplicacao[]">
         </div>
         <div class="form-row">
           <label>Lote:</label>
-          <input type="text" class="edit-input" data-field="vacinacao[${newIndex}].loteVacina">
+          <input type="text" class="loteVacina" name="loteVacina[]">
         </div>
         <div class="form-row">
           <label>Observações:</label>
-          <textarea class="edit-input" data-field="vacinacao[${newIndex}].observacoes"></textarea>
+          <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
         </div>
-        <button class="delete-btn" onclick="this.closest('.vacina-form').remove()">Excluir</button>
+        <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
       `;
-      container.insertBefore(newVac, container.lastElementChild);
+      container.appendChild(newVac);
     }
 
     function toggleEditMode() {
