@@ -340,7 +340,7 @@
     }
     #userDetailTabs {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 5px;
       margin-bottom: 20px;
     }
@@ -376,6 +376,38 @@
       max-height: 60vh;
       overflow-y: auto;
       padding-right: 10px;
+    }
+    .detail-tab-content#detail-monitoramento {
+      background-color: #fff9c4;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .monitoramento-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 5px 0;
+      background-color: white;
+      border-radius: 8px;
+    }
+    .delete-monitoramento-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #createPatientScreen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      z-index: 1001;
+      width: 90%;
+      max-width: 600px;
     }
     @media (max-width: 600px) {
       #userDetailTabs {
@@ -602,7 +634,7 @@
     <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
     <div class="user-list" id="userList"></div>
     <div class="medical-buttons">
-      <button id="createNewPatientBtn" class="btn">Criar Novo Paciente</button>
+      <button id="createNewPatientBtn" class="btn" onclick="showCreateNewPatientScreen()">Criar Novo Paciente</button>
       <button id="medLogoutBtn" class="btn">Sair</button>
     </div>
   </div>
@@ -616,6 +648,7 @@
       <div class="detail-tab" data-tab="detail-doencas">Doenças</div>
       <div class="detail-tab" data-tab="detail-medicamentos">Medicamentos</div>
       <div class="detail-tab" data-tab="detail-anotacoes">Anotações</div>
+      <div class="detail-tab" data-tab="detail-monitoramento">Monitoramento</div>
     </div>
     
     <div class="scrollable-detail">
@@ -627,6 +660,38 @@
       <button id="saveUserBtn" class="btn" style="display: none;" onclick="saveUserChanges()">Salvar</button>
       <button class="btn btn-danger" onclick="deleteUser()">Excluir Usuário</button>
       <button onclick="closeUserDetail()" class="btn">Voltar</button>
+    </div>
+  </div>
+
+  <!-- Tela de Criação de Novo Paciente -->
+  <div id="createPatientScreen" class="container" style="display: none;">
+    <h2>Criar Novo Paciente</h2>
+    <ul class="tabs">
+      <li class="tab active" data-tab="new-identificacao">Identificação</li>
+      <li class="tab" data-tab="new-anotacoes">Anotações</li>
+    </ul>
+
+    <div class="tab-content active" id="new-identificacao">
+      <form id="newPatientForm">
+        <label for="newNome">Nome:</label>
+        <input type="text" id="newNome" name="newNome" required>
+        <label for="newDataNascimento">Data de Nascimento:</label>
+        <input type="date" id="newDataNascimento" name="newDataNascimento" required>
+        <label for="newCode">Código (4 dígitos):</label>
+        <input type="text" id="newCode" name="newCode" pattern="\d{4}" title="Digite um código de 4 dígitos" required>
+      </form>
+    </div>
+
+    <div class="tab-content" id="new-anotacoes">
+      <form id="newAnotacoesForm">
+        <label for="newAnotacoes">Anotações Iniciais:</label>
+        <textarea id="newAnotacoes" name="newAnotacoes"></textarea>
+      </form>
+    </div>
+
+    <div class="medical-buttons">
+      <button id="saveNewPatientBtn" class="btn" onclick="saveNewPatient()">Salvar</button>
+      <button class="btn" onclick="closeCreatePatientScreen()">Cancelar</button>
     </div>
   </div>
 
@@ -660,24 +725,14 @@
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // Variáveis de estado
     let currentDetailTab = 'detail-identificacao';
     let reviewUnsubscribe = null;
     let userDetailUnsubscribe = null;
     let currentEditingUser = null;
     let isEditing = false;
+    let newPatientData = {};
+    let generatedCode = '';
 
-    // Atualização em tempo real
-    function setupRealtimeUpdates(username) {
-      if(reviewUnsubscribe) reviewUnsubscribe();
-      return db.collection('usuarios').doc(username).onSnapshot(doc => {
-        if(doc.exists) updateReviewScreen(doc.data());
-      }, error => {
-        console.error('Erro na escuta em tempo real:', error);
-      });
-    }
-
-    // Funções auxiliares originais
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -687,11 +742,15 @@
       return normalized + cleanDate;
     }
 
-    function generateCode() {
-      return Math.floor(1000 + Math.random() * 9000).toString();
+    function setupRealtimeUpdates(username) {
+      if(reviewUnsubscribe) reviewUnsubscribe();
+      return db.collection('usuarios').doc(username).onSnapshot(doc => {
+        if(doc.exists) updateReviewScreen(doc.data());
+      }, error => {
+        console.error('Erro na escuta em tempo real:', error);
+      });
     }
 
-    // Event Listeners
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
@@ -753,7 +812,6 @@
       container.appendChild(newBlock);
     });
 
-    // Funções de deleção
     function deleteMedicamentoForm(button) {
       if (confirm("Tem certeza que deseja excluir este medicamento?")) {
         const form = button.closest('.medicamento-form');
@@ -768,7 +826,6 @@
       }
     }
 
-    // Salvamento principal
     document.getElementById('saveBtn').addEventListener('click', async () => {
       const nome = document.getElementById('nome').value;
       const dataNascimento = document.getElementById('dataNascimento').value;
@@ -826,7 +883,6 @@
       }
     });
 
-    // Atualização da tela de revisão
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
@@ -869,11 +925,30 @@
           <p><strong>Pressão Arterial:</strong> ${entry.pa}</p>
           <p><strong>Glicemia:</strong> ${entry.glicemia} mg/dL</p>
           <p><em>Registrado em: ${new Date(entry.timestamp).toLocaleString()}</em></p>
+          <button class="delete-btn" onclick="deleteMonitoramentoEntry('${entry.timestamp}')">Excluir</button>
         </div>
       `).join('') || 'Nenhum registro de monitoramento';
     }
 
-    // Exportar para PDF
+    async function deleteMonitoramentoEntry(timestamp) {
+      const username = localStorage.getItem('currentUser');
+      if(!username) return;
+
+      try {
+        const userRef = db.collection('usuarios').doc(username);
+        const userDoc = await userRef.get();
+        const monitoramento = userDoc.data().monitoramento || [];
+        const updatedMonitoramento = monitoramento.filter(entry => entry.timestamp !== timestamp);
+
+        await userRef.update({ monitoramento: updatedMonitoramento });
+        showPopup('Registro de monitoramento excluído com sucesso!');
+        updateReviewScreen(userDoc.data());
+      } catch (error) {
+        console.error('Erro ao excluir registro de monitoramento:', error);
+        showPopup('Erro ao excluir registro de monitoramento!', true);
+      }
+    }
+
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -903,7 +978,6 @@
       doc.save('caderneta-idoso.pdf');
     });
 
-    // Monitoramento
     document.getElementById('monitoramentoBtn').addEventListener('click', () => {
       document.getElementById('monitoramentoOverlay').style.display = 'block';
       document.getElementById('monitoramentoScreen').style.display = 'block';
@@ -943,7 +1017,6 @@
       }
     });
 
-    // Acesso Médico
     document.getElementById('medicalAccessBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('medicalLoginScreen').style.display = 'block';
@@ -993,7 +1066,6 @@
       `).join('');
     }
 
-    // Detalhes do usuário
     async function showUserDetail(userId) {
       currentEditingUser = userId;
       if(userDetailUnsubscribe) userDetailUnsubscribe();
@@ -1169,26 +1241,34 @@
             }
           </div>
         </div>
+
+        <div class="detail-tab-content" id="detail-monitoramento">
+          ${(userData.monitoramento || []).map((entry, index) => `
+            <div class="monitoramento-item">
+              <div>
+                <strong>PA:</strong> ${entry.pa}<br>
+                <strong>Glicemia:</strong> ${entry.glicemia}<br>
+                <em>${new Date(entry.timestamp).toLocaleString()}</em>
+              </div>
+              <button class="delete-monitoramento-btn" onclick="deleteMonitoramentoEntry('${entry.timestamp}')">
+                Excluir
+              </button>
+            </div>
+          `).join('')}
+        </div>
       `;
 
-      // CORREÇÃO DAS ABAS
       document.querySelectorAll('.detail-tab').forEach(tab => {
         tab.addEventListener('click', () => {
-          // Remove todas as classes active
           document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
           document.querySelectorAll('.detail-tab-content').forEach(c => c.classList.remove('active'));
-          
-          // Adiciona active na aba clicada
           tab.classList.add('active');
-          
-          // Mostra o conteúdo correspondente
           const targetTab = tab.dataset.tab;
           document.getElementById(targetTab).classList.add('active');
           currentDetailTab = targetTab;
         });
       });
 
-      // Mantém a aba selecionada
       const activeTab = document.querySelector(`.detail-tab[data-tab="${currentDetailTab}"]`);
       if(activeTab) {
         activeTab.classList.add('active');
@@ -1196,7 +1276,6 @@
       }
     }
 
-    // Funções de edição
     function addNewMedicamento() {
       const container = document.querySelector('#detail-medicamentos');
       const newIndex = container.querySelectorAll('.medicamento-form').length;
@@ -1334,40 +1413,46 @@
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
-    function setMedicationAlarm() {
-      if (Notification.permission !== 'granted') {
-        Notification.requestPermission();
-      }
-
-      const medicamentos = document.querySelectorAll('.medicamento-form');
-      medicamentos.forEach(med => {
-        const horario = med.querySelector('input[name="horarioMedicamento[]"]').value;
-        const nome = med.querySelector('input[name="nomeMedicamento[]"]').value;
+    async function setMedicationAlarm() {
+      try {
+        const medicamentos = currentUserData.medicamentos;
+        const now = new Date();
         
-        if(horario && nome) {
-          const [hours, minutes] = horario.split(':');
-          const now = new Date();
-          const alarmTime = new Date();
-          alarmTime.setHours(hours);
-          alarmTime.setMinutes(minutes);
-          
-          if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
-
-          const timeout = alarmTime - now;
-          
-          setTimeout(() => {
-            if(Notification.permission === 'granted') {
-              new Notification('Hora da Medicação!', {
-                body: `Lembrete para tomar: ${nome}`,
-                icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png'
-              });
-            } else {
-              alert(`Hora de tomar ${nome}!`);
+        medicamentos.forEach(med => {
+          if(med.horario) {
+            const [hours, minutes] = med.horario.split(':');
+            const alarmTime = new Date();
+            alarmTime.setHours(hours);
+            alarmTime.setMinutes(minutes);
+            
+            if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
+            
+            if('Notification' in window) {
+              if(Notification.permission === 'granted') {
+                new Notification(`Alarme: ${med.nome}`, {
+                  body: `Hora de tomar ${med.dose} - ${med.posologia}`,
+                  icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png',
+                  timestamp: alarmTime.getTime()
+                });
+              } else if(Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                  if(permission === 'granted') {
+                    new Notification(`Alarme: ${med.nome}`, {
+                      body: `Hora de tomar ${med.dose} - ${med.posologia}`,
+                      icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png',
+                      timestamp: alarmTime.getTime()
+                    });
+                  }
+                });
+              }
             }
-          }, timeout);
-        }
-      });
-      alert('Alarmes configurados com sucesso!');
+          }
+        });
+        showPopup('Alarmes configurados com sucesso!');
+      } catch (error) {
+        console.error('Erro ao configurar alarmes:', error);
+        showPopup('Erro ao configurar alarmes!', true);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -1403,6 +1488,67 @@
       popup.classList.add('show');
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
+
+    function showCreateNewPatientScreen() {
+      document.getElementById('createPatientScreen').style.display = 'block';
+      generatedCode = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('newCode').value = generatedCode;
+    }
+
+    function closeCreatePatientScreen() {
+      document.getElementById('createPatientScreen').style.display = 'none';
+      document.getElementById('newPatientForm').reset();
+      document.getElementById('newAnotacoesForm').reset();
+    }
+
+    async function saveNewPatient() {
+      const newNome = document.getElementById('newNome').value;
+      const newDataNascimento = document.getElementById('newDataNascimento').value;
+      const newCode = document.getElementById('newCode').value;
+      const newAnotacoes = document.getElementById('newAnotacoes').value;
+
+      if (!newNome || !newDataNascimento || !newCode) {
+        showPopup('Preencha todos os campos obrigatórios!', true);
+        return;
+      }
+
+      try {
+        await db.collection('usuarios').doc(newCode).set({
+          identificacao: {
+            nome: newNome,
+            dataNascimento: newDataNascimento,
+            codigo: newCode
+          },
+          anotacoes: newAnotacoes,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showPopup('Paciente criado com sucesso!');
+        closeCreatePatientScreen();
+        loadMedicalAccess();
+      } catch (error) {
+        console.error('Erro ao criar paciente:', error);
+        showPopup('Erro ao criar paciente!', true);
+      }
+    }
+
+    document.getElementById('editBtn').addEventListener('click', async () => {
+      const username = localStorage.getItem('currentUser');
+      if (username) {
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('nome').value = data.identificacao.nome;
+          document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
+          document.getElementById('peso').value = data.identificacao.peso;
+          document.getElementById('contato').value = data.identificacao.contato;
+          document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
+          document.getElementById('anotacoes').value = data.anotacoes;
+          
+          document.getElementById('reviewScreen').style.display = 'none';
+          document.getElementById('editScreen').style.display = 'block';
+        }
+      }
+    });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
