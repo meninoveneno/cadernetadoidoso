@@ -217,6 +217,27 @@
         max-width: 100%;
         width: 100%;
       }
+      .medical-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 10px;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-around;
+        z-index: 1001;
+        flex-wrap: wrap;
+      }
+      .medical-buttons .btn {
+        flex: 1 1 45%;
+        margin: 5px;
+        max-width: none;
+      }
+      #userDetailScreen {
+        padding-bottom: 80px;
+      }
     }
     .review-buttons {
       display: flex;
@@ -1342,25 +1363,33 @@
     }
 
     function addNewMedicamento(containerId) {
-      const container = document.getElementById(containerId);
+      const container = document.getElementById(containerId) || document.getElementById('detail-medicamentos');
       const newMed = document.createElement('div');
       newMed.className = 'medicamento-form';
       newMed.innerHTML = `
-        <label>Nome do Medicamento:</label>
-        <input type="text" name="nomeMedicamento[]">
-        <label>Dose:</label>
-        <input type="text" name="doseMedicamento[]">
-        <label>Posologia:</label>
-        <input type="text" name="posologiaMedicamento[]">
-        <label>Horário:</label>
-        <input type="time" name="horarioMedicamento[]">
+        <div class="form-row">
+          <label>Nome do Medicamento:</label>
+          <input type="text" name="nomeMedicamento[]">
+        </div>
+        <div class="form-row">
+          <label>Dose:</label>
+          <input type="text" name="doseMedicamento[]">
+        </div>
+        <div class="form-row">
+          <label>Posologia:</label>
+          <input type="text" name="posologiaMedicamento[]">
+        </div>
+        <div class="form-row">
+          <label>Horário:</label>
+          <input type="time" name="horarioMedicamento[]">
+        </div>
         <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
       `;
       container.appendChild(newMed);
     }
 
     function addNewVacina(containerId) {
-      const container = document.getElementById(containerId);
+      const container = document.getElementById(containerId) || document.getElementById('detail-vacinacao');
       const newVac = document.createElement('div');
       newVac.className = 'vacina-form';
       newVac.innerHTML = `
@@ -1589,7 +1618,7 @@
       }
 
       try {
-        await db.collection('usuarios').doc(newCode).set({
+        await db.collection('temporarios').doc(newCode).set({
           identificacao: {
             nome: newNome,
             dataNascimento: newDataNascimento,
@@ -1601,12 +1630,12 @@
           anotacoes: newAnotacoes,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        showPopup('Paciente criado com sucesso!');
+        showPopup('Paciente temporário criado com sucesso!');
         closeCreatePatientScreen();
         loadMedicalAccess();
       } catch (error) {
-        console.error('Erro ao criar paciente:', error);
-        showPopup('Erro ao criar paciente!', true);
+        console.error('Erro ao criar paciente temporário:', error);
+        showPopup('Erro ao criar paciente temporário!', true);
       }
     }
 
