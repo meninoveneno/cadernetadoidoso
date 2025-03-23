@@ -217,22 +217,6 @@
         max-width: 100%;
         width: 100%;
       }
-      /* Estilos adicionados para manter botões visíveis em mobile */
-      #userDetailScreen .medical-buttons {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: white;
-        padding: 10px;
-        box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
-        display: flex;
-        justify-content: space-around;
-        z-index: 1001;
-      }
-      #userDetailScreen .scrollable-detail {
-        padding-bottom: 60px; /* Espaço para os botões fixos */
-      }
     }
     .review-buttons {
       display: flex;
@@ -414,6 +398,28 @@
       padding: 5px 10px;
       border-radius: 5px;
       cursor: pointer;
+    }
+    #createPatientScreen {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      z-index: 1001;
+      width: 90%;
+      max-width: 600px;
+    }
+    @media (max-width: 600px) {
+      #userDetailTabs {
+        grid-template-columns: 1fr;
+      }
+      .detail-tab {
+        font-size: 13px;
+        padding: 10px;
+      }
+      .compact-form {
+        grid-template-columns: 1fr;
+      }
     }
     .medical-search {
       width: 100%;
@@ -628,12 +634,13 @@
     </div>
   </div>
 
-  <!-- Tela de Acesso Médico (sem botão de criar novo paciente) -->
+  <!-- Tela de Acesso Médico -->
   <div id="medicalAccessScreen">
     <h2>Acesso Médico</h2>
     <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
     <div class="user-list" id="userList"></div>
     <div class="medical-buttons">
+      <button id="createNewPatientBtn" class="btn" onclick="showCreateNewPatientScreen()">Criar Novo Paciente</button>
       <button id="medLogoutBtn" class="btn">Sair</button>
     </div>
   </div>
@@ -649,14 +656,104 @@
       <div class="detail-tab" data-tab="detail-anotacoes">Anotações</div>
       <div class="detail-tab" data-tab="detail-monitoramento">Monitoramento</div>
     </div>
+    
     <div class="scrollable-detail">
       <div id="userDetailContent"></div>
     </div>
+
     <div class="medical-buttons">
       <button id="editUserBtn" class="btn" onclick="toggleEditMode()">Editar</button>
       <button id="saveUserBtn" class="btn" style="display: none;" onclick="saveUserChanges()">Salvar</button>
       <button class="btn btn-danger" onclick="deleteUser()">Excluir Usuário</button>
       <button onclick="closeUserDetail()" class="btn">Voltar</button>
+    </div>
+  </div>
+
+  <!-- Tela de Criação de Novo Paciente -->
+  <div id="createPatientScreen" class="container" style="display: none;">
+    <h2>Criar Novo Paciente</h2>
+    <ul class="tabs">
+      <li class="tab active" data-tab="new-identificacao">Identificação</li>
+      <li class="tab" data-tab="new-vacinacao">Vacinação</li>
+      <li class="tab" data-tab="new-doencas">Doenças</li>
+      <li class="tab" data-tab="new-medicamentos">Medicamentos</li>
+      <li class="tab" data-tab="new-anotacoes">Anotações</li>
+    </ul>
+
+    <div class="tab-content active" id="new-identificacao">
+      <form id="newPatientForm">
+        <label for="newNome">Nome:</label>
+        <input type="text" id="newNome" name="newNome" required>
+        <label for="newDataNascimento">Data de Nascimento:</label>
+        <input type="date" id="newDataNascimento" name="newDataNascimento" required>
+        <label for="newCode">Código (4 dígitos):</label>
+        <input type="text" id="newCode" name="newCode" pattern="\d{4}" title="Digite um código de 4 dígitos" required>
+      </form>
+    </div>
+
+    <div class="tab-content" id="new-vacinacao">
+      <div id="newVacinasContainer">
+        <div class="vacina-form">
+          <div class="form-row">
+            <label>Nome da Vacina:</label>
+            <input type="text" class="nomeVacina" name="nomeVacina[]">
+          </div>
+          <div class="form-row">
+            <label>Data de Aplicação:</label>
+            <input type="date" class="dataAplicacao" name="dataAplicacao[]">
+          </div>
+          <div class="form-row">
+            <label>Lote:</label>
+            <input type="text" class="loteVacina" name="loteVacina[]">
+          </div>
+          <div class="form-row">
+            <label>Observações:</label>
+            <textarea class="observacoesVacina" name="observacoesVacina[]"></textarea>
+          </div>
+          <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="addNewVacina('newVacinasContainer')">Adicionar Vacina</button>
+    </div>
+
+    <div class="tab-content" id="new-doencas">
+      <form id="newDoencasForm">
+        <label><input type="checkbox" id="newHipertensao" name="hipertensao"> Hipertensão</label>
+        <label><input type="checkbox" id="newDiabetes" name="diabetes"> Diabetes</label>
+        <label><input type="checkbox" id="newCardiopatias" name="cardiopatias"> Cardiopatias</label>
+        <label><input type="checkbox" id="newChagas" name="chagas"> Chagas</label>
+        <label for="newOutrasDoencas">Outras Doenças/Alergias:</label>
+        <input type="text" id="newOutrasDoencas" name="outrasDoencas">
+      </form>
+    </div>
+
+    <div class="tab-content" id="new-medicamentos">
+      <div id="newMedicamentosContainer">
+        <div class="medicamento-form">
+          <label>Nome do Medicamento:</label>
+          <input type="text" name="nomeMedicamento[]">
+          <label>Dose:</label>
+          <input type="text" name="doseMedicamento[]">
+          <label>Posologia:</label>
+          <input type="text" name="posologiaMedicamento[]">
+          <label>Horário:</label>
+          <input type="time" name="horarioMedicamento[]">
+          <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+        </div>
+      </div>
+      <button type="button" class="btn" onclick="addNewMedicamento('newMedicamentosContainer')">Adicionar Medicamento</button>
+    </div>
+
+    <div class="tab-content" id="new-anotacoes">
+      <form id="newAnotacoesForm">
+        <label for="newAnotacoes">Anotações Iniciais:</label>
+        <textarea id="newAnotacoes" name="newAnotacoes"></textarea>
+      </form>
+    </div>
+
+    <div class="medical-buttons">
+      <button id="saveNewPatientBtn" class="btn" onclick="saveNewPatient()">Salvar</button>
+      <button class="btn" onclick="closeCreatePatientScreen()">Cancelar</button>
     </div>
   </div>
 
@@ -695,7 +792,8 @@
     let userDetailUnsubscribe = null;
     let currentEditingUser = null;
     let isEditing = false;
-    let currentUserData = {};
+    let newPatientData = {};
+    let generatedCode = '';
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -895,8 +993,8 @@
     }
 
     async function deleteMonitoramentoEntry(timestamp) {
-      const username = currentEditingUser || localStorage.getItem('currentUser');
-      if (!username) return;
+      const username = localStorage.getItem('currentUser');
+      if(!username) return;
 
       try {
         const userRef = db.collection('usuarios').doc(username);
@@ -906,13 +1004,7 @@
 
         await userRef.update({ monitoramento: updatedMonitoramento });
         showPopup('Registro de monitoramento excluído com sucesso!');
-
-        if (currentEditingUser) {
-          currentUserData.monitoramento = updatedMonitoramento;
-          renderUserDetail(currentUserData);
-        } else {
-          updateReviewScreen({ ...userDoc.data(), monitoramento: updatedMonitoramento });
-        }
+        updateReviewScreen({ ...userDoc.data(), monitoramento: updatedMonitoramento });
       } catch (error) {
         console.error('Erro ao excluir registro de monitoramento:', error);
         showPopup('Erro ao excluir registro de monitoramento!', true);
@@ -1459,6 +1551,74 @@
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
 
+    function showCreateNewPatientScreen() {
+      document.getElementById('createPatientScreen').style.display = 'block';
+      generatedCode = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('newCode').value = generatedCode;
+    }
+
+    function closeCreatePatientScreen() {
+      document.getElementById('createPatientScreen').style.display = 'none';
+      document.getElementById('newPatientForm').reset();
+      document.getElementById('newAnotacoesForm').reset();
+    }
+
+    async function saveNewPatient() {
+      const newNome = document.getElementById('newNome').value;
+      const newDataNascimento = document.getElementById('newDataNascimento').value;
+      const newCode = document.getElementById('newCode').value;
+
+      const newVacinas = Array.from(document.querySelectorAll('#newVacinasContainer .vacina-form')).map(form => ({
+        nomeVacina: form.querySelector('.nomeVacina').value,
+        dataAplicacao: form.querySelector('.dataAplicacao').value,
+        loteVacina: form.querySelector('.loteVacina').value,
+        observacoes: form.querySelector('.observacoesVacina').value
+      }));
+
+      const newDoencas = {
+        hipertensao: document.getElementById('newHipertensao').checked,
+        diabetes: document.getElementById('newDiabetes').checked,
+        cardiopatias: document.getElementById('newCardiopatias').checked,
+        chagas: document.getElementById('newChagas').checked,
+        outras: document.getElementById('newOutrasDoencas').value
+      };
+
+      const newMedicamentos = Array.from(document.querySelectorAll('#newMedicamentosContainer .medicamento-form')).map(form => ({
+        nome: form.querySelector('input[name="nomeMedicamento[]"]').value,
+        dose: form.querySelector('input[name="doseMedicamento[]"]').value,
+        posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
+        horario: form.querySelector('input[name="horarioMedicamento[]"]').value
+      }));
+
+      const newAnotacoes = document.getElementById('newAnotacoes').value;
+
+      if (!newNome || !newDataNascimento || !newCode) {
+        showPopup('Preencha todos os campos obrigatórios!', true);
+        return;
+      }
+
+      try {
+        await db.collection('usuarios').doc(newCode).set({
+          identificacao: {
+            nome: newNome,
+            dataNascimento: newDataNascimento,
+            codigo: newCode
+          },
+          vacinacao: newVacinas,
+          doencas: newDoencas,
+          medicamentos: newMedicamentos,
+          anotacoes: newAnotacoes,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        showPopup('Paciente criado com sucesso!');
+        closeCreatePatientScreen();
+        loadMedicalAccess();
+      } catch (error) {
+        console.error('Erro ao criar paciente:', error);
+        showPopup('Erro ao criar paciente!', true);
+      }
+    }
+
     document.getElementById('editBtn').addEventListener('click', async () => {
       const username = localStorage.getItem('currentUser');
       if (username) {
@@ -1490,6 +1650,84 @@
         } catch (error) {
           console.error('Erro ao excluir dados:', error);
           showPopup('Erro ao excluir dados!', true);
+        }
+      }
+    });
+
+    document.getElementById('nome').addEventListener('blur', async function() {
+      const inputCode = this.value.trim();
+      
+      if(inputCode.length === 4 && /^\d{4}$/.test(inputCode)) {
+        try {
+          const doc = await db.collection('usuarios').doc(inputCode).get();
+          
+          if(doc.exists) {
+            const data = doc.data();
+            document.getElementById('nome').value = data.identificacao.nome;
+            document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
+            document.getElementById('peso').value = data.identificacao.peso || '';
+            document.getElementById('contato').value = data.identificacao.contato || '';
+            document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia || '';
+            
+            const vacinasContainer = document.getElementById('vacinasContainer');
+            vacinasContainer.innerHTML = '';
+            data.vacinacao.forEach(vacina => {
+              const newVacina = document.createElement('div');
+              newVacina.className = 'vacina-form';
+              newVacina.innerHTML = `
+                <div class="form-row">
+                  <label>Nome da Vacina:</label>
+                  <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nomeVacina}">
+                </div>
+                <div class="form-row">
+                  <label>Data de Aplicação:</label>
+                  <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao}">
+                </div>
+                <div class="form-row">
+                  <label>Lote:</label>
+                  <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.loteVacina}">
+                </div>
+                <div class="form-row">
+                  <label>Observações:</label>
+                  <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes}</textarea>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+              `;
+              vacinasContainer.appendChild(newVacina);
+            });
+
+            const medicamentosContainer = document.getElementById('medicamentosContainer');
+            medicamentosContainer.innerHTML = '';
+            data.medicamentos.forEach(med => {
+              const newMed = document.createElement('div');
+              newMed.className = 'medicamento-form';
+              newMed.innerHTML = `
+                <label>Nome do Medicamento:</label>
+                <input type="text" name="nomeMedicamento[]" value="${med.nome}">
+                <label>Dose:</label>
+                <input type="text" name="doseMedicamento[]" value="${med.dose}">
+                <label>Posologia:</label>
+                <input type="text" name="posologiaMedicamento[]" value="${med.posologia}">
+                <label>Horário:</label>
+                <input type="time" name="horarioMedicamento[]" value="${med.horario}">
+                <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+              `;
+              medicamentosContainer.appendChild(newMed);
+            });
+
+            document.getElementById('hipertensao').checked = data.doencas.hipertensao;
+            document.getElementById('diabetes').checked = data.doencas.diabetes;
+            document.getElementById('cardiopatias').checked = data.doencas.cardiopatias;
+            document.getElementById('chagas').checked = data.doencas.chagas;
+            document.getElementById('outrasDoencas').value = data.doencas.outras || '';
+
+            document.getElementById('anotacoes').value = data.anotacoes || '';
+            
+            showPopup('Dados carregados com sucesso!');
+          }
+        } catch (error) {
+          console.error('Erro ao carregar dados:', error);
+          showPopup('Código não encontrado!', true);
         }
       }
     });
