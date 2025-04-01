@@ -19,43 +19,40 @@
     /* Novo cabeçalho de contato */
     .contact-header {
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(77, 96, 87, 0.8);
+      top: 0;
+      right: 0;
+      background-color: rgba(77, 96, 87, 0.9);
       color: white;
-      padding: 8px 12px;
-      border-radius: 20px;
+      padding: 10px 15px;
       font-size: 14px;
       z-index: 1000;
       display: flex;
       align-items: center;
       gap: 8px;
-      backdrop-filter: blur(5px);
+      border-bottom-left-radius: 20px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     
     .contact-header a {
       color: white;
       text-decoration: none;
+    }
+    
+    .contact-header .whatsapp-link {
       display: flex;
       align-items: center;
       gap: 5px;
-    }
-    
-    .contact-header .phone-icon {
-      background-color: #25D366;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       cursor: pointer;
-      transition: transform 0.2s;
     }
     
-    .contact-header .phone-icon:hover {
-      transform: scale(1.1);
+    .contact-header .whatsapp-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Impede rolagem na tela inicial */
+    #homeScreen {
+      overflow: hidden;
+      height: 100vh;
     }
 
     body {
@@ -65,10 +62,11 @@
       padding: 0;
       background-color: #f8f9fa;
       color: #333;
+      overflow-x: hidden;
     }
     .container {
       max-width: 900px;
-      margin: 50px auto 20px; /* Ajuste para o cabeçalho */
+      margin: 50px auto 20px;
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
@@ -82,6 +80,7 @@
       color: #fff;
       border-radius: 12px;
       position: relative;
+      margin-top: 0;
     }
     #homeScreen h1 {
       font-size: 36px;
@@ -289,7 +288,7 @@
       }
       .contact-header {
         font-size: 12px;
-        padding: 6px 10px;
+        padding: 8px 12px;
       }
     }
     .review-buttons {
@@ -664,11 +663,11 @@
   </style>
 </head>
 <body>
-  <!-- Novo cabeçalho de contato -->
-  <div class="contact-header">
-    @camillaribeirogeriatra Tel. (38) 99903-7071
-    <a href="https://wa.me/5538999037071" class="phone-icon" title="Enviar mensagem no WhatsApp">
-      <i class="fas fa-phone-alt" style="font-size: 12px;"></i>
+  <!-- Cabeçalho de contato -->
+  <div class="contact-header" id="contactHeader">
+    @camillaribeirogeriatra 
+    <a href="https://wa.me/5538999037071" class="whatsapp-link" title="Enviar mensagem no WhatsApp">
+      <i class="fas fa-phone-alt"></i> (38) 99903-7071
     </a>
   </div>
 
@@ -905,29 +904,23 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // Adicionando o prompt de instalação do PWA
-    let deferredPrompt;
-    
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      showInstallPrompt();
-    });
-    
-    function showInstallPrompt() {
-      if(deferredPrompt && confirm('Deseja instalar o aplicativo Caderneta do Idoso em seu dispositivo para melhor experiência?')) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('Usuário aceitou a instalação');
-          } else {
-            console.log('Usuário recusou a instalação');
-          }
-          deferredPrompt = null;
-        });
-      }
+    // Controle do cabeçalho de contato
+    function toggleContactHeader(show) {
+      document.getElementById('contactHeader').style.display = show ? 'flex' : 'none';
     }
 
+    // Mostrar cabeçalho apenas na home e review screens
+    function checkHeaderVisibility() {
+      const homeVisible = document.getElementById('homeScreen').style.display !== 'none';
+      const reviewVisible = document.getElementById('reviewScreen').style.display !== 'none';
+      toggleContactHeader(homeVisible || reviewVisible);
+    }
+
+    // Configurações iniciais
+    toggleContactHeader(true);
+    document.getElementById('homeScreen').style.display = 'block';
+
+    // Configuração do Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
       authDomain: "cadernetavirtualdoidoso.firebaseapp.com",
@@ -969,6 +962,7 @@
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
+      toggleContactHeader(false);
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
       }
@@ -1113,6 +1107,7 @@
       
       document.getElementById('homeScreen').style.display = 'none';
       document.getElementById('editScreen').style.display = 'block';
+      toggleContactHeader(false);
       
       showPopup('Dados do paciente carregados do QR Code!');
     }
@@ -1233,6 +1228,7 @@
         reviewUnsubscribe = setupRealtimeUpdates(username);
         document.getElementById('editScreen').style.display = 'none';
         document.getElementById('reviewScreen').style.display = 'block';
+        toggleContactHeader(true);
         
         showPopup('Dados salvos com sucesso!');
       } catch (error) {
@@ -1377,11 +1373,13 @@
     document.getElementById('medicalAccessBtn').addEventListener('click', () => {
       document.getElementById('reviewScreen').style.display = 'none';
       document.getElementById('medicalLoginScreen').style.display = 'block';
+      toggleContactHeader(false);
     });
 
     document.getElementById('medBackBtn').addEventListener('click', () => {
       document.getElementById('medicalLoginScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
+      toggleContactHeader(true);
     });
 
     document.getElementById('medLoginBtn').addEventListener('click', () => {
@@ -1806,16 +1804,19 @@
       }
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
+      toggleContactHeader(true);
     });
 
     document.getElementById('generateQrBtn').addEventListener('click', () => {
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('qrCodeScreen').style.display = 'block';
+      toggleContactHeader(false);
     });
 
     document.getElementById('closeQrBtn').addEventListener('click', () => {
       document.getElementById('qrCodeScreen').style.display = 'none';
       document.getElementById('medicalAccessScreen').style.display = 'block';
+      toggleContactHeader(false);
     });
 
     document.getElementById('generateQrCodeBtn').addEventListener('click', async () => {
@@ -1897,6 +1898,7 @@
           updateReviewScreen(data);
           document.getElementById('homeScreen').style.display = 'none';
           document.getElementById('reviewScreen').style.display = 'block';
+          toggleContactHeader(true);
         }
       }
     });
@@ -1937,6 +1939,7 @@
           
           document.getElementById('reviewScreen').style.display = 'none';
           document.getElementById('editScreen').style.display = 'block';
+          toggleContactHeader(false);
         }
       }
     });
@@ -1950,6 +1953,7 @@
           showPopup('Todos os dados foram excluídos com sucesso!');
           document.getElementById('reviewScreen').style.display = 'none';
           document.getElementById('homeScreen').style.display = 'block';
+          toggleContactHeader(true);
         } catch (error) {
           console.error('Erro ao excluir dados:', error);
           showPopup('Erro ao excluir dados!', true);
