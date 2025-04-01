@@ -8,8 +8,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
   <title>Caderneta Virtual do Idoso</title>
-  <link rel="icon" type="image/png" href="https://i.imgur.com/PZIwpOw.png">
-  <link rel="apple-touch-icon" href="https://i.imgur.com/PZIwpOw.png">
+  <link rel="icon" type="image/png" href="https://i.imgur.com/BzIGz3X.png">
+  <link rel="apple-touch-icon" href="https://i.imgur.com/BzIGz3X.png">
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -517,7 +517,7 @@
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã!</h2>
     <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
-    <img src="https://i.imgur.com/PZIwpOw.png" alt="Logo">
+    <img src="https://i.imgur.com/BzIGz3X.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -1436,11 +1436,10 @@
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
-    // Funções para geração de QR Code - ATUALIZADAS
+    // Funções para geração de QR Code
     document.getElementById('generateQrBtn').addEventListener('click', () => {
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('qrCodeScreen').style.display = 'block';
-      document.getElementById('qrCodeContainer').style.display = 'none';
     });
 
     document.getElementById('closeQrBtn').addEventListener('click', () => {
@@ -1457,8 +1456,10 @@
         return;
       }
       
+      // Cria um ID único para este registro
       const registroId = firebase.firestore().collection('tempRegistros').doc().id;
       
+      // Cria os dados que serão preenchidos automaticamente
       const pacienteData = {
         nome: nome,
         dataNascimento: dataNascimento,
@@ -1466,14 +1467,11 @@
         timestamp: new Date().toISOString()
       };
       
+      // Salva no Firestore em uma coleção temporária
       await firebase.firestore().collection('tempRegistros').doc(registroId).set(pacienteData);
       
-      let url;
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        url = `http://${window.location.host}?registroId=${registroId}`;
-      } else {
-        url = `https://${window.location.host}?registroId=${registroId}`;
-      }
+      // Gera o QR Code com a URL que contém o registroId
+      const url = `${window.location.origin}?registroId=${registroId}`;
       
       QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 200 }, (error) => {
         if (error) {
@@ -1486,44 +1484,35 @@
       });
     });
 
-    // Verificação do registroId na URL - ATUALIZADA
-    document.addEventListener('DOMContentLoaded', async () => {
+    // Verifica se há um registroId na URL quando a página carrega
+    window.addEventListener('DOMContentLoaded', () => {
       const urlParams = new URLSearchParams(window.location.search);
       const registroId = urlParams.get('registroId');
-
+      
       if(registroId) {
-        if(document.getElementById('homeScreen').style.display !== 'none') {
-          document.getElementById('startBtn').click();
-        }
-        
-        try {
-          const doc = await firebase.firestore().collection('tempRegistros').doc(registroId).get();
-          if(doc.exists) {
-            const data = doc.data();
-            
-            document.getElementById('nome').value = data.nome;
-            document.getElementById('dataNascimento').value = data.dataNascimento;
-            
-            await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
-            
-            window.history.replaceState({}, document.title, window.location.pathname);
-            
-            showPopup('Dados do paciente carregados automaticamente!');
-          }
-        } catch (error) {
-          console.error('Erro ao carregar registro:', error);
-        }
-      }
-
-      const username = localStorage.getItem('currentUser');
-      if(username) {
-        reviewUnsubscribe = setupRealtimeUpdates(username);
-        const data = await loadUserData(username);
-        if(data) {
-          updateReviewScreen(data);
-          document.getElementById('homeScreen').style.display = 'none';
-          document.getElementById('reviewScreen').style.display = 'block';
-        }
+        // Busca os dados do registro temporário
+        firebase.firestore().collection('tempRegistros').doc(registroId).get()
+          .then(async (doc) => {
+            if(doc.exists) {
+              const data = doc.data();
+              
+              // Preenche os campos do formulário
+              document.getElementById('nome').value = data.nome;
+              document.getElementById('dataNascimento').value = data.dataNascimento;
+              
+              // Remove o registro temporário
+              await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
+              
+              // Remove o parâmetro da URL sem recarregar a página
+              window.history.replaceState({}, document.title, window.location.pathname);
+              
+              // Mostra mensagem ao usuário
+              showPopup('Dados do paciente carregados automaticamente!');
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar registro:', error);
+          });
       }
     });
 
@@ -1545,7 +1534,7 @@
               if(Notification.permission === 'granted') {
                 new Notification(`Alarme: ${med.nome}`, {
                   body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                  icon: 'https://i.imgur.com/PZIwpOw.png',
+                  icon: 'https://i.imgur.com/BzIGz3X.png',
                   timestamp: alarmTime.getTime()
                 });
               } else if(Notification.permission !== 'denied') {
@@ -1553,7 +1542,7 @@
                   if(permission === 'granted') {
                     new Notification(`Alarme: ${med.nome}`, {
                       body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                      icon: 'https://i.imgur.com/PZIwpOw.png',
+                      icon: 'https://i.imgur.com/BzIGz3X.png',
                       timestamp: alarmTime.getTime()
                     });
                   }
@@ -1568,6 +1557,19 @@
         showPopup('Erro ao configurar alarmes!', true);
       }
     }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('currentUser');
+      if(username) {
+        reviewUnsubscribe = setupRealtimeUpdates(username);
+        const data = await loadUserData(username);
+        if(data) {
+          updateReviewScreen(data);
+          document.getElementById('homeScreen').style.display = 'none';
+          document.getElementById('reviewScreen').style.display = 'block';
+        }
+      }
+    });
 
     async function loadUserData(username) {
       try {
