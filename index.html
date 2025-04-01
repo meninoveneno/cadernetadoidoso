@@ -366,6 +366,7 @@
       max-width: 800px;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      text-align: center;
     }
     #userDetailTabs {
       display: grid;
@@ -429,11 +430,13 @@
       cursor: pointer;
     }
     #qrCodeScreen input {
-      width: 100%;
+      width: 80%;
+      max-width: 400px;
       padding: 10px;
-      margin: 10px 0;
+      margin: 10px auto;
       border: 1px solid #ddd;
       border-radius: 8px;
+      display: block;
     }
     #qrCodeScreen label {
       display: block;
@@ -447,43 +450,51 @@
       margin: 20px 0;
       display: none;
     }
-    @media (max-width: 600px) {
-      #userDetailTabs {
-        grid-template-columns: 1fr;
-      }
-      .detail-tab {
-        font-size: 13px;
-        padding: 10px;
-      }
-      .compact-form {
-        grid-template-columns: 1fr;
-      }
-    }
     .medical-search {
-      width: 100%;
+      width: 80%;
+      max-width: 400px;
       padding: 10px;
-      margin: 10px 0;
+      margin: 10px auto;
       border: 1px solid #ddd;
       border-radius: 8px;
+      display: block;
     }
     .user-list {
       max-height: 400px;
       overflow-y: auto;
-      margin: 15px 0;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 600px;
     }
     .user-item {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
+      padding: 15px;
+      margin: 10px 0;
+      background: #f8f9fa;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.3s;
+      text-align: left;
     }
     .user-item:hover {
-      background-color: #f8f9fa;
+      background: #e9ecef;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .user-name {
+      font-weight: 600;
+      font-size: 1.1em;
+      margin-bottom: 5px;
+    }
+    .user-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9em;
+      color: #666;
     }
     .medical-buttons {
       display: flex;
       gap: 10px;
-      justify-content: flex-end;
+      justify-content: center;
       margin-top: 20px;
     }
     .editable-field {
@@ -540,6 +551,29 @@
     #closeScannerBtn {
       margin-top: 20px;
       background: #dc3545;
+    }
+    .no-users {
+      text-align: center;
+      color: #666;
+      padding: 20px;
+    }
+    @media (max-width: 600px) {
+      #userDetailTabs {
+        grid-template-columns: 1fr;
+      }
+      .detail-tab {
+        font-size: 13px;
+        padding: 10px;
+      }
+      .compact-form {
+        grid-template-columns: 1fr;
+      }
+      .user-details {
+        flex-direction: column;
+      }
+      .medical-search {
+        width: 90%;
+      }
     }
   </style>
 </head>
@@ -792,6 +826,7 @@
     let currentDetailTab = 'detail-identificacao';
     let reviewUnsubscribe = null;
     let userDetailUnsubscribe = null;
+    let medicalAccessUnsubscribe = null;
     let currentEditingUser = null;
     let isEditing = false;
     let currentUserData = null;
@@ -822,7 +857,6 @@
       }
     });
 
-    // Função atualizada para iniciar o scanner de QR Code
     document.getElementById('readQrBtn').addEventListener('click', startQRScanner);
 
     function startQRScanner() {
@@ -835,15 +869,12 @@
       
       modal.style.display = 'flex';
       
-      // 1. Verificação de suporte nativo (BarcodeDetector API)
       if ('BarcodeDetector' in window) {
         startNativeScanner();
       } 
-      // 2. Fallback para jsQR se a API nativa não estiver disponível
       else if (typeof jsQR !== 'undefined') {
         startJsQRScanner();
       }
-      // 3. Nenhum método disponível
       else {
         showUnsupportedMessage();
         return;
@@ -873,7 +904,6 @@
                 })
                 .catch(err => {
                   console.error('Erro na detecção nativa:', err);
-                  // Se falhar, tenta com jsQR
                   if (typeof jsQR !== 'undefined') {
                     startJsQRScanner();
                   } else {
@@ -898,13 +928,11 @@
             video.srcObject = s;
             video.play();
             
-            // Configura o canvas com as dimensões do vídeo
             function setupCanvas() {
               canvas.width = video.videoWidth;
               canvas.height = video.videoHeight;
             }
             
-            // Processa cada frame para detectar QR Codes
             scanInterval = setInterval(() => {
               if (video.readyState === video.HAVE_ENOUGH_DATA) {
                 if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
@@ -1253,27 +1281,61 @@
 
     async function loadMedicalAccess() {
       document.getElementById('medicalAccessScreen').style.display = 'block';
-      const usersSnapshot = await db.collection('usuarios').get();
-      const users = [];
-      usersSnapshot.forEach(doc => users.push({ id: doc.id, ...doc.data() }));
       
-      displayUsers(users);
+      // Limpar escuta anterior se existir
+      if (medicalAccessUnsubscribe) {
+        medicalAccessUnsubscribe();
+      }
       
-      document.getElementById('userSearch').addEventListener('input', (e) => {
-        const term = e.target.value.toLowerCase();
-        const filtered = users.filter(user => 
-          user.identificacao.nome.toLowerCase().includes(term) ||
-          user.id.toLowerCase().includes(term)
-        );
-        displayUsers(filtered);
+      // Configurar escuta em tempo real
+      medicalAccessUnsubscribe = db.collection('usuarios').onSnapshot(snapshot => {
+        const users = [];
+        snapshot.forEach(doc => {
+          const userData = doc.data();
+          users.push({ 
+            id: doc.id,
+            nome: userData.identificacao.nome,
+            dataNascimento: userData.identificacao.dataNascimento
+          });
+        });
+        
+        // Ordenar por nome
+        users.sort((a, b) => a.nome.localeCompare(b.nome));
+        
+        displayUsers(users);
+        
+        // Configurar pesquisa
+        const searchInput = document.getElementById('userSearch');
+        searchInput.oninput = (e) => {
+          const term = e.target.value.toLowerCase();
+          const filtered = users.filter(user => 
+            user.nome.toLowerCase().includes(term) ||
+            user.id.toLowerCase().includes(term) ||
+            user.dataNascimento.includes(term)
+          );
+          displayUsers(filtered);
+        };
+      }, error => {
+        console.error('Erro na escuta em tempo real:', error);
+        showPopup('Erro ao carregar pacientes!', true);
       });
     }
 
     function displayUsers(users) {
       const userList = document.getElementById('userList');
+      
+      if (users.length === 0) {
+        userList.innerHTML = '<p class="no-users">Nenhum paciente encontrado</p>';
+        return;
+      }
+      
       userList.innerHTML = users.map(user => `
         <div class="user-item" onclick="showUserDetail('${user.id}')">
-          ${user.identificacao.nome} (${user.id})
+          <div class="user-name">${user.nome}</div>
+          <div class="user-details">
+            <span class="user-id">ID: ${user.id}</span>
+            <span class="user-birth">Nasc: ${user.dataNascimento}</span>
+          </div>
         </div>
       `).join('');
     }
@@ -1621,6 +1683,10 @@
     }
 
     document.getElementById('medLogoutBtn').addEventListener('click', () => {
+      if (medicalAccessUnsubscribe) {
+        medicalAccessUnsubscribe();
+        medicalAccessUnsubscribe = null;
+      }
       document.getElementById('medicalAccessScreen').style.display = 'none';
       document.getElementById('reviewScreen').style.display = 'block';
     });
