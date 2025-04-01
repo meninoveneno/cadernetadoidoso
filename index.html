@@ -8,11 +8,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
   <title>Caderneta Virtual do Idoso</title>
-  <link rel="icon" type="image/png" href="https://ibb.co/d4Sqm9D">
-  <link rel="apple-touch-icon" href="https://ibb.co/d4Sqm9D">
+  <link rel="icon" type="image/png" href="https://i.imgur.com/PZIwpOw">
+  <link rel="apple-touch-icon" href="https://i.imgur.com/PZIwpOw">
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -63,7 +64,6 @@
       left: 20px;
       bottom: 20px;
       border: 3px solid #fff;
-      object-fit: cover;
     }
     #homeScreen button {
       padding: 12px 20px;
@@ -342,7 +342,8 @@
     }
     #medicalLoginScreen,
     #medicalAccessScreen,
-    #userDetailScreen {
+    #userDetailScreen,
+    #qrCodeScreen {
       display: none;
       position: fixed;
       top: 50%;
@@ -416,6 +417,25 @@
       padding: 5px 10px;
       border-radius: 5px;
       cursor: pointer;
+    }
+    #qrCodeScreen input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    #qrCodeScreen label {
+      display: block;
+      margin-top: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #495057;
+    }
+    #qrCodeContainer {
+      text-align: center;
+      margin: 20px 0;
+      display: none;
     }
     @media (max-width: 600px) {
       #userDetailTabs {
@@ -497,7 +517,7 @@
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã!</h2>
     <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
-    <img src="https://ibb.co/d4Sqm9D" alt="Logo">
+    <img src="https://i.imgur.com/PZIwpOw" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -649,8 +669,31 @@
     <input type="text" id="userSearch" placeholder="Pesquisar usuários..." class="medical-search">
     <div class="user-list" id="userList"></div>
     <div class="medical-buttons">
+      <button id="generateQrBtn" class="btn">Gerar QR CODE</button>
       <button id="medLogoutBtn" class="btn">Sair</button>
     </div>
+  </div>
+
+  <!-- Tela de Geração de QR Code -->
+  <div id="qrCodeScreen">
+    <h2>Gerar Novo Registro</h2>
+    <form id="qrCodeForm">
+      <label for="qrNome">Nome do Paciente:</label>
+      <input type="text" id="qrNome" required>
+      
+      <label for="qrNascimento">Data de Nascimento:</label>
+      <input type="date" id="qrNascimento" required>
+      
+      <div id="qrCodeContainer">
+        <canvas id="qrCanvas"></canvas>
+        <p style="margin-top: 10px;">Escaneie este QR code para cadastrar automaticamente</p>
+      </div>
+      
+      <div class="medical-buttons">
+        <button type="button" id="generateQrCodeBtn" class="btn">Gerar QR</button>
+        <button type="button" id="closeQrBtn" class="btn">Fechar</button>
+      </div>
+    </form>
   </div>
 
   <!-- Tela de Detalhes do Paciente -->
@@ -712,6 +755,7 @@
     let userDetailUnsubscribe = null;
     let currentEditingUser = null;
     let isEditing = false;
+    let currentUserData = null;
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -1392,6 +1436,86 @@
       document.getElementById('reviewScreen').style.display = 'block';
     });
 
+    // Funções para geração de QR Code
+    document.getElementById('generateQrBtn').addEventListener('click', () => {
+      document.getElementById('medicalAccessScreen').style.display = 'none';
+      document.getElementById('qrCodeScreen').style.display = 'block';
+    });
+
+    document.getElementById('closeQrBtn').addEventListener('click', () => {
+      document.getElementById('qrCodeScreen').style.display = 'none';
+      document.getElementById('medicalAccessScreen').style.display = 'block';
+    });
+
+    document.getElementById('generateQrCodeBtn').addEventListener('click', async () => {
+      const nome = document.getElementById('qrNome').value;
+      const dataNascimento = document.getElementById('qrNascimento').value;
+      
+      if(!nome || !dataNascimento) {
+        alert('Por favor, preencha todos os campos obrigatórios!');
+        return;
+      }
+      
+      // Cria um ID único para este registro
+      const registroId = firebase.firestore().collection('tempRegistros').doc().id;
+      
+      // Cria os dados que serão preenchidos automaticamente
+      const pacienteData = {
+        nome: nome,
+        dataNascimento: dataNascimento,
+        registroId: registroId,
+        timestamp: new Date().toISOString()
+      };
+      
+      // Salva no Firestore em uma coleção temporária
+      await firebase.firestore().collection('tempRegistros').doc(registroId).set(pacienteData);
+      
+      // Gera o QR Code com a URL que contém o registroId
+      const url = `${window.location.origin}?registroId=${registroId}`;
+      
+      QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 200 }, (error) => {
+        if (error) {
+          console.error('Erro ao gerar QR Code:', error);
+          showPopup('Erro ao gerar QR Code!', true);
+        } else {
+          document.getElementById('qrCodeContainer').style.display = 'block';
+          showPopup('QR Code gerado com sucesso!');
+        }
+      });
+    });
+
+    // Verifica se há um registroId na URL quando a página carrega
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const registroId = urlParams.get('registroId');
+      
+      if(registroId) {
+        // Busca os dados do registro temporário
+        firebase.firestore().collection('tempRegistros').doc(registroId).get()
+          .then(async (doc) => {
+            if(doc.exists) {
+              const data = doc.data();
+              
+              // Preenche os campos do formulário
+              document.getElementById('nome').value = data.nome;
+              document.getElementById('dataNascimento').value = data.dataNascimento;
+              
+              // Remove o registro temporário
+              await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
+              
+              // Remove o parâmetro da URL sem recarregar a página
+              window.history.replaceState({}, document.title, window.location.pathname);
+              
+              // Mostra mensagem ao usuário
+              showPopup('Dados do paciente carregados automaticamente!');
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar registro:', error);
+          });
+      }
+    });
+
     async function setMedicationAlarm() {
       try {
         const medicamentos = currentUserData.medicamentos;
@@ -1410,7 +1534,7 @@
               if(Notification.permission === 'granted') {
                 new Notification(`Alarme: ${med.nome}`, {
                   body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                  icon: 'https://ibb.co/d4Sqm9D',
+                  icon: 'https://i.imgur.com/PZIwpOw',
                   timestamp: alarmTime.getTime()
                 });
               } else if(Notification.permission !== 'denied') {
@@ -1418,7 +1542,7 @@
                   if(permission === 'granted') {
                     new Notification(`Alarme: ${med.nome}`, {
                       body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                      icon: 'https://ibb.co/d4Sqm9D',
+                      icon: 'https://i.imgur.com/PZIwpOw',
                       timestamp: alarmTime.getTime()
                     });
                   }
