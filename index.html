@@ -366,7 +366,7 @@
       max-width: 800px;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      text-align: center;
+      text-align: left;
     }
     #userDetailTabs {
       display: grid;
@@ -393,6 +393,7 @@
       border: 1px solid #eee;
       border-radius: 8px;
       margin-bottom: 15px;
+      text-align: left;
     }
     .detail-tab-content.active {
       display: block;
@@ -401,16 +402,19 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 15px;
+      text-align: left;
     }
     .scrollable-detail {
       max-height: 60vh;
       overflow-y: auto;
       padding-right: 10px;
+      text-align: left;
     }
     .detail-tab-content#detail-monitoramento {
       background-color: #fff9c4;
       padding: 15px;
       border-radius: 8px;
+      text-align: left;
     }
     .monitoramento-item {
       display: flex;
@@ -420,6 +424,7 @@
       margin: 5px 0;
       background-color: white;
       border-radius: 8px;
+      text-align: left;
     }
     .delete-monitoramento-btn {
       background: #ff4444;
@@ -444,6 +449,7 @@
       font-size: 16px;
       font-weight: 600;
       color: #495057;
+      text-align: left;
     }
     #qrCodeContainer {
       text-align: center;
@@ -465,6 +471,7 @@
       margin: 15px auto;
       width: 90%;
       max-width: 600px;
+      text-align: left;
     }
     .user-item {
       padding: 15px;
@@ -502,6 +509,7 @@
       padding: 5px;
       margin: 5px 0;
       transition: all 0.3s;
+      text-align: left;
     }
     .editing .editable-field {
       border-color: #4D6057;
@@ -513,6 +521,7 @@
       margin: 5px 0;
       border: 1px solid #ddd;
       border-radius: 4px;
+      text-align: left;
     }
     .btn-danger {
       background-color: #dc3545;
@@ -557,6 +566,37 @@
       color: #666;
       padding: 20px;
     }
+
+    /* NOVAS REGRAS PARA CENTRALIZAÇÃO */
+    #medicalLoginScreen h2,
+    #medicalAccessScreen h2,
+    #qrCodeScreen h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    #qrCodeScreen form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #qrCodeScreen label {
+      text-align: center;
+      width: 100%;
+    }
+
+    #qrCodeScreen input {
+      text-align: center;
+    }
+
+    /* Mantendo o alinhamento original dos outros elementos */
+    #medicalLoginScreen,
+    #medicalAccessScreen,
+    #qrCodeScreen {
+      text-align: left;
+    }
+
     @media (max-width: 600px) {
       #userDetailTabs {
         grid-template-columns: 1fr;
