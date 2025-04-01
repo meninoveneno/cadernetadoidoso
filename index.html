@@ -75,9 +75,18 @@
       font-size: 16px;
       font-weight: 600;
       transition: background-color 0.3s;
+      width: 100%;
+      max-width: 200px;
     }
     #homeScreen button:hover {
       background-color: #2d4036;
+    }
+    #readQrBtn {
+      margin-top: 10px;
+      background-color: #839c90;
+    }
+    #readQrBtn:hover {
+      background-color: #6d8a7d;
     }
     .tabs {
       display: flex;
@@ -509,6 +518,28 @@
       bottom: 20px;
       width: 100px;
     }
+    #qrScannerModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    #qrScannerVideo {
+      width: 90%;
+      max-width: 500px;
+      border-radius: 8px;
+    }
+    #closeScannerBtn {
+      margin-top: 20px;
+      background: #dc3545;
+    }
   </style>
 </head>
 <body>
@@ -519,6 +550,7 @@
     <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
     <img src="https://i.imgur.com/BzIGz3X.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
+    <button id="readQrBtn">Ler QR Code</button>
   </div>
 
   <!-- Tela de Edição -->
@@ -736,6 +768,12 @@
     </form>
   </div>
 
+  <!-- Modal para Scanner de QR Code -->
+  <div id="qrScannerModal">
+    <video id="qrScannerVideo" playsinline></video>
+    <button id="closeScannerBtn" class="btn">Fechar Scanner</button>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     const firebaseConfig = {
@@ -756,6 +794,7 @@
     let currentEditingUser = null;
     let isEditing = false;
     let currentUserData = null;
+    let qrScanner = null;
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -782,6 +821,94 @@
         document.documentElement.requestFullscreen();
       }
     });
+
+    // Função para iniciar o scanner de QR Code
+    document.getElementById('readQrBtn').addEventListener('click', startQRScanner);
+
+    function startQRScanner() {
+      const modal = document.getElementById('qrScannerModal');
+      const video = document.getElementById('qrScannerVideo');
+      
+      modal.style.display = 'flex';
+      
+      // Verifica se a API está disponível
+      if (!('BarcodeDetector' in window)) {
+        alert('Seu navegador não suporta leitura de QR Code. Por favor, use um navegador mais moderno.');
+        modal.style.display = 'none';
+        return;
+      }
+      
+      // Configura o scanner
+      const barcodeDetector = new BarcodeDetector({ formats: ['qr_code'] });
+      let stream = null;
+      
+      // Inicia a câmera
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        .then(s => {
+          stream = s;
+          video.srcObject = s;
+          video.play();
+          
+          // Função para detectar QR Codes
+          function detectQR() {
+            if (!video.videoWidth) {
+              requestAnimationFrame(detectQR);
+              return;
+            }
+            
+            barcodeDetector.detect(video)
+              .then(barcodes => {
+                if (barcodes.length > 0) {
+                  const qrData = barcodes[0].rawValue;
+                  try {
+                    const data = JSON.parse(qrData);
+                    fillFormFromQR(data);
+                    stopScanner();
+                  } catch (e) {
+                    console.error('Erro ao ler QR Code:', e);
+                  }
+                }
+                requestAnimationFrame(detectQR);
+              })
+              .catch(err => {
+                console.error('Erro na detecção:', err);
+                requestAnimationFrame(detectQR);
+              });
+          }
+          
+          detectQR();
+        })
+        .catch(err => {
+          console.error('Erro ao acessar câmera:', err);
+          alert('Não foi possível acessar a câmera. Por favor, verifique as permissões.');
+          modal.style.display = 'none';
+        });
+      
+      // Fecha o scanner
+      document.getElementById('closeScannerBtn').addEventListener('click', stopScanner);
+      
+      function stopScanner() {
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+        }
+        modal.style.display = 'none';
+      }
+    }
+
+    // Função para preencher o formulário com dados do QR Code
+    function fillFormFromQR(data) {
+      if (data.nome) document.getElementById('nome').value = data.nome;
+      if (data.dataNascimento) document.getElementById('dataNascimento').value = data.dataNascimento;
+      if (data.peso) document.getElementById('peso').value = data.peso;
+      if (data.contato) document.getElementById('contato').value = data.contato;
+      if (data.contatoEmergencia) document.getElementById('contatoEmergencia').value = data.contatoEmergencia;
+      
+      // Mostra a tela de edição
+      document.getElementById('homeScreen').style.display = 'none';
+      document.getElementById('editScreen').style.display = 'block';
+      
+      showPopup('Dados do paciente carregados do QR Code!');
+    }
 
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -1456,24 +1583,17 @@
         return;
       }
       
-      // Cria um ID único para este registro
-      const registroId = firebase.firestore().collection('tempRegistros').doc().id;
-      
-      // Cria os dados que serão preenchidos automaticamente
+      // Cria os dados que serão incluídos no QR Code
       const pacienteData = {
         nome: nome,
         dataNascimento: dataNascimento,
-        registroId: registroId,
         timestamp: new Date().toISOString()
       };
       
-      // Salva no Firestore em uma coleção temporária
-      await firebase.firestore().collection('tempRegistros').doc(registroId).set(pacienteData);
+      // Gera o QR Code com os dados em formato JSON
+      const qrData = JSON.stringify(pacienteData);
       
-      // Gera o QR Code com a URL que contém o registroId
-      const url = `${window.location.origin}?registroId=${registroId}`;
-      
-      QRCode.toCanvas(document.getElementById('qrCanvas'), url, { width: 200 }, (error) => {
+      QRCode.toCanvas(document.getElementById('qrCanvas'), qrData, { width: 200 }, (error) => {
         if (error) {
           console.error('Erro ao gerar QR Code:', error);
           showPopup('Erro ao gerar QR Code!', true);
@@ -1482,38 +1602,6 @@
           showPopup('QR Code gerado com sucesso!');
         }
       });
-    });
-
-    // Verifica se há um registroId na URL quando a página carrega
-    window.addEventListener('DOMContentLoaded', () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const registroId = urlParams.get('registroId');
-      
-      if(registroId) {
-        // Busca os dados do registro temporário
-        firebase.firestore().collection('tempRegistros').doc(registroId).get()
-          .then(async (doc) => {
-            if(doc.exists) {
-              const data = doc.data();
-              
-              // Preenche os campos do formulário
-              document.getElementById('nome').value = data.nome;
-              document.getElementById('dataNascimento').value = data.dataNascimento;
-              
-              // Remove o registro temporário
-              await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
-              
-              // Remove o parâmetro da URL sem recarregar a página
-              window.history.replaceState({}, document.title, window.location.pathname);
-              
-              // Mostra mensagem ao usuário
-              showPopup('Dados do paciente carregados automaticamente!');
-            }
-          })
-          .catch(error => {
-            console.error('Erro ao carregar registro:', error);
-          });
-      }
     });
 
     async function setMedicationAlarm() {
