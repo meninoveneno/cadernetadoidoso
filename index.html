@@ -19,18 +19,18 @@
     /* Cabeçalho de contato modificado */
     .contact-header {
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: rgba(77, 96, 87, 0.8);
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: #4D6057;
       color: white;
-      padding: 8px 12px;
-      border-radius: 20px;
+      padding: 10px 15px;
       font-size: 14px;
       z-index: 1000;
       display: flex;
       align-items: center;
-      gap: 8px;
-      backdrop-filter: blur(5px);
+      justify-content: center;
+      gap: 15px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     
@@ -40,6 +40,11 @@
       display: flex;
       align-items: center;
       gap: 5px;
+      transition: opacity 0.2s;
+    }
+    
+    .contact-header a:hover {
+      opacity: 0.8;
     }
     
     .contact-header .phone-icon {
@@ -50,12 +55,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    
-    .contact-header .phone-icon:hover {
-      transform: scale(1.1);
     }
     
     .contact-header .instagram-icon {
@@ -66,25 +65,19 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-    
-    .contact-header .instagram-icon:hover {
-      transform: scale(1.1);
     }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 16px;
       margin: 0;
-      padding: 0;
+      padding-top: 50px;
       background-color: #f8f9fa;
       color: #333;
     }
     .container {
       max-width: 900px;
-      margin: 50px auto 20px;
+      margin: 20px auto;
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
@@ -304,8 +297,25 @@
         display: block;
       }
       .contact-header {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px 10px;
         font-size: 12px;
-        padding: 6px 10px;
+      }
+      .contact-header a {
+        font-size: 0;
+      }
+      .contact-header .phone-icon,
+      .contact-header .instagram-icon {
+        width: 20px;
+        height: 20px;
+      }
+      .contact-header .phone-icon i,
+      .contact-header .instagram-icon i {
+        font-size: 10px;
+      }
+      body {
+        padding-top: 60px;
       }
     }
     .review-buttons {
@@ -680,16 +690,21 @@
   </style>
 </head>
 <body>
-  <!-- Cabeçalho de contato modificado -->
+  <!-- Cabeçalho de contato fixo no topo -->
   <div class="contact-header" id="contactHeader">
-    <a href="https://www.instagram.com/camillaribeirogeriatra" target="_blank" class="instagram-icon" title="Acessar Instagram">
-      <i class="fab fa-instagram" style="font-size: 12px;"></i>
+    <a href="https://wa.me/5538999037071" class="phone-link" title="Enviar mensagem no WhatsApp">
+      <div class="phone-icon">
+        <i class="fas fa-phone-alt" style="font-size: 12px;"></i>
+      </div>
+      <span class="phone-text">(38) 99903-7071</span>
     </a>
-    @camillaribeirogeriatra
-    <a href="https://wa.me/5538999037071" class="phone-icon" title="Enviar mensagem no WhatsApp">
-      <i class="fas fa-phone-alt" style="font-size: 12px;"></i>
+    
+    <a href="https://www.instagram.com/camillaribeirogeriatra" target="_blank" class="instagram-link" title="Acessar Instagram">
+      <div class="instagram-icon">
+        <i class="fab fa-instagram" style="font-size: 12px;"></i>
+      </div>
+      <span class="instagram-text">@camillaribeirogeriatra</span>
     </a>
-    Tel. (38) 99903-7071
   </div>
 
   <!-- Tela Inicial -->
@@ -967,45 +982,6 @@
     let currentEditingUser = null;
     let isEditing = false;
     let currentUserData = null;
-
-    // Função para controlar a visibilidade do cabeçalho de contato
-    function updateContactHeaderVisibility() {
-      const contactHeader = document.getElementById('contactHeader');
-      const homeScreen = document.getElementById('homeScreen');
-      const reviewScreen = document.getElementById('reviewScreen');
-      
-      if (homeScreen.style.display !== 'none') {
-        contactHeader.style.display = 'flex';
-      } else if (reviewScreen.style.display !== 'none') {
-        contactHeader.style.display = 'flex';
-      } else {
-        contactHeader.style.display = 'none';
-      }
-    }
-
-    // Observar mudanças nas telas para atualizar o cabeçalho
-    function observeScreenChanges() {
-      const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-          if (mutation.attributeName === 'style') {
-            updateContactHeaderVisibility();
-          }
-        });
-      });
-
-      // Observar as telas principais
-      const homeScreen = document.getElementById('homeScreen');
-      const reviewScreen = document.getElementById('reviewScreen');
-      
-      observer.observe(homeScreen, { attributes: true });
-      observer.observe(reviewScreen, { attributes: true });
-    }
-
-    // Inicializar observador quando o DOM estiver carregado
-    document.addEventListener('DOMContentLoaded', function() {
-      updateContactHeaderVisibility();
-      observeScreenChanges();
-    });
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -1458,12 +1434,10 @@
     async function loadMedicalAccess() {
       document.getElementById('medicalAccessScreen').style.display = 'block';
       
-      // Limpar escuta anterior se existir
       if (medicalAccessUnsubscribe) {
         medicalAccessUnsubscribe();
       }
       
-      // Configurar escuta em tempo real
       medicalAccessUnsubscribe = db.collection('usuarios').onSnapshot(snapshot => {
         const users = [];
         snapshot.forEach(doc => {
@@ -1475,12 +1449,10 @@
           });
         });
         
-        // Ordenar por nome
         users.sort((a, b) => a.nome.localeCompare(b.nome));
         
         displayUsers(users);
         
-        // Configurar pesquisa
         const searchInput = document.getElementById('userSearch');
         searchInput.oninput = (e) => {
           const term = e.target.value.toLowerCase();
