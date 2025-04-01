@@ -8,8 +8,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
   <title>Caderneta Virtual do Idoso</title>
-  <link rel="icon" type="image/png" href="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true">
-  <link rel="apple-touch-icon" href="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true">
+  <link rel="icon" type="image/png" href="https://ibb.co/d4Sqm9D">
+  <link rel="apple-touch-icon" href="https://ibb.co/d4Sqm9D">
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -63,6 +63,7 @@
       left: 20px;
       bottom: 20px;
       border: 3px solid #fff;
+      object-fit: cover;
     }
     #homeScreen button {
       padding: 12px 20px;
@@ -496,7 +497,7 @@
     <h1>Caderneta Virtual do Idoso</h1>
     <h2>Cuidar hoje para viver melhor amanhã!</h2>
     <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
-    <img src="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true" alt="Logo">
+    <img src="https://ibb.co/d4Sqm9D" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -1409,7 +1410,7 @@
               if(Notification.permission === 'granted') {
                 new Notification(`Alarme: ${med.nome}`, {
                   body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                  icon: 'https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true',
+                  icon: 'https://ibb.co/d4Sqm9D',
                   timestamp: alarmTime.getTime()
                 });
               } else if(Notification.permission !== 'denied') {
@@ -1417,7 +1418,7 @@
                   if(permission === 'granted') {
                     new Notification(`Alarme: ${med.nome}`, {
                       body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                      icon: 'https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true',
+                      icon: 'https://ibb.co/d4Sqm9D',
                       timestamp: alarmTime.getTime()
                     });
                   }
