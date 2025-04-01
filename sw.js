@@ -1,7 +1,7 @@
 const assetsToCache = [
   "/",
   "/index.html",
-  "https://raw.githubusercontent.com/meninoveneno/cadernetadoidoso/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG",
+  "https://cdn-icons-png.flaticon.com/512/4441/4441163.png",
   // Adicione aqui outros assets estáticos do seu projeto
 ];
 
