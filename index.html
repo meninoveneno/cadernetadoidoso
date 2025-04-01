@@ -16,6 +16,48 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
+    /* Novo cabeçalho de contato */
+    .contact-header {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(77, 96, 87, 0.8);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .contact-header a {
+      color: white;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .contact-header .phone-icon {
+      background-color: #25D366;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .contact-header .phone-icon:hover {
+      transform: scale(1.1);
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 16px;
@@ -26,7 +68,7 @@
     }
     .container {
       max-width: 900px;
-      margin: 20px auto;
+      margin: 50px auto 20px; /* Ajuste para o cabeçalho */
       background: #fff;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       padding: 30px;
@@ -244,6 +286,10 @@
         bottom: auto;
         margin: 20px auto;
         display: block;
+      }
+      .contact-header {
+        font-size: 12px;
+        padding: 6px 10px;
       }
     }
     .review-buttons {
@@ -618,6 +664,14 @@
   </style>
 </head>
 <body>
+  <!-- Novo cabeçalho de contato -->
+  <div class="contact-header">
+    @camillaribeirogeriatra Tel. (38) 99903-7071
+    <a href="https://wa.me/5538999037071" class="phone-icon" title="Enviar mensagem no WhatsApp">
+      <i class="fas fa-phone-alt" style="font-size: 12px;"></i>
+    </a>
+  </div>
+
   <!-- Tela Inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
@@ -851,6 +905,29 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
+    // Adicionando o prompt de instalação do PWA
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      showInstallPrompt();
+    });
+    
+    function showInstallPrompt() {
+      if(deferredPrompt && confirm('Deseja instalar o aplicativo Caderneta do Idoso em seu dispositivo para melhor experiência?')) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Usuário aceitou a instalação');
+          } else {
+            console.log('Usuário recusou a instalação');
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
     const firebaseConfig = {
       apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
       authDomain: "cadernetavirtualdoidoso.firebaseapp.com",
