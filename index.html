@@ -75,18 +75,9 @@
       font-size: 16px;
       font-weight: 600;
       transition: background-color 0.3s;
-      margin: 5px;
-      width: 80%;
-      max-width: 300px;
     }
     #homeScreen button:hover {
       background-color: #2d4036;
-    }
-    #readQrBtn {
-      background-color: #5a7d6e;
-    }
-    #readQrBtn:hover {
-      background-color: #4a6b5d;
     }
     .tabs {
       display: flex;
@@ -244,9 +235,6 @@
         margin: 20px auto;
         display: block;
       }
-      #homeScreen button {
-        width: 90%;
-      }
     }
     .review-buttons {
       display: flex;
@@ -346,17 +334,16 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-    .alarm-btn i {
-      font-size: 18px;
-    }
     .alarm-btn:hover {
       background-color: #e0a800;
+    }
+    .alarm-btn i {
+      font-size: 18px;
     }
     #medicalLoginScreen,
     #medicalAccessScreen,
     #userDetailScreen,
-    #qrCodeScreen,
-    #qrReaderScreen {
+    #qrCodeScreen {
       display: none;
       position: fixed;
       top: 50%;
@@ -369,23 +356,6 @@
       max-width: 800px;
       z-index: 1000;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    #qrReaderScreen {
-      width: 100%;
-      height: 100%;
-      max-width: none;
-      top: 0;
-      left: 0;
-      transform: none;
-      padding: 0;
-    }
-    #qrReaderContainer {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
     }
     #userDetailTabs {
       display: grid;
@@ -448,9 +418,7 @@
       border-radius: 5px;
       cursor: pointer;
     }
-    #qrCodeScreen input,
-    #qrCodeScreen textarea,
-    #qrCodeScreen select {
+    #qrCodeScreen input {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
@@ -468,13 +436,6 @@
       text-align: center;
       margin: 20px 0;
       display: none;
-    }
-    .qr-section-title {
-      margin-top: 20px;
-      color: #4D6057;
-      font-size: 18px;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 5px;
     }
     @media (max-width: 600px) {
       #userDetailTabs {
@@ -558,7 +519,6 @@
     <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
     <img src="https://i.imgur.com/BzIGz3X.png" alt="Logo">
     <button id="startBtn">Iniciar</button>
-    <button id="readQrBtn">Ler QR Code</button>
   </div>
 
   <!-- Tela de Edição -->
@@ -718,96 +678,12 @@
   <div id="qrCodeScreen">
     <h2>Gerar Novo Registro</h2>
     <form id="qrCodeForm">
-      <h3 class="qr-section-title">Identificação</h3>
-      <div class="compact-form">
-        <div class="form-row">
-          <label for="qrNome">Nome do Paciente*:</label>
-          <input type="text" id="qrNome" required>
-        </div>
-        <div class="form-row">
-          <label for="qrNascimento">Data de Nascimento*:</label>
-          <input type="date" id="qrNascimento" required>
-        </div>
-        <div class="form-row">
-          <label for="qrPeso">Peso (kg):</label>
-          <input type="number" id="qrPeso">
-        </div>
-        <div class="form-row">
-          <label for="qrContato">Contato:</label>
-          <input type="tel" id="qrContato">
-        </div>
-        <div class="form-row">
-          <label for="qrContatoEmergencia">Contato de Emergência:</label>
-          <input type="tel" id="qrContatoEmergencia">
-        </div>
-      </div>
-
-      <h3 class="qr-section-title">Doenças Crônicas</h3>
-      <div class="compact-form">
-        <div class="form-row">
-          <label><input type="checkbox" id="qrHipertensao"> Hipertensão</label>
-        </div>
-        <div class="form-row">
-          <label><input type="checkbox" id="qrDiabetes"> Diabetes</label>
-        </div>
-        <div class="form-row">
-          <label><input type="checkbox" id="qrCardiopatias"> Cardiopatias</label>
-        </div>
-        <div class="form-row">
-          <label><input type="checkbox" id="qrChagas"> Chagas</label>
-        </div>
-        <div class="form-row">
-          <label for="qrOutrasDoencas">Outras Doenças/Alergias:</label>
-          <input type="text" id="qrOutrasDoencas">
-        </div>
-      </div>
-
-      <h3 class="qr-section-title">Anotações</h3>
-      <div class="form-row">
-        <label for="qrAnotacoes">Anotações Médicas:</label>
-        <textarea id="qrAnotacoes" rows="3"></textarea>
-      </div>
-
-      <h3 class="qr-section-title">Vacinas</h3>
-      <div id="qrVacinasContainer">
-        <div class="vacina-form">
-          <div class="form-row">
-            <label>Nome da Vacina:</label>
-            <input type="text" class="qrNomeVacina">
-          </div>
-          <div class="form-row">
-            <label>Data de Aplicação:</label>
-            <input type="date" class="qrDataAplicacao">
-          </div>
-          <div class="form-row">
-            <label>Lote:</label>
-            <input type="text" class="qrLoteVacina">
-          </div>
-          <div class="form-row">
-            <label>Observações:</label>
-            <textarea class="qrObservacoesVacina"></textarea>
-          </div>
-          <button type="button" class="delete-btn" onclick="deleteQrVacinaForm(this)">Excluir Vacina</button>
-        </div>
-        <button type="button" class="btn" onclick="addQrVacinaForm()">Adicionar Vacina</button>
-      </div>
-
-      <h3 class="qr-section-title">Medicamentos</h3>
-      <div id="qrMedicamentosContainer">
-        <div class="medicamento-form">
-          <label>Nome do Medicamento:</label>
-          <input type="text" class="qrNomeMedicamento">
-          <label>Dose:</label>
-          <input type="text" class="qrDoseMedicamento">
-          <label>Posologia:</label>
-          <input type="text" class="qrPosologiaMedicamento">
-          <label>Horário:</label>
-          <input type="time" class="qrHorarioMedicamento">
-          <button type="button" class="delete-btn" onclick="deleteQrMedicamentoForm(this)">Excluir Medicamento</button>
-        </div>
-        <button type="button" class="btn" onclick="addQrMedicamentoForm()">Adicionar Medicamento</button>
-      </div>
-
+      <label for="qrNome">Nome do Paciente:</label>
+      <input type="text" id="qrNome" required>
+      
+      <label for="qrNascimento">Data de Nascimento:</label>
+      <input type="date" id="qrNascimento" required>
+      
       <div id="qrCodeContainer">
         <canvas id="qrCanvas"></canvas>
         <p style="margin-top: 10px;">Escaneie este QR code para cadastrar automaticamente</p>
@@ -818,15 +694,6 @@
         <button type="button" id="closeQrBtn" class="btn">Fechar</button>
       </div>
     </form>
-  </div>
-
-  <!-- Tela de Leitura de QR Code -->
-  <div id="qrReaderScreen">
-    <div id="qrReaderContainer">
-      <h2>Ler QR Code</h2>
-      <div id="qrReader" style="width: 100%; max-width: 500px; margin: 20px auto;"></div>
-      <button id="closeQrReaderBtn" class="btn">Cancelar</button>
-    </div>
   </div>
 
   <!-- Tela de Detalhes do Paciente -->
@@ -870,7 +737,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCMP_bBotEMngO0pLkxhrZvvgCJqIFTZCY",
@@ -890,7 +756,6 @@
     let currentEditingUser = null;
     let isEditing = false;
     let currentUserData = null;
-    let html5QrCodeScanner = null;
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -917,199 +782,6 @@
         document.documentElement.requestFullscreen();
       }
     });
-
-    document.getElementById('readQrBtn').addEventListener('click', () => {
-      document.getElementById('homeScreen').style.display = 'none';
-      document.getElementById('qrReaderScreen').style.display = 'block';
-      
-      html5QrCodeScanner = new Html5Qrcode("qrReader");
-      const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-        if (decodedText) {
-          const registroId = decodedText.split('registroId=')[1];
-          if (registroId) {
-            html5QrCodeScanner.stop().then(() => {
-              loadFromQrCode(registroId);
-              document.getElementById('qrReaderScreen').style.display = 'none';
-            }).catch(err => {
-              console.error("Erro ao parar o scanner:", err);
-            });
-          }
-        }
-      };
-      
-      const config = { 
-        fps: 10,
-        qrbox: { width: 250, height: 250 }
-      };
-      
-      html5QrCodeScanner.start(
-        { facingMode: "environment" },
-        config,
-        qrCodeSuccessCallback,
-        errorMessage => {
-          // Mensagens de erro são tratadas aqui
-        }
-      ).catch(err => {
-        console.error("Erro ao iniciar o scanner:", err);
-      });
-    });
-
-    document.getElementById('closeQrReaderBtn').addEventListener('click', () => {
-      if (html5QrCodeScanner) {
-        html5QrCodeScanner.stop().then(() => {
-          document.getElementById('qrReaderScreen').style.display = 'none';
-          document.getElementById('homeScreen').style.display = 'block';
-        }).catch(err => {
-          console.error("Erro ao parar o scanner:", err);
-        });
-      } else {
-        document.getElementById('qrReaderScreen').style.display = 'none';
-        document.getElementById('homeScreen').style.display = 'block';
-      }
-    });
-
-    async function loadFromQrCode(registroId) {
-      try {
-        const doc = await firebase.firestore().collection('tempRegistros').doc(registroId).get();
-        if (doc.exists) {
-          const data = doc.data();
-          
-          // Preenche os campos do formulário
-          document.getElementById('nome').value = data.identificacao.nome;
-          document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
-          document.getElementById('peso').value = data.identificacao.peso;
-          document.getElementById('contato').value = data.identificacao.contato;
-          document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
-          
-          // Preenche doenças crônicas
-          document.getElementById('hipertensao').checked = data.doencas.hipertensao;
-          document.getElementById('diabetes').checked = data.doencas.diabetes;
-          document.getElementById('cardiopatias').checked = data.doencas.cardiopatias;
-          document.getElementById('chagas').checked = data.doencas.chagas;
-          document.getElementById('outrasDoencas').value = data.doencas.outras;
-          
-          // Preenche anotações
-          document.getElementById('anotacoes').value = data.anotacoes;
-          
-          // Preenche vacinas
-          const vacinasContainer = document.getElementById('vacinasContainer');
-          vacinasContainer.innerHTML = '';
-          data.vacinacao.forEach(vacina => {
-            const newBlock = document.createElement('div');
-            newBlock.classList.add('vacina-form');
-            newBlock.innerHTML = `
-              <div class="form-row">
-                <label>Nome da Vacina:</label>
-                <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nomeVacina || ''}">
-              </div>
-              <div class="form-row">
-                <label>Data de Aplicação:</label>
-                <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao || ''}">
-              </div>
-              <div class="form-row">
-                <label>Lote:</label>
-                <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.loteVacina || ''}">
-              </div>
-              <div class="form-row">
-                <label>Observações:</label>
-                <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes || ''}</textarea>
-              </div>
-              <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
-            `;
-            vacinasContainer.appendChild(newBlock);
-          });
-          
-          // Preenche medicamentos
-          const medicamentosContainer = document.getElementById('medicamentosContainer');
-          medicamentosContainer.innerHTML = '';
-          data.medicamentos.forEach(med => {
-            const newBlock = document.createElement('div');
-            newBlock.classList.add('medicamento-form');
-            newBlock.innerHTML = `
-              <label>Nome do Medicamento:</label>
-              <input type="text" name="nomeMedicamento[]" value="${med.nome || ''}">
-              <label>Dose:</label>
-              <input type="text" name="doseMedicamento[]" value="${med.dose || ''}">
-              <label>Posologia:</label>
-              <input type="text" name="posologiaMedicamento[]" value="${med.posologia || ''}">
-              <label>Horário:</label>
-              <input type="time" name="horarioMedicamento[]" value="${med.horario || ''}">
-              <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
-            `;
-            medicamentosContainer.appendChild(newBlock);
-          });
-          
-          // Remove o registro temporário
-          await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
-          
-          // Mostra mensagem ao usuário
-          showPopup('Dados do paciente carregados automaticamente!');
-          
-          // Vai para a tela de edição
-          document.getElementById('homeScreen').style.display = 'none';
-          document.getElementById('editScreen').style.display = 'block';
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados do QR Code:', error);
-        showPopup('Erro ao carregar dados do QR Code!', true);
-      }
-    }
-
-    function addQrVacinaForm() {
-      const container = document.getElementById('qrVacinasContainer');
-      const newBlock = document.createElement('div');
-      newBlock.classList.add('vacina-form');
-      newBlock.innerHTML = `
-        <div class="form-row">
-          <label>Nome da Vacina:</label>
-          <input type="text" class="qrNomeVacina">
-        </div>
-        <div class="form-row">
-          <label>Data de Aplicação:</label>
-          <input type="date" class="qrDataAplicacao">
-        </div>
-        <div class="form-row">
-          <label>Lote:</label>
-          <input type="text" class="qrLoteVacina">
-        </div>
-        <div class="form-row">
-          <label>Observações:</label>
-          <textarea class="qrObservacoesVacina"></textarea>
-        </div>
-        <button type="button" class="delete-btn" onclick="deleteQrVacinaForm(this)">Excluir Vacina</button>
-      `;
-      container.insertBefore(newBlock, container.lastElementChild);
-    }
-
-    function deleteQrVacinaForm(button) {
-      if (confirm("Tem certeza que deseja excluir esta vacina?")) {
-        button.closest('.vacina-form').remove();
-      }
-    }
-
-    function addQrMedicamentoForm() {
-      const container = document.getElementById('qrMedicamentosContainer');
-      const newBlock = document.createElement('div');
-      newBlock.classList.add('medicamento-form');
-      newBlock.innerHTML = `
-        <label>Nome do Medicamento:</label>
-        <input type="text" class="qrNomeMedicamento">
-        <label>Dose:</label>
-        <input type="text" class="qrDoseMedicamento">
-        <label>Posologia:</label>
-        <input type="text" class="qrPosologiaMedicamento">
-        <label>Horário:</label>
-        <input type="time" class="qrHorarioMedicamento">
-        <button type="button" class="delete-btn" onclick="deleteQrMedicamentoForm(this)">Excluir Medicamento</button>
-      `;
-      container.insertBefore(newBlock, container.lastElementChild);
-    }
-
-    function deleteQrMedicamentoForm(button) {
-      if (confirm("Tem certeza que deseja excluir este medicamento?")) {
-        button.closest('.medicamento-form').remove();
-      }
-    }
 
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -1780,45 +1452,20 @@
       const dataNascimento = document.getElementById('qrNascimento').value;
       
       if(!nome || !dataNascimento) {
-        alert('Por favor, preencha pelo menos o nome e data de nascimento!');
+        alert('Por favor, preencha todos os campos obrigatórios!');
         return;
       }
       
-      // Coletando todos os dados do formulário
-      const pacienteData = {
-        identificacao: {
-          nome: nome,
-          dataNascimento: dataNascimento,
-          peso: document.getElementById('qrPeso').value,
-          contato: document.getElementById('qrContato').value,
-          contatoEmergencia: document.getElementById('qrContatoEmergencia').value
-        },
-        doencas: {
-          hipertensao: document.getElementById('qrHipertensao').checked,
-          diabetes: document.getElementById('qrDiabetes').checked,
-          cardiopatias: document.getElementById('qrCardiopatias').checked,
-          chagas: document.getElementById('qrChagas').checked,
-          outras: document.getElementById('qrOutrasDoencas').value
-        },
-        anotacoes: document.getElementById('qrAnotacoes').value,
-        vacinacao: Array.from(document.querySelectorAll('#qrVacinasContainer .vacina-form')).map(form => ({
-          nomeVacina: form.querySelector('.qrNomeVacina').value,
-          dataAplicacao: form.querySelector('.qrDataAplicacao').value,
-          loteVacina: form.querySelector('.qrLoteVacina').value,
-          observacoes: form.querySelector('.qrObservacoesVacina').value
-        })),
-        medicamentos: Array.from(document.querySelectorAll('#qrMedicamentosContainer .medicamento-form')).map(form => ({
-          nome: form.querySelector('.qrNomeMedicamento').value,
-          dose: form.querySelector('.qrDoseMedicamento').value,
-          posologia: form.querySelector('.qrPosologiaMedicamento').value,
-          horario: form.querySelector('.qrHorarioMedicamento').value
-        }))
-      };
-      
       // Cria um ID único para este registro
       const registroId = firebase.firestore().collection('tempRegistros').doc().id;
-      pacienteData.registroId = registroId;
-      pacienteData.timestamp = new Date().toISOString();
+      
+      // Cria os dados que serão preenchidos automaticamente
+      const pacienteData = {
+        nome: nome,
+        dataNascimento: dataNascimento,
+        registroId: registroId,
+        timestamp: new Date().toISOString()
+      };
       
       // Salva no Firestore em uma coleção temporária
       await firebase.firestore().collection('tempRegistros').doc(registroId).set(pacienteData);
@@ -1835,6 +1482,38 @@
           showPopup('QR Code gerado com sucesso!');
         }
       });
+    });
+
+    // Verifica se há um registroId na URL quando a página carrega
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const registroId = urlParams.get('registroId');
+      
+      if(registroId) {
+        // Busca os dados do registro temporário
+        firebase.firestore().collection('tempRegistros').doc(registroId).get()
+          .then(async (doc) => {
+            if(doc.exists) {
+              const data = doc.data();
+              
+              // Preenche os campos do formulário
+              document.getElementById('nome').value = data.nome;
+              document.getElementById('dataNascimento').value = data.dataNascimento;
+              
+              // Remove o registro temporário
+              await firebase.firestore().collection('tempRegistros').doc(registroId).delete();
+              
+              // Remove o parâmetro da URL sem recarregar a página
+              window.history.replaceState({}, document.title, window.location.pathname);
+              
+              // Mostra mensagem ao usuário
+              showPopup('Dados do paciente carregados automaticamente!');
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar registro:', error);
+          });
+      }
     });
 
     async function setMedicationAlarm() {
@@ -1889,16 +1568,6 @@
           document.getElementById('homeScreen').style.display = 'none';
           document.getElementById('reviewScreen').style.display = 'block';
         }
-      }
-
-      // Verifica se há um registroId na URL quando a página carrega
-      const urlParams = new URLSearchParams(window.location.search);
-      const registroId = urlParams.get('registroId');
-      
-      if(registroId) {
-        loadFromQrCode(registroId);
-        // Remove o parâmetro da URL sem recarregar a página
-        window.history.replaceState({}, document.title, window.location.pathname);
       }
     });
 
