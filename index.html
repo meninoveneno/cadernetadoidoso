@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#007bff">
+  <meta name="theme-color" content="#4D6057">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <link rel="manifest" href="/manifest.json">
   <title>Caderneta Virtual do Idoso</title>
-  <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/4441/4441163.png">
+  <link rel="icon" type="image/png" href="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true">
+  <link rel="apple-touch-icon" href="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true">
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -34,7 +34,7 @@
     #homeScreen {
       text-align: center;
       padding: 50px 20px;
-      background: linear-gradient(135deg, #007bff, #00bfff);
+      background: linear-gradient(135deg, #4D6057, #839c90);
       color: #fff;
       border-radius: 12px;
       position: relative;
@@ -42,22 +42,32 @@
     #homeScreen h1 {
       font-size: 36px;
       margin-bottom: 10px;
+      font-weight: 600;
     }
     #homeScreen h2 {
-      font-size: 24px;
-      margin-bottom: 30px;
+      font-size: 20px;
+      margin-bottom: 10px;
       font-weight: 400;
     }
+    #homeScreen h3 {
+      font-size: 18px;
+      margin-bottom: 30px;
+      font-weight: 400;
+      font-style: italic;
+    }
     #homeScreen img {
-      width: 73.125px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
       position: absolute;
       left: 20px;
       bottom: 20px;
+      border: 3px solid #fff;
     }
     #homeScreen button {
       padding: 12px 20px;
       border: none;
-      background: #28a745;
+      background: #3b5448;
       color: #fff;
       border-radius: 8px;
       cursor: pointer;
@@ -66,7 +76,7 @@
       transition: background-color 0.3s;
     }
     #homeScreen button:hover {
-      background-color: #218838;
+      background-color: #2d4036;
     }
     .tabs {
       display: flex;
@@ -91,12 +101,12 @@
       color: #495057;
     }
     .tabs li.active {
-      background-color: #007bff;
+      background-color: #839c90;
       color: white;
-      box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+      box-shadow: 0 4px 6px rgba(131, 156, 144, 0.2);
     }
     .tabs li:hover {
-      background-color: #0056b3;
+      background-color: #6d8a7d;
       color: white;
     }
     .tab-content {
@@ -127,9 +137,9 @@
     form input:focus,
     form select:focus,
     form textarea:focus {
-      border-color: #007bff;
+      border-color: #4D6057;
       outline: none;
-      box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+      box-shadow: 0 0 0 3px rgba(77, 96, 87, 0.1);
     }
     form textarea {
       resize: vertical;
@@ -139,7 +149,7 @@
       margin-top: 20px;
       padding: 12px 20px;
       border: none;
-      background: #28a745;
+      background: #3b5448;
       color: #fff;
       border-radius: 8px;
       cursor: pointer;
@@ -150,17 +160,17 @@
       max-width: 200px;
     }
     .btn:hover {
-      background-color: #218838;
+      background-color: #2d4036;
     }
     #addMedicamento,
     #addVacina {
-      background: #17a2b8;
+      background: #4D6057;
       width: 100%;
       max-width: 200px;
     }
     #addMedicamento:hover,
     #addVacina:hover {
-      background: #117a8b;
+      background: #3b5448;
     }
     #monitoramentoBtn {
       background-color: #ffc107;
@@ -173,7 +183,7 @@
       position: fixed;
       top: 20px;
       right: 20px;
-      background: #28a745;
+      background: #3b5448;
       color: #fff;
       padding: 12px 20px;
       border-radius: 8px;
@@ -216,6 +226,13 @@
       .review-buttons .btn {
         max-width: 100%;
         width: 100%;
+      }
+      #homeScreen img {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        margin: 20px auto;
+        display: block;
       }
     }
     .review-buttons {
@@ -303,7 +320,7 @@
     }
     .review-container h3 {
       margin-top: 0;
-      color: #007bff;
+      color: #4D6057;
     }
     .alarm-btn {
       background-color: #ffc107;
@@ -354,7 +371,7 @@
       font-size: 14px;
     }
     .detail-tab.active {
-      background: #007bff;
+      background: #839c90;
       color: white;
     }
     .detail-tab-content {
@@ -445,7 +462,7 @@
       transition: all 0.3s;
     }
     .editing .editable-field {
-      border-color: #007bff;
+      border-color: #4D6057;
       background-color: #f8f9fa;
     }
     .edit-input {
@@ -463,7 +480,7 @@
     }
     .add-item-btn {
       margin: 10px 0;
-      background: #17a2b8;
+      background: #4D6057;
     }
     .code-input {
       position: absolute;
@@ -477,8 +494,9 @@
   <!-- Tela Inicial -->
   <div id="homeScreen" class="container">
     <h1>Caderneta Virtual do Idoso</h1>
-    <h2>Cuidar hoje para viver melhor amanhã! - Grupo D Inovação e Tecnologia em Saúde FUNORTE 2025.1</h2>
-    <img src="https://cdn-icons-png.flaticon.com/512/4441/4441163.png" alt="Logo">
+    <h2>Cuidar hoje para viver melhor amanhã!</h2>
+    <h3>Dra. Camilla Ribeiro | CRM: 57634 RQE: 42473</h3>
+    <img src="https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true" alt="Logo">
     <button id="startBtn">Iniciar</button>
   </div>
 
@@ -1391,7 +1409,7 @@
               if(Notification.permission === 'granted') {
                 new Notification(`Alarme: ${med.nome}`, {
                   body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                  icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png',
+                  icon: 'https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true',
                   timestamp: alarmTime.getTime()
                 });
               } else if(Notification.permission !== 'denied') {
@@ -1399,7 +1417,7 @@
                   if(permission === 'granted') {
                     new Notification(`Alarme: ${med.nome}`, {
                       body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                      icon: 'https://cdn-icons-png.flaticon.com/512/4441/4441163.png',
+                      icon: 'https://github.com/meninoveneno/cadernetadoidoso/blob/36e9c11990c7d3f23f991b31c589a8b308ff3318/icon.PNG?raw=true',
                       timestamp: alarmTime.getTime()
                     });
                   }
@@ -1444,7 +1462,7 @@
     function showPopup(message, isError = false) {
       const popup = document.getElementById('popup');
       popup.textContent = message;
-      popup.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+      popup.style.backgroundColor = isError ? '#dc3545' : '#3b5448';
       popup.classList.add('show');
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
