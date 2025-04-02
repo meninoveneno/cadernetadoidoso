@@ -678,14 +678,10 @@
     .exame-thumbnail {
       width: 60px;
       height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: #f0f0f0;
+      object-fit: cover;
       border-radius: 4px;
       border: 1px solid #ddd;
       cursor: pointer;
-      color: #4D6057;
     }
     
     .exame-details {
@@ -700,12 +696,6 @@
     .exame-date {
       font-size: 12px;
       color: #666;
-    }
-    
-    .exame-type {
-      font-size: 12px;
-      color: #4D6057;
-      font-weight: 500;
     }
     
     .exame-actions {
@@ -1312,7 +1302,7 @@
   </div>
 
   <!-- Input oculto para upload de arquivos -->
-  <input type="file" id="examFileInput" accept="image/*, .pdf, .doc, .docx" style="display: none;">
+  <input type="file" id="examFileInput" accept="image/*" style="display: none;">
 
   <!-- Elementos da câmera para exames -->
   <div class="camera-container" id="cameraContainer">
@@ -1409,90 +1399,75 @@
       });
     }
 
+    // Funções para gerenciar exames (MODIFICADAS para usar localStorage)
     function formatDate(dateString) {
       const date = new Date(dateString);
       return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
     }
 
     async function loadExames(username) {
-      if(examesUnsubscribe) examesUnsubscribe();
-      
       try {
-        examesUnsubscribe = db.collection('exames')
-          .where('pacienteId', '==', username)
-          .orderBy('data', 'desc')
-          .onSnapshot(querySnapshot => {
-            const examesList = document.getElementById('examesList');
-            examesList.innerHTML = '';
-            
-            if (querySnapshot.empty) {
-              examesList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado ainda.</p>';
-              return;
-            }
-            
-            querySnapshot.forEach(doc => {
-              const exame = doc.data();
-              const exameItem = document.createElement('div');
-              exameItem.className = 'exame-item';
-              
-              // Ícone diferente para PDFs e documentos
-              const fileTypeIcon = exame.url.includes('data:application/pdf') ? 'file-pdf' : 
-                                 exame.url.includes('data:application/msword') ? 'file-word' : 
-                                 'file-image';
-              
-              exameItem.innerHTML = `
-                <div class="exame-info">
-                  <div class="exame-thumbnail" onclick="showExamePreview('${exame.url}')">
-                    <i class="fas fa-${fileTypeIcon} fa-3x"></i>
-                  </div>
-                  <div class="exame-details">
-                    <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
-                    <div class="exame-date">${formatDate(exame.data)}</div>
-                    ${exame.tipo ? `<div class="exame-type">${exame.tipo}</div>` : ''}
-                  </div>
-                </div>
-                <div class="exame-actions">
-                  <button class="exame-action-btn" onclick="deleteExame('${doc.id}')" title="Excluir exame">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              `;
-              examesList.appendChild(exameItem);
-            });
-          });
+        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
+        const examesList = document.getElementById('examesList');
+        examesList.innerHTML = '';
+        
+        if (exames.length === 0) {
+          examesList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado ainda.</p>';
+          return;
+        }
+        
+        exames.forEach((exame, index) => {
+          const exameItem = document.createElement('div');
+          exameItem.className = 'exame-item';
+          exameItem.innerHTML = `
+            <div class="exame-info">
+              <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                   onclick="showExamePreview('${exame.url}')">
+              <div class="exame-details">
+                <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
+                <div class="exame-date">${formatDate(exame.data)}</div>
+              </div>
+            </div>
+            <div class="exame-actions">
+              <button class="exame-action-btn" onclick="deleteExame('${username}', ${index})" title="Excluir exame">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          examesList.appendChild(exameItem);
+        });
       } catch (error) {
         console.error('Erro ao carregar exames:', error);
         showPopup('Erro ao carregar exames!', true);
       }
     }
 
-    function showExamePreview(fileUrl) {
+    function showExamePreview(imageUrl) {
       const modal = document.getElementById('examePreviewModal');
       const img = document.getElementById('examePreviewImage');
-      
-      if (fileUrl.startsWith('data:image')) {
-        // É uma imagem - mostra diretamente
-        img.src = fileUrl;
-        img.style.display = 'block';
-      } else {
-        // É um PDF ou documento - mostra mensagem
-        img.style.display = 'none';
-        alert('Este tipo de arquivo não pode ser visualizado diretamente. Faça o download para visualizar.');
-        return;
-      }
-      
+      img.src = imageUrl;
       modal.style.display = 'flex';
+      
       document.getElementById('closePreviewBtn').onclick = () => {
         modal.style.display = 'none';
       };
     }
 
-    async function deleteExame(exameId) {
+    async function deleteExame(username, index) {
       if(!confirm('Tem certeza que deseja excluir este exame permanentemente?')) return;
       
       try {
-        await db.collection('exames').doc(exameId).delete();
+        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
+        exames.splice(index, 1);
+        localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
+        
         showPopup('Exame excluído com sucesso!');
+        loadExames(username);
+        
+        // Atualiza também na tela de detalhes do médico, se estiver aberta
+        if (document.getElementById('userDetailScreen').style.display === 'block') {
+          loadUserExames(username);
+        }
       } catch (error) {
         console.error('Erro ao excluir exame:', error);
         showPopup('Erro ao excluir exame!', true);
@@ -1509,7 +1484,7 @@
 
     async function startCamera(facingMode = 'environment') {
       try {
-        stopCamera();
+        stopCamera(); // Para qualquer stream existente
         
         const constraints = {
           video: { 
@@ -1529,6 +1504,7 @@
         video.onloadedmetadata = () => {
           video.play();
         };
+        
       } catch (error) {
         console.error('Erro ao acessar câmera:', error);
         showPopup('Não foi possível acessar a câmera. Verifique as permissões.', true);
@@ -1568,28 +1544,19 @@
     }
 
     async function handleFileUpload(event) {
+      closeExamModal();
       const file = event.target.files[0];
       if (!file) return;
-      
-      // Verifica o tipo do arquivo
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!validTypes.includes(file.type)) {
-        alert('Tipo de arquivo não suportado. Por favor, envie imagens, PDFs ou documentos do Word.');
-        return;
-      }
       
       const reader = new FileReader();
       reader.onload = async (e) => {
         const description = prompt('Descreva o exame (opcional):');
-        const fileType = file.type.includes('image') ? 'imagem' : 
-                        file.type.includes('pdf') ? 'pdf' : 'documento';
-        
-        await uploadExamToFirebase(e.target.result, description, fileType, file.name);
+        uploadExamToFirebase(e.target.result, description);
       };
       reader.readAsDataURL(file);
     }
 
-    async function uploadExamToFirebase(fileData, description, fileType, fileName) {
+    async function uploadExamToFirebase(imageData, description) {
       const username = localStorage.getItem('currentUser');
       if (!username) {
         showPopup('Nenhum usuário selecionado!', true);
@@ -1600,76 +1567,73 @@
         showPopup('Salvando exame...');
         
         const timestamp = new Date().toISOString();
-        const examId = db.collection('exames').doc().id;
+        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
         
-        await db.collection('exames').doc(examId).set({
-          pacienteId: username,
-          url: fileData,
-          descricao: description || fileName,
-          tipo: fileType,
-          data: timestamp,
-          status: 'pendente'
+        exames.push({
+          url: imageData,
+          descricao: description || '',
+          data: timestamp
         });
         
+        localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
+        
         showPopup('Exame salvo com sucesso!');
+        loadExames(username);
+        
+        // Atualiza também na tela de detalhes do médico, se estiver aberta
+        if (document.getElementById('userDetailScreen').style.display === 'block') {
+          loadUserExames(username);
+        }
       } catch (error) {
         console.error('Erro ao salvar exame:', error);
-        showPopup('Erro ao salvar exame! Por favor, tente novamente.', true);
+        showPopup('Erro ao salvar exame!', true);
       }
     }
 
     async function loadUserExames(username) {
-      if(examesUnsubscribe) examesUnsubscribe();
-      
       try {
-        examesUnsubscribe = db.collection('exames')
-          .where('pacienteId', '==', username)
-          .orderBy('data', 'desc')
-          .onSnapshot(querySnapshot => {
-            const examesContainer = document.createElement('div');
-            examesContainer.className = 'exames-container';
-            
-            if (querySnapshot.empty) {
-              examesContainer.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado para este paciente.</p>';
-            } else {
-              querySnapshot.forEach(doc => {
-                const exame = doc.data();
-                const exameItem = document.createElement('div');
-                exameItem.className = 'exame-item';
-                
-                const fileTypeIcon = exame.url.includes('data:application/pdf') ? 'file-pdf' : 
-                                   exame.url.includes('data:application/msword') ? 'file-word' : 
-                                   'file-image';
-                
-                exameItem.innerHTML = `
-                  <div class="exame-info">
-                    <div class="exame-thumbnail" onclick="showExamePreview('${exame.url}')">
-                      <i class="fas fa-${fileTypeIcon} fa-3x"></i>
-                    </div>
-                    <div class="exame-details">
-                      <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
-                      <div class="exame-date">${formatDate(exame.data)}</div>
-                      ${exame.tipo ? `<div class="exame-type">${exame.tipo}</div>` : ''}
-                    </div>
-                  </div>
-                `;
-                examesContainer.appendChild(exameItem);
-              });
-            }
-            
-            const detailContent = document.getElementById('userDetailContent');
-            let examesTab = document.getElementById('detail-exames');
-            
-            if (!examesTab) {
-              examesTab = document.createElement('div');
-              examesTab.className = 'detail-tab-content';
-              examesTab.id = 'detail-exames';
-              detailContent.appendChild(examesTab);
-            }
-            
-            examesTab.innerHTML = '';
-            examesTab.appendChild(examesContainer);
+        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
+        const examesContainer = document.createElement('div');
+        examesContainer.className = 'exames-container';
+        
+        if (exames.length === 0) {
+          examesContainer.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado para este paciente.</p>';
+        } else {
+          exames.forEach((exame, index) => {
+            const exameItem = document.createElement('div');
+            exameItem.className = 'exame-item';
+            exameItem.innerHTML = `
+              <div class="exame-info">
+                <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                     onclick="showExamePreview('${exame.url}')">
+                <div class="exame-details">
+                  <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
+                  <div class="exame-date">${formatDate(exame.data)}</div>
+                </div>
+              </div>
+              <div class="exame-actions">
+                <button class="exame-action-btn" onclick="deleteExame('${username}', ${index})" title="Excluir exame">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            `;
+            examesContainer.appendChild(exameItem);
           });
+        }
+        
+        const detailContent = document.getElementById('userDetailContent');
+        let examesTab = document.getElementById('detail-exames');
+        
+        if (!examesTab) {
+          examesTab = document.createElement('div');
+          examesTab.className = 'detail-tab-content';
+          examesTab.id = 'detail-exames';
+          detailContent.appendChild(examesTab);
+        }
+        
+        examesTab.innerHTML = '';
+        examesTab.appendChild(examesContainer);
+        
       } catch (error) {
         console.error('Erro ao carregar exames:', error);
         showPopup('Erro ao carregar exames do paciente!', true);
@@ -1811,7 +1775,7 @@
         modal.style.display = 'none';
       }
 
-      document.getElementById('closeScannerBtn').addEventListener('click', stopCamera);
+      document.getElementById('closeScannerBtn').addEventListener('click', stopScanner);
     }
 
     function fillFormFromQR(data) {
@@ -2168,7 +2132,6 @@
 
     async function showUserDetail(userId) {
       currentEditingUser = userId;
-      currentDetailTab = 'detail-identificacao'; // Resetar para a aba padrão
       if(userDetailUnsubscribe) userDetailUnsubscribe();
       
       try {
@@ -2443,29 +2406,17 @@
       renderUserDetail(currentUserData);
     }
 
-    function getFieldValue(fieldPath) {
-      const element = document.querySelector(`[data-field="${fieldPath}"]`);
-      if (!element) return '';
-      
-      if (element.type === 'checkbox') {
-        return element.checked;
-      }
-      
-      return element.value || '';
-    }
-
     async function saveUserChanges() {
       try {
         const userRef = db.collection('usuarios').doc(currentEditingUser);
         const updatedData = { ...currentUserData };
 
-        // Captura todos os campos de forma robusta
         updatedData.identificacao = {
-          nome: getFieldValue('identificacao.nome') || '',
-          dataNascimento: getFieldValue('identificacao.dataNascimento') || '',
-          contato: getFieldValue('identificacao.contato') || '',
-          peso: getFieldValue('identificacao.peso') || '',
-          contatoEmergencia: getFieldValue('identificacao.contatoEmergencia') || ''
+          nome: document.querySelector('[data-field="identificacao.nome"]')?.value || '',
+          dataNascimento: document.querySelector('[data-field="identificacao.dataNascimento"]')?.value || '',
+          contato: document.querySelector('[data-field="identificacao.contato"]')?.value || '',
+          peso: document.querySelector('[data-field="identificacao.peso"]')?.value || '',
+          contatoEmergencia: document.querySelector('[data-field="identificacao.contatoEmergencia"]')?.value || ''
         };
 
         updatedData.doencas = {
@@ -2473,34 +2424,25 @@
           diabetes: document.querySelector('[data-field="doencas.diabetes"]')?.checked || false,
           cardiopatias: document.querySelector('[data-field="doencas.cardiopatias"]')?.checked || false,
           chagas: document.querySelector('[data-field="doencas.chagas"]')?.checked || false,
-          outras: getFieldValue('doencas.outras') || ''
+          outras: document.querySelector('[data-field="doencas.outras"]')?.value || ''
         };
 
-        // Processa vacinas
-        updatedData.vacinacao = [];
-        document.querySelectorAll('#detail-vacinacao .vacina-form').forEach((form, index) => {
-          updatedData.vacinacao.push({
-            nomeVacina: getFieldValue(`vacinacao[${index}].nomeVacina`) || '',
-            dataAplicacao: getFieldValue(`vacinacao[${index}].dataAplicacao`) || '',
-            loteVacina: getFieldValue(`vacinacao[${index}].loteVacina`) || '',
-            observacoes: getFieldValue(`vacinacao[${index}].observacoes`) || ''
-          });
-        });
+        updatedData.vacinacao = Array.from(document.querySelectorAll('#detail-vacinacao .vacina-form')).map(form => ({
+          nomeVacina: form.querySelector('[data-field$=".nomeVacina"]')?.value || '',
+          dataAplicacao: form.querySelector('[data-field$=".dataAplicacao"]')?.value || '',
+          loteVacina: form.querySelector('[data-field$=".loteVacina"]')?.value || '',
+          observacoes: form.querySelector('[data-field$=".observacoes"]')?.value || ''
+        }));
 
-        // Processa medicamentos
-        updatedData.medicamentos = [];
-        document.querySelectorAll('#detail-medicamentos .medicamento-form').forEach((form, index) => {
-          updatedData.medicamentos.push({
-            nome: getFieldValue(`medicamentos[${index}].nome`) || '',
-            dose: getFieldValue(`medicamentos[${newIndex}].dose`) || '',
-            posologia: getFieldValue(`medicamentos[${newIndex}].posologia`) || '',
-            horario: getFieldValue(`medicamentos[${newIndex}].horario`) || ''
-          });
-        });
+        updatedData.medicamentos = Array.from(document.querySelectorAll('#detail-medicamentos .medicamento-form')).map(form => ({
+          nome: form.querySelector('[data-field$=".nome"]')?.value || '',
+          dose: form.querySelector('[data-field$=".dose"]')?.value || '',
+          posologia: form.querySelector('[data-field$=".posologia"]')?.value || '',
+          horario: form.querySelector('[data-field$=".horario"]')?.value || ''
+        }));
 
-        updatedData.anotacoes = getFieldValue('anotacoes') || '';
+        updatedData.anotacoes = document.querySelector('[data-field="anotacoes"]')?.value || '';
 
-        // Salva no Firestore com tratamento de erro
         await userRef.set(updatedData, { merge: true });
         
         currentUserData = updatedData;
@@ -2510,25 +2452,14 @@
       } catch (error) {
         console.error('Erro ao salvar alterações:', error);
         showPopup('Erro ao salvar alterações!', true);
-        // Tentativa de recuperação - mantém o modo de edição
-        document.getElementById('saveUserBtn').style.display = 'block';
-        document.getElementById('editUserBtn').style.display = 'none';
       }
     }
 
     async function deleteUser() {
       if(confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
         try {
-          // Primeiro deleta todos os exames do usuário
-          const examesRef = db.collection('exames').where('pacienteId', '==', currentEditingUser);
-          const querySnapshot = await examesRef.get();
-          
-          const batch = db.batch();
-          querySnapshot.forEach(doc => {
-            batch.delete(doc.ref);
-          });
-          
-          await batch.commit();
+          // Primeiro deleta todos os exames do usuário no localStorage
+          localStorage.removeItem(`exames_${currentEditingUser}`);
           
           // Depois deleta o usuário do Firestore
           await db.collection('usuarios').doc(currentEditingUser).delete();
@@ -2545,7 +2476,6 @@
 
     function closeUserDetail() {
       if(userDetailUnsubscribe) userDetailUnsubscribe();
-      if(examesUnsubscribe) examesUnsubscribe();
       document.getElementById('userDetailScreen').style.display = 'none';
       document.getElementById('medicalAccessScreen').style.display = 'block';
     }
@@ -2671,17 +2601,22 @@
           showPopup('Salvando exame...');
           
           const timestamp = new Date().toISOString();
+          const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
           
-          // Salva no Firestore
-          await db.collection('exames').add({
-            pacienteId: username,
+          exames.push({
             url: capturedPhotoUrl,
             descricao: examName,
-            data: timestamp,
-            tipo: 'imagem'
+            data: timestamp
           });
           
+          localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
+          
           showPopup('Exame salvo com sucesso!');
+          loadExames(username);
+          
+          if (document.getElementById('userDetailScreen').style.display === 'block') {
+            loadUserExames(username);
+          }
           
           capturedPhotoUrl = null;
           stopCamera();
@@ -2741,84 +2676,18 @@
     document.getElementById('editBtn').addEventListener('click', async () => {
       const username = localStorage.getItem('currentUser');
       if (username) {
-        try {
-          const doc = await db.collection('usuarios').doc(username).get();
-          if (doc.exists) {
-            const data = doc.data();
-            
-            // Preenche todos os campos do formulário
-            document.getElementById('nome').value = data.identificacao.nome || '';
-            document.getElementById('dataNascimento').value = data.identificacao.dataNascimento || '';
-            document.getElementById('peso').value = data.identificacao.peso || '';
-            document.getElementById('contato').value = data.identificacao.contato || '';
-            document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia || '';
-            document.getElementById('anotacoes').value = data.anotacoes || '';
-            
-            // Preenche doenças crônicas
-            document.getElementById('hipertensao').checked = data.doencas.hipertensao || false;
-            document.getElementById('diabetes').checked = data.doencas.diabetes || false;
-            document.getElementById('cardiopatias').checked = data.doencas.cardiopatias || false;
-            document.getElementById('chagas').checked = data.doencas.chagas || false;
-            document.getElementById('outrasDoencas').value = data.doencas.outras || '';
-            
-            // Limpa containers antes de preencher
-            document.getElementById('vacinasContainer').innerHTML = '';
-            document.getElementById('medicamentosContainer').innerHTML = '';
-            
-            // Preenche vacinas
-            if (data.vacinacao && data.vacinacao.length > 0) {
-              data.vacinacao.forEach(vacina => {
-                const newBlock = document.createElement('div');
-                newBlock.classList.add('vacina-form');
-                newBlock.innerHTML = `
-                  <div class="form-row">
-                    <label>Nome da Vacina:</label>
-                    <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nomeVacina || ''}">
-                  </div>
-                  <div class="form-row">
-                    <label>Data de Aplicação:</label>
-                    <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao || ''}">
-                  </div>
-                  <div class="form-row">
-                    <label>Lote:</label>
-                    <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.loteVacina || ''}">
-                  </div>
-                  <div class="form-row">
-                    <label>Observações:</label>
-                    <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes || ''}</textarea>
-                  </div>
-                  <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
-                `;
-                document.getElementById('vacinasContainer').appendChild(newBlock);
-              });
-            }
-            
-            // Preenche medicamentos
-            if (data.medicamentos && data.medicamentos.length > 0) {
-              data.medicamentos.forEach(med => {
-                const newBlock = document.createElement('div');
-                newBlock.classList.add('medicamento-form');
-                newBlock.innerHTML = `
-                  <label>Nome do Medicamento:</label>
-                  <input type="text" name="nomeMedicamento[]" value="${med.nome || ''}">
-                  <label>Dose:</label>
-                  <input type="text" name="doseMedicamento[]" value="${med.dose || ''}">
-                  <label>Posologia:</label>
-                  <input type="text" name="posologiaMedicamento[]" value="${med.posologia || ''}">
-                  <label>Horário:</label>
-                  <input type="time" name="horarioMedicamento[]" value="${med.horario || ''}">
-                  <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
-                `;
-                document.getElementById('medicamentosContainer').appendChild(newBlock);
-              });
-            }
-            
-            document.getElementById('reviewScreen').style.display = 'none';
-            document.getElementById('editScreen').style.display = 'block';
-          }
-        } catch (error) {
-          console.error('Erro ao carregar dados para edição:', error);
-          showPopup('Erro ao carregar dados para edição!', true);
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('nome').value = data.identificacao.nome;
+          document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
+          document.getElementById('peso').value = data.identificacao.peso;
+          document.getElementById('contato').value = data.identificacao.contato;
+          document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
+          document.getElementById('anotacoes').value = data.anotacoes;
+          
+          document.getElementById('reviewScreen').style.display = 'none';
+          document.getElementById('editScreen').style.display = 'block';
         }
       }
     });
@@ -2833,19 +2702,11 @@
             return;
           }
           
-          // Deleta todos os exames do usuário
-          const examesRef = db.collection('exames').where('pacienteId', '==', username);
-          const querySnapshot = await examesRef.get();
-          
-          const batch = db.batch();
-          querySnapshot.forEach(doc => {
-            batch.delete(doc.ref);
-          });
-          
-          await batch.commit();
-          
           // Deleta os dados do Firestore
           await db.collection('usuarios').doc(username).delete();
+          
+          // Remove os exames do localStorage
+          localStorage.removeItem(`exames_${username}`);
           
           // Remove o usuário atual do localStorage
           localStorage.removeItem('currentUser');
