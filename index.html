@@ -17,7 +17,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
-    /* Cabeçalho de contato simplificado */
+    /* Cabeçalho de contato simplificado - Modificado para manter em linha em mobile */
     .contact-header {
       position: fixed;
       top: 0;
@@ -33,13 +33,15 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 20px;
+      gap: 15px;
+      flex-wrap: wrap;
     }
     
     .contact-header a {
       color: white;
       text-decoration: none;
       transition: opacity 0.2s;
+      white-space: nowrap;
     }
     
     .contact-header a:hover {
@@ -47,13 +49,23 @@
       text-decoration: underline;
     }
 
-    /* Estilo para mobile */
+    .contact-separator {
+      display: inline-block;
+    }
+
+    /* Estilo para mobile - Modificado para manter em linha */
     @media (max-width: 600px) {
       .contact-header {
         font-size: 12px;
-        padding: 8px;
-        gap: 10px;
-        flex-direction: column;
+        padding: 8px 5px;
+        gap: 8px;
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      
+      .contact-separator {
+        display: inline-block;
       }
     }
 
@@ -289,7 +301,7 @@
         display: block;
       }
       body {
-        padding-top: 100px;
+        padding-top: 80px;
       }
     }
     .review-buttons {
@@ -612,8 +624,6 @@
       color: #666;
       padding: 20px;
     }
-
-    /* Estilos melhorados para a seção de Exames */
     .exames-container {
       margin-top: 20px;
       border: 1px solid #e9ecef;
@@ -751,8 +761,6 @@
       align-items: center;
       font-size: 18px;
     }
-
-    /* Botões de ação melhorados */
     .action-buttons {
       display: flex;
       flex-wrap: wrap;
@@ -816,7 +824,6 @@
       background-color: #c82333;
     }
     
-    /* Modal de upload/tirar foto */
     .exam-modal {
       position: fixed;
       top: 50%;
@@ -866,8 +873,6 @@
         width: 100%;
       }
     }
-
-    /* NOVAS REGRAS PARA CENTRALIZAÇÃO */
     #medicalLoginScreen h2,
     #medicalAccessScreen h2,
     #qrCodeScreen h2 {
@@ -890,7 +895,6 @@
       text-align: center;
     }
 
-    /* Mantendo o alinhamento original dos outros elementos */
     #medicalLoginScreen,
     #medicalAccessScreen,
     #qrCodeScreen {
@@ -918,14 +922,14 @@
   </style>
 </head>
 <body>
-  <!-- Cabeçalho de contato simplificado -->
+  <!-- Cabeçalho de contato simplificado - Modificado para manter em linha em mobile -->
   <div class="contact-header">
     <a href="https://www.instagram.com/camillaribeirogeriatra" target="_blank" title="Acessar Instagram">
-      @camillaribeirogeriatra
+      <i class="fab fa-instagram"></i> @camillaribeirogeriatra
     </a>
-    <span>|</span>
+    <span class="contact-separator">|</span>
     <a href="https://wa.me/5538999037071" title="Enviar mensagem no WhatsApp">
-      Tel. (38) 99903-7071
+      <i class="fab fa-whatsapp"></i> (38) 99903-7071
     </a>
   </div>
 
@@ -1083,7 +1087,9 @@
       <button id="monitoramentoBtn" class="btn">Monitoramento</button>
       <button id="medicalAccessBtn" class="btn">Acesso Médico</button>
       <button id="editBtn" class="btn">Editar</button>
-      <button id="deleteAllBtn" class="btn">Excluir todos os dados</button>
+      <button id="deleteAllBtn" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Excluir todos os dados
+      </button>
     </div>
   </div>
 
@@ -2513,10 +2519,14 @@
       }
     });
 
-    document.getElementById('deleteAllBtn').addEventListener('click', async () => {
-      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
+    document.getElementById('deleteAllBtn').addEventListener('click', async function() {
+      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?\nEsta ação não pode ser desfeita!')) {
         try {
           const username = localStorage.getItem('currentUser');
+          if (!username) {
+            showPopup('Nenhum usuário encontrado para excluir!', true);
+            return;
+          }
           
           // Primeiro deleta todos os exames
           const examesRef = db.collection('usuarios').doc(username).collection('exames');
@@ -2535,10 +2545,16 @@
           // Finalmente deleta o usuário
           await db.collection('usuarios').doc(username).delete();
           
+          // Limpa o localStorage e redireciona para a tela inicial
           localStorage.removeItem('currentUser');
           showPopup('Todos os dados foram excluídos com sucesso!');
-          document.getElementById('reviewScreen').style.display = 'none';
+          
+          // Esconde todas as telas e mostra apenas a tela inicial
+          document.querySelectorAll('.container, #medicalLoginScreen, #medicalAccessScreen, #userDetailScreen, #qrCodeScreen').forEach(el => {
+            el.style.display = 'none';
+          });
           document.getElementById('homeScreen').style.display = 'block';
+          
         } catch (error) {
           console.error('Erro ao excluir dados:', error);
           showPopup('Erro ao excluir dados!', true);
