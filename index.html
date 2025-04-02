@@ -38,34 +38,22 @@
     .contact-header a {
       color: white;
       text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: opacity 0.2s;
+      padding: 8px 12px;
+      border-radius: 20px;
+      transition: all 0.2s;
+    }
+    
+    .contact-header a.whatsapp {
+      background-color: #25D366;
+    }
+    
+    .contact-header a.instagram {
+      background-color: #E1306C;
     }
     
     .contact-header a:hover {
-      opacity: 0.8;
-    }
-    
-    .contact-header .phone-icon {
-      background-color: #25D366;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .contact-header .instagram-icon {
-      background-color: #E1306C;
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      opacity: 0.9;
+      transform: translateY(-1px);
     }
 
     /* Estilo para mobile */
@@ -73,19 +61,14 @@
       .contact-header {
         flex-direction: column;
         padding: 8px;
-        gap: 5px;
-      }
-      
-      .contact-header a {
+        gap: 8px;
         font-size: 12px;
       }
       
-      .contact-header .phone-text::before {
-        content: "Telefone: ";
-      }
-      
-      .contact-header .instagram-text::before {
-        content: "Instagram: ";
+      .contact-header a {
+        width: 100%;
+        text-align: center;
+        padding: 6px;
       }
     }
 
@@ -93,7 +76,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       font-size: 16px;
       margin: 0;
-      padding-top: 50px;
+      padding-top: 60px;
       background-color: #f8f9fa;
       color: #333;
     }
@@ -282,9 +265,11 @@
     @keyframes fadeIn {
       from {
         opacity: 0;
+        transform: translateY(-10px);
       }
       to {
         opacity: 1;
+        transform: translateY(0);
       }
     }
     @media (max-width: 600px) {
@@ -318,26 +303,8 @@
         margin: 20px auto;
         display: block;
       }
-      .contact-header {
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 8px 10px;
-        font-size: 12px;
-      }
-      .contact-header a {
-        font-size: 0;
-      }
-      .contact-header .phone-icon,
-      .contact-header .instagram-icon {
-        width: 20px;
-        height: 20px;
-      }
-      .contact-header .phone-icon i,
-      .contact-header .instagram-icon i {
-        font-size: 10px;
-      }
       body {
-        padding-top: 60px;
+        padding-top: 100px;
       }
     }
     .review-buttons {
@@ -814,20 +781,13 @@
   </style>
 </head>
 <body>
-  <!-- Cabeçalho de contato fixo no topo -->
+  <!-- Cabeçalho de contato fixo no topo - Versão modificada -->
   <div class="contact-header" id="contactHeader">
-    <a href="https://wa.me/5538999037071" class="phone-link" title="Enviar mensagem no WhatsApp">
-      <div class="phone-icon">
-        <i class="fas fa-phone-alt" style="font-size: 12px;"></i>
-      </div>
-      <span class="phone-text">(38) 99903-7071</span>
+    <a href="https://www.instagram.com/camillaribeirogeriatra" target="_blank" class="instagram" title="Acessar Instagram">
+      @camillaribeirogeriatra
     </a>
-    
-    <a href="https://www.instagram.com/camillaribeirogeriatra" target="_blank" class="instagram-link" title="Acessar Instagram">
-      <div class="instagram-icon">
-        <i class="fab fa-instagram" style="font-size: 12px;"></i>
-      </div>
-      <span class="instagram-text">@camillaribeirogeriatra</span>
+    <a href="https://wa.me/5538999037071" class="whatsapp" title="Enviar mensagem no WhatsApp">
+      Tel. (38) 99903-7071
     </a>
   </div>
 
@@ -1235,99 +1195,102 @@
     }
 
     // Função para tirar foto do exame
-    function takeExamPhoto() {
+    async function takeExamPhoto() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         alert('Seu navegador não suporta acesso à câmera ou não tem permissão.');
         return;
       }
       
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          const video = document.createElement('video');
-          video.srcObject = stream;
-          video.play();
-          
-          const canvas = document.createElement('canvas');
-          const context = canvas.getContext('2d');
-          
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+        
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        return new Promise((resolve) => {
           video.addEventListener('canplay', () => {
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
             const imageData = canvas.toDataURL('image/jpeg');
-            uploadExamImage(imageData);
-            
-            // Parar a stream da câmera
             stream.getTracks().forEach(track => track.stop());
+            resolve(imageData);
           });
-        })
-        .catch(error => {
-          console.error('Erro ao acessar câmera:', error);
-          showPopup('Erro ao acessar câmera!', true);
         });
+      } catch (error) {
+        console.error('Erro ao acessar câmera:', error);
+        showPopup('Erro ao acessar câmera!', true);
+        return null;
+      }
     }
 
-    // Função para fazer upload de imagem de exame
-    function uploadExamImage(imageData) {
+    // Função para fazer upload de exame para o Firebase
+    async function uploadExamToFirebase(imageData, description) {
       const username = localStorage.getItem('currentUser');
-      if (!username) return;
+      if (!username) return null;
       
-      const descricao = prompt('Descreva o exame (opcional):');
-      const timestamp = new Date().toISOString();
-      
-      // Gera um nome único para o arquivo
-      const fileName = `exames/${username}/${Date.now()}.jpg`;
-      const storageRef = storage.ref(fileName);
-      
-      // Converte a imagem base64 para blob
-      fetch(imageData)
-        .then(res => res.blob())
-        .then(blob => {
-          // Faz upload para o Firebase Storage
-          const uploadTask = storageRef.put(blob);
-          
-          uploadTask.on('state_changed',
-            null,
-            error => {
-              console.error('Erro no upload:', error);
-              showPopup('Erro ao enviar exame!', true);
-            },
-            () => {
-              // Upload completo, obtém a URL e salva no Firestore
-              uploadTask.snapshot.ref.getDownloadURL().then(url => {
-                db.collection('usuarios').doc(username).collection('exames').add({
-                  url: url,
-                  descricao: descricao || '',
-                  data: timestamp
-                })
-                .then(() => {
-                  showPopup('Exame salvo com sucesso!');
-                  loadExames(username);
-                })
-                .catch(error => {
-                  console.error('Erro ao salvar exame:', error);
-                  showPopup('Erro ao salvar exame!', true);
-                });
-              });
-            }
-          );
+      try {
+        const timestamp = new Date().toISOString();
+        const fileName = `exames/${username}/${Date.now()}.jpg`;
+        const storageRef = storage.ref(fileName);
+        
+        // Converte base64 para blob
+        const blob = await fetch(imageData).then(res => res.blob());
+        
+        // Faz upload para o Firebase Storage
+        const snapshot = await storageRef.put(blob);
+        const downloadURL = await snapshot.ref.getDownloadURL();
+        
+        // Salva metadados no Firestore
+        await db.collection('usuarios').doc(username).collection('exames').add({
+          url: downloadURL,
+          descricao: description || '',
+          data: timestamp
         });
+        
+        return true;
+      } catch (error) {
+        console.error('Erro no upload do exame:', error);
+        return false;
+      }
     }
 
-    // Função para selecionar arquivo para upload
-    function selectExamFile() {
-      document.getElementById('examFileInput').click();
+    // Função para lidar com a captura de foto
+    async function handleTakePhoto() {
+      const imageData = await takeExamPhoto();
+      if (!imageData) return;
+      
+      const description = prompt('Descreva o exame (opcional):');
+      const success = await uploadExamToFirebase(imageData, description);
+      
+      if (success) {
+        showPopup('Exame salvo com sucesso!');
+        loadExames(localStorage.getItem('currentUser'));
+      } else {
+        showPopup('Erro ao salvar exame!', true);
+      }
     }
 
-    // Função para lidar com o upload de arquivo selecionado
-    function handleExamFileUpload(event) {
+    // Função para lidar com upload de arquivo
+    async function handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
       
       const reader = new FileReader();
-      reader.onload = (e) => {
-        uploadExamImage(e.target.result);
+      reader.onload = async (e) => {
+        const description = prompt('Descreva o exame (opcional):');
+        const success = await uploadExamToFirebase(e.target.result, description);
+        
+        if (success) {
+          showPopup('Exame salvo com sucesso!');
+          loadExames(localStorage.getItem('currentUser'));
+        } else {
+          showPopup('Erro ao salvar exame!', true);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -2343,9 +2306,11 @@
       }
       
       // Configura os botões de exames
-      document.getElementById('takeExamPhotoBtn').addEventListener('click', takeExamPhoto);
-      document.getElementById('uploadExamPhotoBtn').addEventListener('click', selectExamFile);
-      document.getElementById('examFileInput').addEventListener('change', handleExamFileUpload);
+      document.getElementById('takeExamPhotoBtn').addEventListener('click', handleTakePhoto);
+      document.getElementById('uploadExamPhotoBtn').addEventListener('click', () => {
+        document.getElementById('examFileInput').click();
+      });
+      document.getElementById('examFileInput').addEventListener('change', handleFileUpload);
     });
 
     async function loadUserData(username) {
