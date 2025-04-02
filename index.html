@@ -1399,7 +1399,6 @@
       });
     }
 
-    // Funções para gerenciar exames (MODIFICADAS para usar localStorage)
     function formatDate(dateString) {
       const date = new Date(dateString);
       return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
@@ -1407,16 +1406,26 @@
 
     async function loadExames(username) {
       try {
-        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
+        const examesRef = db.collection('exames').where('pacienteId', '==', username);
+        const querySnapshot = await examesRef.get();
+        
         const examesList = document.getElementById('examesList');
         examesList.innerHTML = '';
         
-        if (exames.length === 0) {
+        if (querySnapshot.empty) {
           examesList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado ainda.</p>';
           return;
         }
         
-        exames.forEach((exame, index) => {
+        const exames = [];
+        querySnapshot.forEach(doc => {
+          exames.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordena por data (mais recente primeiro)
+        exames.sort((a, b) => new Date(b.data) - new Date(a.data));
+        
+        exames.forEach(exame => {
           const exameItem = document.createElement('div');
           exameItem.className = 'exame-item';
           exameItem.innerHTML = `
@@ -1429,7 +1438,7 @@
               </div>
             </div>
             <div class="exame-actions">
-              <button class="exame-action-btn" onclick="deleteExame('${username}', ${index})" title="Excluir exame">
+              <button class="exame-action-btn" onclick="deleteExame('${exame.id}')" title="Excluir exame">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -1453,20 +1462,22 @@
       };
     }
 
-    async function deleteExame(username, index) {
+    async function deleteExame(exameId) {
       if(!confirm('Tem certeza que deseja excluir este exame permanentemente?')) return;
       
       try {
-        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
-        exames.splice(index, 1);
-        localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
-        
+        await db.collection('exames').doc(exameId).delete();
         showPopup('Exame excluído com sucesso!');
-        loadExames(username);
+        
+        // Atualiza a lista de exames na tela do paciente
+        const username = localStorage.getItem('currentUser');
+        if (username) {
+          loadExames(username);
+        }
         
         // Atualiza também na tela de detalhes do médico, se estiver aberta
         if (document.getElementById('userDetailScreen').style.display === 'block') {
-          loadUserExames(username);
+          loadUserExames(currentEditingUser);
         }
       } catch (error) {
         console.error('Erro ao excluir exame:', error);
@@ -1567,17 +1578,18 @@
         showPopup('Salvando exame...');
         
         const timestamp = new Date().toISOString();
-        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
         
-        exames.push({
+        // Salva no Firestore
+        await db.collection('exames').add({
+          pacienteId: username,
           url: imageData,
           descricao: description || '',
           data: timestamp
         });
         
-        localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
-        
         showPopup('Exame salvo com sucesso!');
+        
+        // Atualiza a lista de exames
         loadExames(username);
         
         // Atualiza também na tela de detalhes do médico, se estiver aberta
@@ -1592,14 +1604,24 @@
 
     async function loadUserExames(username) {
       try {
-        const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
+        const examesRef = db.collection('exames').where('pacienteId', '==', username);
+        const querySnapshot = await examesRef.get();
+        
         const examesContainer = document.createElement('div');
         examesContainer.className = 'exames-container';
         
-        if (exames.length === 0) {
+        if (querySnapshot.empty) {
           examesContainer.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado para este paciente.</p>';
         } else {
-          exames.forEach((exame, index) => {
+          const exames = [];
+          querySnapshot.forEach(doc => {
+            exames.push({ id: doc.id, ...doc.data() });
+          });
+          
+          // Ordena por data (mais recente primeiro)
+          exames.sort((a, b) => new Date(b.data) - new Date(a.data));
+          
+          exames.forEach(exame => {
             const exameItem = document.createElement('div');
             exameItem.className = 'exame-item';
             exameItem.innerHTML = `
@@ -1612,7 +1634,7 @@
                 </div>
               </div>
               <div class="exame-actions">
-                <button class="exame-action-btn" onclick="deleteExame('${username}', ${index})" title="Excluir exame">
+                <button class="exame-action-btn" onclick="deleteExame('${exame.id}')" title="Excluir exame">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -1775,7 +1797,7 @@
         modal.style.display = 'none';
       }
 
-      document.getElementById('closeScannerBtn').addEventListener('click', stopScanner);
+      document.getElementById('closeScannerBtn').addEventListener('click', stopCamera);
     }
 
     function fillFormFromQR(data) {
@@ -2458,8 +2480,16 @@
     async function deleteUser() {
       if(confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
         try {
-          // Primeiro deleta todos os exames do usuário no localStorage
-          localStorage.removeItem(`exames_${currentEditingUser}`);
+          // Primeiro deleta todos os exames do usuário
+          const examesRef = db.collection('exames').where('pacienteId', '==', currentEditingUser);
+          const querySnapshot = await examesRef.get();
+          
+          const batch = db.batch();
+          querySnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          await batch.commit();
           
           // Depois deleta o usuário do Firestore
           await db.collection('usuarios').doc(currentEditingUser).delete();
@@ -2601,19 +2631,21 @@
           showPopup('Salvando exame...');
           
           const timestamp = new Date().toISOString();
-          const exames = JSON.parse(localStorage.getItem(`exames_${username}`)) || [];
           
-          exames.push({
+          // Salva no Firestore
+          await db.collection('exames').add({
+            pacienteId: username,
             url: capturedPhotoUrl,
             descricao: examName,
             data: timestamp
           });
           
-          localStorage.setItem(`exames_${username}`, JSON.stringify(exames));
-          
           showPopup('Exame salvo com sucesso!');
+          
+          // Atualiza a lista de exames
           loadExames(username);
           
+          // Atualiza também na tela de detalhes do médico, se estiver aberta
           if (document.getElementById('userDetailScreen').style.display === 'block') {
             loadUserExames(username);
           }
@@ -2702,11 +2734,19 @@
             return;
           }
           
+          // Deleta todos os exames do usuário
+          const examesRef = db.collection('exames').where('pacienteId', '==', username);
+          const querySnapshot = await examesRef.get();
+          
+          const batch = db.batch();
+          querySnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          
+          await batch.commit();
+          
           // Deleta os dados do Firestore
           await db.collection('usuarios').doc(username).delete();
-          
-          // Remove os exames do localStorage
-          localStorage.removeItem(`exames_${username}`);
           
           // Remove o usuário atual do localStorage
           localStorage.removeItem('currentUser');
