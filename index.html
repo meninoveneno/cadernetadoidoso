@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="https://i.imgur.com/BzIGz3X.png">
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-storage-compat.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
@@ -65,6 +66,27 @@
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    /* Estilo para mobile */
+    @media (max-width: 600px) {
+      .contact-header {
+        flex-direction: column;
+        padding: 8px;
+        gap: 5px;
+      }
+      
+      .contact-header a {
+        font-size: 12px;
+      }
+      
+      .contact-header .phone-text::before {
+        content: "Telefone: ";
+      }
+      
+      .contact-header .instagram-text::before {
+        content: "Instagram: ";
+      }
     }
 
     body {
@@ -639,6 +661,104 @@
       padding: 20px;
     }
 
+    /* Estilos para a seção de Exames */
+    .exames-container {
+      margin-top: 20px;
+      border: 1px solid #e9ecef;
+      padding: 15px;
+      border-radius: 8px;
+      background-color: #f8f9fa;
+    }
+    
+    .exames-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .exames-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #4D6057;
+    }
+    
+    .exames-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .exame-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      margin: 10px 0;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .exame-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .exame-thumbnail {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .exame-date {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .exame-actions {
+      display: flex;
+      gap: 5px;
+    }
+    
+    .exame-preview {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 10px 0;
+      display: none;
+    }
+    
+    #examePreviewModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    #examePreviewImage {
+      max-width: 90%;
+      max-height: 90%;
+    }
+    
+    #closePreviewBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
     /* NOVAS REGRAS PARA CENTRALIZAÇÃO */
     #medicalLoginScreen h2,
     #medicalAccessScreen h2,
@@ -685,6 +805,10 @@
       }
       .medical-search {
         width: 90%;
+      }
+      
+      .exames-actions {
+        flex-direction: column;
       }
     }
   </style>
@@ -839,6 +963,26 @@
       <h3>Recomendações/Anotações Médicas</h3>
       <div id="reviewAnotacoes"></div>
     </div>
+    
+    <!-- Nova seção de Exames -->
+    <div class="review-container">
+      <h3>Exames</h3>
+      <div class="exames-container">
+        <div class="exames-header">
+          <div class="exames-title">Documentos e Exames</div>
+          <div class="exames-actions">
+            <button id="takeExamPhotoBtn" class="btn">
+              <i class="fas fa-camera"></i> Tirar Foto
+            </button>
+            <button id="uploadExamPhotoBtn" class="btn">
+              <i class="fas fa-upload"></i> Upload
+            </button>
+          </div>
+        </div>
+        <div id="examesList"></div>
+      </div>
+    </div>
+    
     <div class="review-buttons">
       <button id="exportBtn" class="btn">Exportar</button>
       <button id="monitoramentoBtn" class="btn">Monitoramento</button>
@@ -902,6 +1046,7 @@
       <div class="detail-tab" data-tab="detail-medicamentos">Medicamentos</div>
       <div class="detail-tab" data-tab="detail-anotacoes">Anotações</div>
       <div class="detail-tab" data-tab="detail-monitoramento">Monitoramento</div>
+      <div class="detail-tab" data-tab="detail-exames">Exames</div>
     </div>
     
     <div class="scrollable-detail">
@@ -937,6 +1082,15 @@
     <video id="qrScannerVideo" playsinline></video>
     <button id="closeScannerBtn" class="btn">Fechar Scanner</button>
   </div>
+  
+  <!-- Modal para visualização de exames -->
+  <div id="examePreviewModal">
+    <button id="closePreviewBtn"><i class="fas fa-times"></i></button>
+    <img id="examePreviewImage" src="" alt="Visualização do Exame">
+  </div>
+  
+  <!-- Input oculto para upload de arquivos -->
+  <input type="file" id="examFileInput" accept="image/*" style="display: none;">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
@@ -974,6 +1128,7 @@
 
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+    const storage = firebase.storage();
 
     let currentDetailTab = 'detail-identificacao';
     let reviewUnsubscribe = null;
@@ -982,6 +1137,7 @@
     let currentEditingUser = null;
     let isEditing = false;
     let currentUserData = null;
+    let examesUnsubscribe = null;
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -999,6 +1155,181 @@
       }, error => {
         console.error('Erro na escuta em tempo real:', error);
       });
+    }
+
+    // Função para carregar exames do paciente
+    async function loadExames(username) {
+      try {
+        const examesRef = db.collection('usuarios').doc(username).collection('exames');
+        const snapshot = await examesRef.orderBy('data', 'desc').get();
+        
+        const examesList = document.getElementById('examesList');
+        examesList.innerHTML = '';
+        
+        if (snapshot.empty) {
+          examesList.innerHTML = '<p>Nenhum exame cadastrado ainda.</p>';
+          return;
+        }
+        
+        snapshot.forEach(doc => {
+          const exame = doc.data();
+          const exameItem = document.createElement('div');
+          exameItem.className = 'exame-item';
+          exameItem.innerHTML = `
+            <div class="exame-info">
+              <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                   onclick="showExamePreview('${exame.url}')">
+              <div>
+                <div>${exame.descricao || 'Exame médico'}</div>
+                <div class="exame-date">${new Date(exame.data).toLocaleDateString()}</div>
+              </div>
+            </div>
+            <div class="exame-actions">
+              <button class="delete-btn" onclick="deleteExame('${username}', '${doc.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          `;
+          examesList.appendChild(exameItem);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar exames:', error);
+        showPopup('Erro ao carregar exames!', true);
+      }
+    }
+
+    // Função para mostrar preview do exame
+    function showExamePreview(imageUrl) {
+      const modal = document.getElementById('examePreviewModal');
+      const img = document.getElementById('examePreviewImage');
+      img.src = imageUrl;
+      modal.style.display = 'flex';
+      
+      document.getElementById('closePreviewBtn').onclick = () => {
+        modal.style.display = 'none';
+      };
+    }
+
+    // Função para deletar exame
+    async function deleteExame(username, exameId) {
+      if(!confirm('Tem certeza que deseja excluir este exame permanentemente?')) return;
+      
+      try {
+        // Primeiro deleta o arquivo no Storage
+        const exameDoc = await db.collection('usuarios').doc(username).collection('exames').doc(exameId).get();
+        if(exameDoc.exists) {
+          const exameData = exameDoc.data();
+          const fileRef = storage.refFromURL(exameData.url);
+          await fileRef.delete();
+        }
+        
+        // Depois deleta o documento no Firestore
+        await db.collection('usuarios').doc(username).collection('exames').doc(exameId).delete();
+        
+        showPopup('Exame excluído com sucesso!');
+        loadExames(username);
+      } catch (error) {
+        console.error('Erro ao excluir exame:', error);
+        showPopup('Erro ao excluir exame!', true);
+      }
+    }
+
+    // Função para tirar foto do exame
+    function takeExamPhoto() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Seu navegador não suporta acesso à câmera ou não tem permissão.');
+        return;
+      }
+      
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          const video = document.createElement('video');
+          video.srcObject = stream;
+          video.play();
+          
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          
+          video.addEventListener('canplay', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            const imageData = canvas.toDataURL('image/jpeg');
+            uploadExamImage(imageData);
+            
+            // Parar a stream da câmera
+            stream.getTracks().forEach(track => track.stop());
+          });
+        })
+        .catch(error => {
+          console.error('Erro ao acessar câmera:', error);
+          showPopup('Erro ao acessar câmera!', true);
+        });
+    }
+
+    // Função para fazer upload de imagem de exame
+    function uploadExamImage(imageData) {
+      const username = localStorage.getItem('currentUser');
+      if (!username) return;
+      
+      const descricao = prompt('Descreva o exame (opcional):');
+      const timestamp = new Date().toISOString();
+      
+      // Gera um nome único para o arquivo
+      const fileName = `exames/${username}/${Date.now()}.jpg`;
+      const storageRef = storage.ref(fileName);
+      
+      // Converte a imagem base64 para blob
+      fetch(imageData)
+        .then(res => res.blob())
+        .then(blob => {
+          // Faz upload para o Firebase Storage
+          const uploadTask = storageRef.put(blob);
+          
+          uploadTask.on('state_changed',
+            null,
+            error => {
+              console.error('Erro no upload:', error);
+              showPopup('Erro ao enviar exame!', true);
+            },
+            () => {
+              // Upload completo, obtém a URL e salva no Firestore
+              uploadTask.snapshot.ref.getDownloadURL().then(url => {
+                db.collection('usuarios').doc(username).collection('exames').add({
+                  url: url,
+                  descricao: descricao || '',
+                  data: timestamp
+                })
+                .then(() => {
+                  showPopup('Exame salvo com sucesso!');
+                  loadExames(username);
+                })
+                .catch(error => {
+                  console.error('Erro ao salvar exame:', error);
+                  showPopup('Erro ao salvar exame!', true);
+                });
+              });
+            }
+          );
+        });
+    }
+
+    // Função para selecionar arquivo para upload
+    function selectExamFile() {
+      document.getElementById('examFileInput').click();
+    }
+
+    // Função para lidar com o upload de arquivo selecionado
+    function handleExamFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadExamImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
 
     document.getElementById('startBtn').addEventListener('click', () => {
@@ -1269,6 +1600,9 @@
         document.getElementById('editScreen').style.display = 'none';
         document.getElementById('reviewScreen').style.display = 'block';
         
+        // Carrega os exames do paciente
+        loadExames(username);
+        
         showPopup('Dados salvos com sucesso!');
       } catch (error) {
         console.error('Erro ao salvar dados:', error);
@@ -1506,10 +1840,68 @@
               renderUserDetail(currentUserData);
             }
           });
+          
+          // Carrega os exames do paciente
+          loadUserExames(userId);
         }
       } catch (error) {
         console.error('Erro ao carregar detalhes:', error);
         showPopup('Erro ao carregar dados do paciente!', true);
+      }
+    }
+    
+    // Função para carregar exames na tela de detalhes do médico
+    async function loadUserExames(username) {
+      try {
+        const examesRef = db.collection('usuarios').doc(username).collection('exames');
+        const snapshot = await examesRef.orderBy('data', 'desc').get();
+        
+        const examesContainer = document.createElement('div');
+        examesContainer.className = 'exames-container';
+        
+        if (snapshot.empty) {
+          examesContainer.innerHTML = '<p>Nenhum exame cadastrado para este paciente.</p>';
+        } else {
+          snapshot.forEach(doc => {
+            const exame = doc.data();
+            const exameItem = document.createElement('div');
+            exameItem.className = 'exame-item';
+            exameItem.innerHTML = `
+              <div class="exame-info">
+                <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                     onclick="showExamePreview('${exame.url}')">
+                <div>
+                  <div>${exame.descricao || 'Exame médico'}</div>
+                  <div class="exame-date">${new Date(exame.data).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <div class="exame-actions">
+                <button class="delete-btn" onclick="deleteExame('${username}', '${doc.id}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            `;
+            examesContainer.appendChild(exameItem);
+          });
+        }
+        
+        // Adiciona a seção de exames ao conteúdo de detalhes
+        const detailContent = document.getElementById('userDetailContent');
+        const examesTab = document.createElement('div');
+        examesTab.className = 'detail-tab-content';
+        examesTab.id = 'detail-exames';
+        examesTab.appendChild(examesContainer);
+        
+        // Verifica se já existe a aba de exames
+        const existingExamesTab = document.getElementById('detail-exames');
+        if (existingExamesTab) {
+          existingExamesTab.replaceWith(examesTab);
+        } else {
+          detailContent.appendChild(examesTab);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar exames:', error);
+        showPopup('Erro ao carregar exames do paciente!', true);
       }
     }
 
@@ -1813,7 +2205,23 @@
     async function deleteUser() {
       if(confirm('Tem certeza que deseja excluir este usuário permanentemente?')) {
         try {
+          // Primeiro deleta todos os exames do usuário
+          const examesRef = db.collection('usuarios').doc(currentEditingUser).collection('exames');
+          const snapshot = await examesRef.get();
+          
+          const batch = db.batch();
+          snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          
+          // Depois deleta os arquivos no Storage
+          const listResult = await storage.ref(`exames/${currentEditingUser}`).listAll();
+          await Promise.all(listResult.items.map(item => item.delete()));
+          
+          // Finalmente deleta o usuário
           await db.collection('usuarios').doc(currentEditingUser).delete();
+          
           showPopup('Usuário excluído com sucesso!');
           closeUserDetail();
           loadMedicalAccess();
@@ -1928,8 +2336,16 @@
           updateReviewScreen(data);
           document.getElementById('homeScreen').style.display = 'none';
           document.getElementById('reviewScreen').style.display = 'block';
+          
+          // Carrega os exames do paciente
+          loadExames(username);
         }
       }
+      
+      // Configura os botões de exames
+      document.getElementById('takeExamPhotoBtn').addEventListener('click', takeExamPhoto);
+      document.getElementById('uploadExamPhotoBtn').addEventListener('click', selectExamFile);
+      document.getElementById('examFileInput').addEventListener('change', handleExamFileUpload);
     });
 
     async function loadUserData(username) {
@@ -1976,7 +2392,24 @@
       if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?')) {
         try {
           const username = localStorage.getItem('currentUser');
+          
+          // Primeiro deleta todos os exames
+          const examesRef = db.collection('usuarios').doc(username).collection('exames');
+          const snapshot = await examesRef.get();
+          
+          const batch = db.batch();
+          snapshot.forEach(doc => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          
+          // Depois deleta os arquivos no Storage
+          const listResult = await storage.ref(`exames/${username}`).listAll();
+          await Promise.all(listResult.items.map(item => item.delete()));
+          
+          // Finalmente deleta o usuário
           await db.collection('usuarios').doc(username).delete();
+          
           localStorage.removeItem('currentUser');
           showPopup('Todos os dados foram excluídos com sucesso!');
           document.getElementById('reviewScreen').style.display = 'none';
