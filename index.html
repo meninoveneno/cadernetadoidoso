@@ -950,6 +950,18 @@
       margin-top: 15px;
     }
     
+    /* Estilos para o modal de prévia da foto */
+    #photoPreviewModal {
+      z-index: 1002;
+    }
+    
+    #photoPreviewModal img {
+      max-height: 50vh;
+      border-radius: 8px;
+      border: 2px solid #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    
     @media (max-width: 600px) {
       .exame-info {
         gap: 10px;
@@ -1302,6 +1314,20 @@
     </button>
   </div>
 
+  <!-- Modal de Prévia da Foto -->
+  <div id="photoPreviewModal" class="exam-modal" style="display: none;">
+    <h3>Prévia do Exame</h3>
+    <img id="previewImage" src="" alt="Prévia do Exame" style="max-width: 100%; margin: 15px 0;">
+    <div class="exam-modal-actions">
+      <button id="retakePhotoBtn" class="action-btn btn-danger">
+        <i class="fas fa-sync-alt"></i> Tirar Novamente
+      </button>
+      <button id="confirmPhotoBtn" class="action-btn btn-primary">
+        <i class="fas fa-check"></i> Confirmar
+      </button>
+    </div>
+  </div>
+
   <!-- Input oculto para upload de arquivos -->
   <input type="file" id="examFileInput" accept="image/*" style="display: none;">
 
@@ -1541,8 +1567,25 @@
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
       capturedPhotoUrl = canvas.toDataURL('image/jpeg', 0.8);
+      showPhotoPreview(capturedPhotoUrl);
+    }
+    
+    function showPhotoPreview(imageUrl) {
+      const previewModal = document.getElementById('photoPreviewModal');
+      const previewImage = document.getElementById('previewImage');
+      previewImage.src = imageUrl;
+      previewModal.style.display = 'block';
+    }
+    
+    function confirmPhoto() {
+      document.getElementById('photoPreviewModal').style.display = 'none';
       document.getElementById('examNameDialog').style.display = 'block';
       document.getElementById('examNameInput').focus();
+    }
+    
+    function retakePhoto() {
+      document.getElementById('photoPreviewModal').style.display = 'none';
+      startCamera(usingFrontCamera ? 'user' : 'environment');
     }
     
     function flipCamera() {
@@ -1798,7 +1841,7 @@
         modal.style.display = 'none';
       }
 
-      document.getElementById('closeScannerBtn').addEventListener('click', stopCamera);
+      document.getElementById('closeScannerBtn').addEventListener('click', stopScanner);
     }
 
     function fillFormFromQR(data) {
@@ -2363,6 +2406,11 @@
           const targetTab = tab.dataset.tab;
           document.getElementById(targetTab).classList.add('active');
           currentDetailTab = targetTab;
+          
+          // Carrega os exames quando a aba é clicada
+          if (targetTab === 'detail-exames') {
+            loadUserExames(currentEditingUser);
+          }
         });
       });
 
@@ -2682,6 +2730,10 @@
         }
       }
     });
+
+    // Event listeners para o modal de prévia da foto
+    document.getElementById('retakePhotoBtn').addEventListener('click', retakePhoto);
+    document.getElementById('confirmPhotoBtn').addEventListener('click', confirmPhoto);
 
     document.addEventListener('DOMContentLoaded', async () => {
       const username = localStorage.getItem('currentUser');
