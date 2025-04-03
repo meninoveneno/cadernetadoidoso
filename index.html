@@ -2653,46 +2653,97 @@
           }
         }
         
-        const now = new Date();
-        let alarmesConfigurados = 0;
+        // Registrar o Service Worker se ainda não estiver registrado
+        if ('serviceWorker' in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('Service Worker registrado com sucesso:', registration);
+          } catch (error) {
+            console.error('Falha ao registrar Service Worker:', error);
+            showPopup('Erro ao configurar alarmes!', true);
+            return;
+          }
+        }
         
-        medicamentos.forEach(med => {
-          if (med.horario) {
-            const [hours, minutes] = med.horario.split(':');
-            const alarmTime = new Date();
-            alarmTime.setHours(hours);
-            alarmTime.setMinutes(minutes);
-            
-            if (alarmTime < now) {
-              alarmTime.setDate(alarmTime.getDate() + 1);
-            }
-            
-            const timeUntilAlarm = alarmTime.getTime() - now.getTime();
-            
-            if (timeUntilAlarm > 0) {
-              setTimeout(() => {
-                // Notificação para navegador
-                if ('Notification' in window && Notification.permission === 'granted') {
-                  new Notification(`Alarme: ${med.nome}`, {
-                    body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                    icon: 'https://i.imgur.com/BzIGz3X.png'
+        // Armazenar os alarmes no IndexedDB
+        const dbName = 'MedicationAlarmsDB';
+        const dbVersion = 1;
+        
+        const request = indexedDB.open(dbName, dbVersion);
+        
+        request.onerror = (event) => {
+          console.error('Erro ao abrir o banco de dados:', event.target.error);
+          showPopup('Erro ao configurar alarmes!', true);
+        };
+        
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('alarms')) {
+            db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
+          }
+        };
+        
+        request.onsuccess = (event) => {
+          const db = event.target.result;
+          const transaction = db.transaction(['alarms'], 'readwrite');
+          const store = transaction.objectStore('alarms');
+          
+          // Limpar alarmes antigos
+          store.clear();
+          
+          const now = new Date();
+          let alarmesConfigurados = 0;
+          
+          medicamentos.forEach((med, index) => {
+            if (med.horario) {
+              const [hours, minutes] = med.horario.split(':');
+              const alarmTime = new Date();
+              alarmTime.setHours(hours);
+              alarmTime.setMinutes(minutes);
+              
+              if (alarmTime < now) {
+                alarmTime.setDate(alarmTime.getDate() + 1);
+              }
+              
+              const timeUntilAlarm = alarmTime.getTime() - now.getTime();
+              
+              if (timeUntilAlarm > 0) {
+                const alarmData = {
+                  medicamento: med.nome,
+                  dose: med.dose,
+                  posologia: med.posologia,
+                  horario: med.horario,
+                  timestamp: alarmTime.getTime()
+                };
+                
+                store.add(alarmData);
+                alarmesConfigurados++;
+                
+                // Enviar mensagem para o Service Worker para agendar a notificação
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.controller.postMessage({
+                    type: 'SCHEDULE_NOTIFICATION',
+                    alarmData: alarmData
                   });
                 }
-                
-                // Alerta para dispositivos móveis
-                alert(`ALARME DE MEDICAÇÃO\n\nMedicamento: ${med.nome}\nDose: ${med.dose}\nPosologia: ${med.posologia}`);
-              }, timeUntilAlarm);
-              
-              alarmesConfigurados++;
+              }
             }
-          }
-        });
-        
-        if (alarmesConfigurados > 0) {
-          showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
-        } else {
-          showPopup('Nenhum horário de medicação válido encontrado!', true);
-        }
+          });
+          
+          transaction.oncomplete = () => {
+            db.close();
+            if (alarmesConfigurados > 0) {
+              showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
+            } else {
+              showPopup('Nenhum horário de medicação válido encontrado!', true);
+            }
+          };
+          
+          transaction.onerror = (event) => {
+            console.error('Erro na transação:', event.target.error);
+            showPopup('Erro ao configurar alarmes!', true);
+          };
+        };
       } catch (error) {
         console.error('Erro ao configurar alarmes:', error);
         showPopup('Erro ao configurar alarmes!', true);
@@ -2855,6 +2906,18 @@
           // Remove o usuário atual do localStorage
           localStorage.removeItem('currentUser');
           
+          // Remove os alarmes do IndexedDB
+          const dbName = 'MedicationAlarmsDB';
+          const request = indexedDB.deleteDatabase(dbName);
+          
+          request.onsuccess = () => {
+            console.log('Banco de dados de alarmes excluído com sucesso');
+          };
+          
+          request.onerror = (event) => {
+            console.error('Erro ao excluir banco de dados de alarmes:', event.target.error);
+          };
+          
           showPopup('Todos os dados foram excluídos com sucesso!');
           
           // Esconde todas as telas e mostra apenas a tela inicial
@@ -2870,11 +2933,17 @@
       }
     });
 
+    // Registrar o Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then(registration => {
             console.log('Service Worker registrado:', registration.scope);
+            
+            // Verificar se há notificações pendentes quando a página é carregada
+            registration.active.postMessage({
+              type: 'CHECK_PENDING_NOTIFICATIONS'
+            });
           })
           .catch(error => {
             console.log('Falha no registro:', error);
