@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <style>
-    /* Estilos permanecem exatamente os mesmos */
     .contact-header {
       position: fixed;
       top: 0;
@@ -391,18 +390,25 @@
       color: #4D6057;
     }
     .alarm-btn {
-      background-color: #ffc107;
-      color: #333;
+      background-color: #4D6057;
+      color: white;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
-      padding: 10px 15px;
+      padding: 12px 15px;
       border-radius: 8px;
       cursor: pointer;
       transition: background-color 0.3s;
+      width: 100%;
+      max-width: 300px;
+      margin: 15px auto;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
     }
     .alarm-btn:hover {
-      background-color: #e0a800;
+      background-color: #3b5448;
     }
     .alarm-btn i {
       font-size: 18px;
@@ -451,9 +457,12 @@
       border-radius: 8px;
       margin-bottom: 15px;
       text-align: left;
+      position: relative;
+      z-index: 1;
     }
     .detail-tab-content.active {
       display: block;
+      z-index: 2;
     }
     .compact-form {
       display: grid;
@@ -2233,36 +2242,31 @@
               <label>Nome:</label>
               ${isEditing ? 
                 `<input type="text" class="edit-input" data-field="identificacao.nome" value="${userData.identificacao.nome}">` : 
-                `<span>${userData.identificacao.nome}</span>`
-              }
+                `<span>${userData.identificacao.nome}</span>`}
             </div>
             <div class="form-row">
               <label>Nascimento:</label>
               ${isEditing ? 
                 `<input type="date" class="edit-input" data-field="identificacao.dataNascimento" value="${userData.identificacao.dataNascimento}">` : 
-                `<span>${userData.identificacao.dataNascimento}</span>`
-              }
+                `<span>${userData.identificacao.dataNascimento}</span>`}
             </div>
             <div class="form-row">
               <label>Contato:</label>
               ${isEditing ? 
                 `<input type="tel" class="edit-input" data-field="identificacao.contato" value="${userData.identificacao.contato}">` : 
-                `<span>${userData.identificacao.contato}</span>`
-              }
+                `<span>${userData.identificacao.contato}</span>`}
             </div>
             <div class="form-row">
               <label>Contato de Emergência:</label>
               ${isEditing ? 
                 `<input type="tel" class="edit-input" data-field="identificacao.contatoEmergencia" value="${userData.identificacao.contatoEmergencia || ''}">` : 
-                `<span>${userData.identificacao.contatoEmergencia || 'Não informado'}</span>`
-              }
+                `<span>${userData.identificacao.contatoEmergencia || 'Não informado'}</span>`}
             </div>
             <div class="form-row">
               <label>Peso:</label>
               ${isEditing ? 
                 `<input type="number" class="edit-input" data-field="identificacao.peso" value="${userData.identificacao.peso}">` : 
-                `<span>${userData.identificacao.peso}</span>`
-              }
+                `<span>${userData.identificacao.peso}</span>`}
             </div>
           </div>
         </div>
@@ -2274,29 +2278,25 @@
                 <label>Vacina:</label>
                 ${isEditing ? 
                   `<input type="text" class="edit-input" data-field="vacinacao[${index}].nomeVacina" value="${vacina.nomeVacina}">` : 
-                  `<span>${vacina.nomeVacina}</span>`
-                }
+                  `<span>${vacina.nomeVacina}</span>`}
               </div>
               <div class="form-row">
                 <label>Data:</label>
                 ${isEditing ? 
                   `<input type="date" class="edit-input" data-field="vacinacao[${index}].dataAplicacao" value="${vacina.dataAplicacao}">` : 
-                  `<span>${vacina.dataAplicacao}</span>`
-                }
+                  `<span>${vacina.dataAplicacao}</span>`}
               </div>
               <div class="form-row">
                 <label>Lote:</label>
                 ${isEditing ? 
                   `<input type="text" class="edit-input" data-field="vacinacao[${index}].loteVacina" value="${vacina.loteVacina}">` : 
-                  `<span>${vacina.loteVacina}</span>`
-                }
+                  `<span>${vacina.loteVacina}</span>`}
               </div>
               <div class="form-row">
                 <label>Observações:</label>
                 ${isEditing ? 
                   `<textarea class="edit-input" data-field="vacinacao[${index}].observacoes">${vacina.observacoes}</textarea>` : 
-                  `<span>${vacina.observacoes}</span>`
-                }
+                  `<span>${vacina.observacoes}</span>`}
               </div>
               ${isEditing ? `<button class="delete-btn" onclick="this.closest('.vacina-form').remove()">Excluir</button>` : ''}
             </div>
@@ -2330,8 +2330,7 @@
               <label>Outras:</label>
               ${isEditing ? 
                 `<input type="text" class="edit-input" data-field="doencas.outras" value="${userData.doencas.outras || ''}">` : 
-                `<span>${userData.doencas.outras || 'Nenhuma'}</span>`
-              }
+                `<span>${userData.doencas.outras || 'Nenhuma'}</span>`}
             </div>
           </div>
         </div>
@@ -2343,29 +2342,25 @@
                 <label>Medicamento:</label>
                 ${isEditing ? 
                   `<input type="text" class="edit-input" data-field="medicamentos[${index}].nome" value="${med.nome}">` : 
-                  `<span>${med.nome}</span>`
-                }
+                  `<span>${med.nome}</span>`}
               </div>
               <div class="form-row">
                 <label>Dose:</label>
                 ${isEditing ? 
                   `<input type="text" class="edit-input" data-field="medicamentos[${index}].dose" value="${med.dose}">` : 
-                  `<span>${med.dose}</span>`
-                }
+                  `<span>${med.dose}</span>`}
               </div>
               <div class="form-row">
                 <label>Posologia:</label>
                 ${isEditing ? 
                   `<input type="text" class="edit-input" data-field="medicamentos[${index}].posologia" value="${med.posologia}">` : 
-                  `<span>${med.posologia}</span>`
-                }
+                  `<span>${med.posologia}</span>`}
               </div>
               <div class="form-row">
                 <label>Horário:</label>
                 ${isEditing ? 
                   `<input type="time" class="edit-input" data-field="medicamentos[${index}].horario" value="${med.horario}">` : 
-                  `<span>${med.horario}</span>`
-                }
+                  `<span>${med.horario}</span>`}
               </div>
               ${isEditing ? `<button class="delete-btn" onclick="this.closest('.medicamento-form').remove()">Excluir</button>` : ''}
             </div>
@@ -2377,8 +2372,7 @@
           <div class="form-row">
             ${isEditing ? 
               `<textarea class="edit-input" data-field="anotacoes">${userData.anotacoes || ''}</textarea>` : 
-              `<span>${userData.anotacoes || 'Nenhuma anotação'}</span>`
-            }
+              `<span>${userData.anotacoes || 'Nenhuma anotação'}</span>`}
           </div>
         </div>
 
@@ -2629,42 +2623,76 @@
       });
     });
 
+    // Função modificada para configurar alarmes de medicação
     async function setMedicationAlarm() {
       try {
-        const medicamentos = currentUserData.medicamentos;
+        const username = localStorage.getItem('currentUser');
+        if (!username) {
+          showPopup('Nenhum usuário encontrado!', true);
+          return;
+        }
+        
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (!doc.exists) {
+          showPopup('Dados do usuário não encontrados!', true);
+          return;
+        }
+        
+        const medicamentos = doc.data().medicamentos;
+        if (!medicamentos || medicamentos.length === 0) {
+          showPopup('Nenhum medicamento cadastrado para configurar alarmes!', true);
+          return;
+        }
+        
+        // Solicitar permissão para notificações
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            showPopup('Permissão para notificações não concedida!', true);
+            return;
+          }
+        }
+        
         const now = new Date();
+        let alarmesConfigurados = 0;
         
         medicamentos.forEach(med => {
-          if(med.horario) {
+          if (med.horario) {
             const [hours, minutes] = med.horario.split(':');
             const alarmTime = new Date();
             alarmTime.setHours(hours);
             alarmTime.setMinutes(minutes);
             
-            if(alarmTime < now) alarmTime.setDate(alarmTime.getDate() + 1);
+            if (alarmTime < now) {
+              alarmTime.setDate(alarmTime.getDate() + 1);
+            }
             
-            if('Notification' in window) {
-              if(Notification.permission === 'granted') {
-                new Notification(`Alarme: ${med.nome}`, {
-                  body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                  icon: 'https://i.imgur.com/BzIGz3X.png',
-                  timestamp: alarmTime.getTime()
-                });
-              } else if(Notification.permission !== 'denied') {
-                Notification.requestPermission().then(permission => {
-                  if(permission === 'granted') {
-                    new Notification(`Alarme: ${med.nome}`, {
-                      body: `Hora de tomar ${med.dose} - ${med.posologia}`,
-                      icon: 'https://i.imgur.com/BzIGz3X.png',
-                      timestamp: alarmTime.getTime()
-                    });
-                  }
-                });
-              }
+            const timeUntilAlarm = alarmTime.getTime() - now.getTime();
+            
+            if (timeUntilAlarm > 0) {
+              setTimeout(() => {
+                // Notificação para navegador
+                if ('Notification' in window && Notification.permission === 'granted') {
+                  new Notification(`Alarme: ${med.nome}`, {
+                    body: `Hora de tomar ${med.dose} - ${med.posologia}`,
+                    icon: 'https://i.imgur.com/BzIGz3X.png'
+                  });
+                }
+                
+                // Alerta para dispositivos móveis
+                alert(`ALARME DE MEDICAÇÃO\n\nMedicamento: ${med.nome}\nDose: ${med.dose}\nPosologia: ${med.posologia}`);
+              }, timeUntilAlarm);
+              
+              alarmesConfigurados++;
             }
           }
         });
-        showPopup('Alarmes configurados com sucesso!');
+        
+        if (alarmesConfigurados > 0) {
+          showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
+        } else {
+          showPopup('Nenhum horário de medicação válido encontrado!', true);
+        }
       } catch (error) {
         console.error('Erro ao configurar alarmes:', error);
         showPopup('Erro ao configurar alarmes!', true);
