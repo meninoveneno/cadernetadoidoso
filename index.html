@@ -972,61 +972,62 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
-    /* Estilo para o logo na identificação */
-    .identificacao-logo {
+    /* Estilo para a imagem na identificação */
+    .review-container#reviewIdentificacao {
+      padding-right: 150px;
+      min-height: 120px;
+    }
+    
+    .review-container#reviewIdentificacao::after {
+      content: '';
       position: absolute;
-      top: 15px;
-      right: 15px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      border: 2px solid #4D6057;
+      top: 20px;
+      right: 20px;
+      width: 120px;
+      height: 120px;
+      background-image: url('https://i.imgur.com/XRYaCsH.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
     }
     
-    /* Estilo para o carrossel de fotos */
-    .photo-carousel {
+    /* Estilos para o álbum de fotos */
+    .exame-album {
       display: flex;
-      overflow-x: auto;
+      flex-wrap: wrap;
       gap: 10px;
-      padding: 10px 0;
-      margin: 10px 0;
+      margin-top: 10px;
     }
     
-    .photo-carousel img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 8px;
-      border: 1px solid #ddd;
-    }
-    
-    .photo-carousel-container {
+    .exame-album-item {
+      width: 80px;
+      height: 80px;
       position: relative;
     }
     
-    .photo-carousel-nav {
+    .exame-album-thumbnail {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .exame-album-delete {
       position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(0,0,0,0.5);
+      top: -8px;
+      right: -8px;
+      background: #dc3545;
       color: white;
       border: none;
-      width: 30px;
-      height: 30px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 10;
-    }
-    
-    .photo-carousel-nav.prev {
-      left: 5px;
-    }
-    
-    .photo-carousel-nav.next {
-      right: 5px;
+      font-size: 12px;
     }
     
     @media (max-width: 600px) {
@@ -1047,9 +1048,13 @@
         width: 100%;
       }
       
-      .identificacao-logo {
-        width: 40px;
-        height: 40px;
+      .review-container#reviewIdentificacao {
+        padding-right: 15px;
+        min-height: auto;
+      }
+      
+      .review-container#reviewIdentificacao::after {
+        display: none;
       }
     }
     #medicalLoginScreen h2,
@@ -1216,10 +1221,9 @@
   <!-- Tela de Revisão -->
   <div id="reviewScreen" class="container" style="display: none;">
     <h2>Dados do Idoso</h2>
-    <div class="review-container">
-      <img src="https://i.imgur.com/XRYaCsH.png" alt="Logo" class="identificacao-logo">
+    <div class="review-container" id="reviewIdentificacao">
       <h3>Identificação</h3>
-      <div id="reviewIdentificacao"></div>
+      <div id="reviewIdentificacaoContent"></div>
     </div>
     <div class="review-container">
       <h3>Vacinação</h3>
@@ -1390,17 +1394,10 @@
   <!-- Modal de Prévia da Foto -->
   <div id="photoPreviewModal" class="exam-modal" style="display: none;">
     <h3>Prévia do Exame</h3>
-    <div class="photo-carousel-container">
-      <div class="photo-carousel" id="photoCarousel"></div>
-      <button class="photo-carousel-nav prev" onclick="navigateCarousel(-1)">❮</button>
-      <button class="photo-carousel-nav next" onclick="navigateCarousel(1)">❯</button>
-    </div>
+    <div class="exame-album" id="photoAlbumPreview"></div>
     <div class="exam-modal-actions">
       <button id="retakePhotoBtn" class="action-btn btn-danger">
         <i class="fas fa-sync-alt"></i> Tirar Novamente
-      </button>
-      <button id="addMorePhotosBtn" class="action-btn btn-secondary">
-        <i class="fas fa-plus"></i> Adicionar Mais Fotos
       </button>
       <button id="confirmPhotoBtn" class="action-btn btn-primary">
         <i class="fas fa-check"></i> Confirmar
@@ -1425,6 +1422,9 @@
       </button>
       <button id="flipCameraBtn" class="camera-btn">
         <i class="fas fa-sync-alt"></i>
+      </button>
+      <button id="finishAlbumBtn" class="camera-btn" style="display: none;">
+        <i class="fas fa-check"></i>
       </button>
     </div>
   </div>
@@ -1487,7 +1487,7 @@
     let cameraStream = null;
     let usingFrontCamera = false;
     let capturedPhotos = [];
-    let currentPhotoIndex = 0;
+    let currentAlbum = [];
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -1537,18 +1537,17 @@
           const exameItem = document.createElement('div');
           exameItem.className = 'exame-item';
           
-          // Verifica se é um álbum (múltiplas fotos)
+          // Verifica se é um álbum (array de imagens)
           const isAlbum = Array.isArray(exame.url);
-          const thumbnailUrl = isAlbum ? exame.url[0] : exame.url;
+          const firstImage = isAlbum ? exame.url[0] : exame.url;
           
           exameItem.innerHTML = `
             <div class="exame-info">
-              <img src="${thumbnailUrl}" alt="Exame" class="exame-thumbnail" 
-                   onclick="showExamePreview('${exame.id}', ${isAlbum})">
+              <img src="${firstImage}" alt="Exame" class="exame-thumbnail" 
+                   onclick="showExamePreview('${isAlbum ? JSON.stringify(exame.url) : exame.url}')">
               <div class="exame-details">
-                <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
+                <div class="exame-name">${exame.descricao || 'Exame médico'} ${isAlbum ? `(${exame.url.length} imagens)` : ''}</div>
                 <div class="exame-date">${formatDate(exame.data)}</div>
-                ${isAlbum ? `<div class="exame-album-info"><i class="fas fa-images"></i> ${exame.url.length} fotos</div>` : ''}
               </div>
             </div>
             <div class="exame-actions">
@@ -1565,59 +1564,43 @@
       }
     }
 
-    async function showExamePreview(exameId, isAlbum = false) {
+    function showExamePreview(imageUrlOrArray) {
+      const modal = document.getElementById('examePreviewModal');
+      const imgContainer = document.getElementById('examePreviewImage');
+      
       try {
-        const doc = await db.collection('exames').doc(exameId).get();
-        if (!doc.exists) return;
+        // Verifica se é um array (álbum) ou uma string única
+        const images = typeof imageUrlOrArray === 'string' && imageUrlOrArray.startsWith('[') ? 
+                      JSON.parse(imageUrlOrArray) : [imageUrlOrArray];
         
-        const exameData = doc.data();
-        const images = isAlbum ? exameData.url : [exameData.url];
+        const albumContainer = document.createElement('div');
+        albumContainer.className = 'exame-album';
         
-        const modal = document.getElementById('examePreviewModal');
-        const carousel = document.getElementById('photoCarousel');
-        carousel.innerHTML = '';
-        
-        images.forEach((imgUrl, index) => {
-          const img = document.createElement('img');
-          img.src = imgUrl;
-          img.style.display = index === 0 ? 'block' : 'none';
-          carousel.appendChild(img);
+        images.forEach((img, index) => {
+          const imgElement = document.createElement('img');
+          imgElement.src = img;
+          imgElement.className = 'exame-preview';
+          imgElement.style.display = index === 0 ? 'block' : 'none';
+          imgElement.onclick = () => {
+            // Alterna para a próxima imagem no álbum
+            imgElement.style.display = 'none';
+            const nextIndex = (index + 1) % images.length;
+            albumContainer.querySelectorAll('img')[nextIndex].style.display = 'block';
+          };
+          albumContainer.appendChild(imgElement);
         });
         
-        currentPhotoIndex = 0;
-        updateCarouselNav();
-        modal.style.display = 'block';
+        imgContainer.innerHTML = '';
+        imgContainer.appendChild(albumContainer);
+        modal.style.display = 'flex';
         
         document.getElementById('closePreviewBtn').onclick = () => {
           modal.style.display = 'none';
         };
-      } catch (error) {
-        console.error('Erro ao mostrar prévia do exame:', error);
-        showPopup('Erro ao carregar exame!', true);
+      } catch (e) {
+        console.error('Erro ao exibir exame:', e);
+        showPopup('Erro ao exibir exame!', true);
       }
-    }
-    
-    function navigateCarousel(direction) {
-      const carousel = document.getElementById('photoCarousel');
-      const images = carousel.querySelectorAll('img');
-      
-      if (images.length <= 1) return;
-      
-      images[currentPhotoIndex].style.display = 'none';
-      currentPhotoIndex = (currentPhotoIndex + direction + images.length) % images.length;
-      images[currentPhotoIndex].style.display = 'block';
-      
-      updateCarouselNav();
-    }
-    
-    function updateCarouselNav() {
-      const carousel = document.getElementById('photoCarousel');
-      const images = carousel.querySelectorAll('img');
-      const prevBtn = document.querySelector('.photo-carousel-nav.prev');
-      const nextBtn = document.querySelector('.photo-carousel-nav.next');
-      
-      prevBtn.style.display = images.length > 1 ? 'flex' : 'none';
-      nextBtn.style.display = images.length > 1 ? 'flex' : 'none';
     }
 
     async function deleteExame(exameId) {
@@ -1669,6 +1652,7 @@
         video.srcObject = stream;
         cameraStream = stream;
         document.getElementById('cameraContainer').style.display = 'flex';
+        document.getElementById('finishAlbumBtn').style.display = 'none';
         
         video.onloadedmetadata = () => {
           video.play();
@@ -1686,6 +1670,7 @@
         cameraStream = null;
       }
       document.getElementById('cameraContainer').style.display = 'none';
+      capturedPhotos = [];
     }
     
     function capturePhoto() {
@@ -1699,42 +1684,60 @@
       
       const photoUrl = canvas.toDataURL('image/jpeg', 0.8);
       capturedPhotos.push(photoUrl);
-      showPhotoPreview();
+      
+      // Mostra o botão de finalizar álbum se houver mais de uma foto
+      if (capturedPhotos.length > 0) {
+        document.getElementById('finishAlbumBtn').style.display = 'flex';
+      }
+      
+      // Mostra prévia da última foto capturada
+      showPhotoPreview(photoUrl);
     }
     
-    function showPhotoPreview() {
+    function showPhotoPreview(photoUrl) {
       const previewModal = document.getElementById('photoPreviewModal');
-      const carousel = document.getElementById('photoCarousel');
-      carousel.innerHTML = '';
+      const albumContainer = document.getElementById('photoAlbumPreview');
       
-      capturedPhotos.forEach((photoUrl, index) => {
-        const img = document.createElement('img');
-        img.src = photoUrl;
-        img.style.display = index === 0 ? 'block' : 'none';
-        carousel.appendChild(img);
+      albumContainer.innerHTML = '';
+      
+      // Adiciona todas as fotos capturadas ao álbum de prévia
+      capturedPhotos.forEach((photo, index) => {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'exame-album-item';
+        photoItem.innerHTML = `
+          <img src="${photo}" class="exame-album-thumbnail">
+          <button class="exame-album-delete" onclick="removePhotoFromAlbum(${index})">
+            <i class="fas fa-times"></i>
+          </button>
+        `;
+        albumContainer.appendChild(photoItem);
       });
       
-      currentPhotoIndex = 0;
-      updateCarouselNav();
       previewModal.style.display = 'block';
+    }
+    
+    function removePhotoFromAlbum(index) {
+      capturedPhotos.splice(index, 1);
+      showPhotoPreview();
+      
+      // Se não houver mais fotos, esconde o botão de finalizar
+      if (capturedPhotos.length === 0) {
+        document.getElementById('finishAlbumBtn').style.display = 'none';
+      }
     }
     
     function confirmPhoto() {
       document.getElementById('photoPreviewModal').style.display = 'none';
-      document.getElementById('examNameDialog').style.display = 'block';
-      document.getElementById('examNameInput').focus();
+      
+      // Se houver mais de uma foto, mostra o botão para continuar adicionando
+      if (capturedPhotos.length > 0) {
+        document.getElementById('finishAlbumBtn').style.display = 'flex';
+      }
     }
     
     function retakePhoto() {
-      if (capturedPhotos.length > 0) {
-        capturedPhotos.pop();
-        if (capturedPhotos.length > 0) {
-          showPhotoPreview();
-        } else {
-          document.getElementById('photoPreviewModal').style.display = 'none';
-          startCamera(usingFrontCamera ? 'user' : 'environment');
-        }
-      }
+      document.getElementById('photoPreviewModal').style.display = 'none';
+      startCamera(usingFrontCamera ? 'user' : 'environment');
     }
     
     function flipCamera() {
@@ -1744,7 +1747,6 @@
 
     async function takeExamPhoto() {
       closeExamModal();
-      capturedPhotos = []; // Resetar fotos capturadas
       startCamera('environment'); // Usa a câmera traseira por padrão
     }
 
@@ -1753,29 +1755,28 @@
       const files = event.target.files;
       if (!files || files.length === 0) return;
       
-      capturedPhotos = []; // Resetar fotos capturadas
+      currentAlbum = [];
       
+      // Processa cada arquivo selecionado
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const photoUrl = await readFileAsDataURL(file);
-        capturedPhotos.push(photoUrl);
+        const reader = new FileReader();
+        
+        await new Promise((resolve) => {
+          reader.onload = (e) => {
+            currentAlbum.push(e.target.result);
+            resolve();
+          };
+          reader.readAsDataURL(file);
+        });
       }
       
-      if (capturedPhotos.length > 0) {
-        showPhotoPreview();
-      }
-    }
-    
-    function readFileAsDataURL(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.onerror = (e) => reject(e);
-        reader.readAsDataURL(file);
-      });
+      // Mostra o diálogo para nomear o exame
+      document.getElementById('examNameDialog').style.display = 'block';
+      document.getElementById('examNameInput').focus();
     }
 
-    async function uploadExamToFirebase(photos, description) {
+    async function uploadExamToFirebase(images, description) {
       const username = localStorage.getItem('currentUser');
       if (!username) {
         showPopup('Nenhum usuário selecionado!', true);
@@ -1790,7 +1791,7 @@
         // Salva no Firestore
         await db.collection('exames').add({
           pacienteId: username,
-          url: photos.length > 1 ? photos : photos[0], // Array se múltiplas fotos, string se única
+          url: images,
           descricao: description || '',
           data: timestamp
         });
@@ -1804,9 +1805,6 @@
         if (document.getElementById('userDetailScreen').style.display === 'block') {
           loadUserExames(username);
         }
-        
-        // Resetar fotos capturadas
-        capturedPhotos = [];
       } catch (error) {
         console.error('Erro ao salvar exame:', error);
         showPopup('Erro ao salvar exame!', true);
@@ -1836,18 +1834,17 @@
             const exameItem = document.createElement('div');
             exameItem.className = 'exame-item';
             
-            // Verifica se é um álbum (múltiplas fotos)
+            // Verifica se é um álbum (array de imagens)
             const isAlbum = Array.isArray(exame.url);
-            const thumbnailUrl = isAlbum ? exame.url[0] : exame.url;
+            const firstImage = isAlbum ? exame.url[0] : exame.url;
             
             exameItem.innerHTML = `
               <div class="exame-info">
-                <img src="${thumbnailUrl}" alt="Exame" class="exame-thumbnail" 
-                     onclick="showExamePreview('${exame.id}', ${isAlbum})">
+                <img src="${firstImage}" alt="Exame" class="exame-thumbnail" 
+                     onclick="showExamePreview('${isAlbum ? JSON.stringify(exame.url) : exame.url}')">
                 <div class="exame-details">
-                  <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
+                  <div class="exame-name">${exame.descricao || 'Exame médico'} ${isAlbum ? `(${exame.url.length} imagens)` : ''}</div>
                   <div class="exame-date">${formatDate(exame.data)}</div>
-                  ${isAlbum ? `<div class="exame-album-info"><i class="fas fa-images"></i> ${exame.url.length} fotos</div>` : ''}
                 </div>
               </div>
               <div class="exame-actions">
@@ -2158,7 +2155,7 @@
     });
 
     function updateReviewScreen(data) {
-      document.getElementById('reviewIdentificacao').innerHTML = `
+      document.getElementById('reviewIdentificacaoContent').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
         <p><strong>Nascimento:</strong> ${data.identificacao.dataNascimento}</p>
         <p><strong>Peso:</strong> ${data.identificacao.peso} kg</p>
@@ -2815,9 +2812,6 @@
             showPopup('Permissão para notificações não concedida!', true);
             return;
           }
-        } else {
-          showPopup('Seu navegador não suporta notificações!', true);
-          return;
         }
         
         // Registrar o Service Worker se ainda não estiver registrado
@@ -2846,7 +2840,8 @@
         request.onupgradeneeded = (event) => {
           const db = event.target.result;
           if (!db.objectStoreNames.contains('alarms')) {
-            db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
+            const store = db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
           }
         };
         
@@ -2868,6 +2863,7 @@
               alarmTime.setHours(hours);
               alarmTime.setMinutes(minutes);
               
+              // Se o horário já passou hoje, agenda para amanhã
               if (alarmTime < now) {
                 alarmTime.setDate(alarmTime.getDate() + 1);
               }
@@ -2881,7 +2877,7 @@
                   posologia: med.posologia,
                   horario: med.horario,
                   timestamp: alarmTime.getTime(),
-                  notificationId: `med-alarm-${Date.now()}-${index}`
+                  notificationTime: alarmTime.toISOString()
                 };
                 
                 store.add(alarmData);
@@ -2902,6 +2898,14 @@
             db.close();
             if (alarmesConfigurados > 0) {
               showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
+              
+              // Mostra uma notificação imediata de confirmação
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Alarmes de Medicação', {
+                  body: `${alarmesConfigurados} alarme(s) configurado(s) com sucesso!`,
+                  icon: 'https://i.imgur.com/BzIGz3X.png'
+                });
+              }
             } else {
               showPopup('Nenhum horário de medicação válido encontrado!', true);
             }
@@ -2922,6 +2926,10 @@
     document.getElementById('captureBtn').addEventListener('click', capturePhoto);
     document.getElementById('closeCameraBtn').addEventListener('click', stopCamera);
     document.getElementById('flipCameraBtn').addEventListener('click', flipCamera);
+    document.getElementById('finishAlbumBtn').addEventListener('click', () => {
+      document.getElementById('examNameDialog').style.display = 'block';
+      document.getElementById('examNameInput').focus();
+    });
     
     // Event listeners para o diálogo de nome do exame
     document.getElementById('cancelExamNameBtn').addEventListener('click', () => {
@@ -2940,15 +2948,15 @@
       document.getElementById('examNameInput').value = '';
       
       if (capturedPhotos.length > 0) {
-        await uploadExamToFirebase(capturedPhotos, examName);
-        stopCamera();
+        try {
+          await uploadExamToFirebase(capturedPhotos, examName);
+          capturedPhotos = [];
+          stopCamera();
+        } catch (error) {
+          console.error('Erro ao salvar exame:', error);
+          showPopup('Erro ao salvar exame!', true);
+        }
       }
-    });
-
-    // Event listener para adicionar mais fotos
-    document.getElementById('addMorePhotosBtn').addEventListener('click', () => {
-      document.getElementById('photoPreviewModal').style.display = 'none';
-      startCamera(usingFrontCamera ? 'user' : 'environment');
     });
 
     // Event listeners para o modal de prévia da foto
