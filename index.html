@@ -384,6 +384,7 @@
       border-radius: 8px;
       margin-bottom: 20px;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
     .review-container h3 {
       margin-top: 0;
@@ -971,6 +972,41 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     
+    /* Estilo para o logo na identificação */
+    .logo-identificacao {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      opacity: 0.7;
+    }
+    
+    /* Estilos para o álbum de fotos */
+    .album-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    
+    .album-thumbnail {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+      cursor: pointer;
+    }
+    
+    .album-preview {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 10px 0;
+      display: none;
+      border-radius: 4px;
+    }
+    
     @media (max-width: 600px) {
       .exame-info {
         gap: 10px;
@@ -987,6 +1023,11 @@
       
       .action-btn {
         width: 100%;
+      }
+      
+      .album-thumbnail {
+        width: 60px;
+        height: 60px;
       }
     }
     #medicalLoginScreen h2,
@@ -1154,6 +1195,7 @@
   <div id="reviewScreen" class="container" style="display: none;">
     <h2>Dados do Idoso</h2>
     <div class="review-container">
+      <img src="https://i.imgur.com/XRYaCsH.png" alt="Logo" class="logo-identificacao">
       <h3>Identificação</h3>
       <div id="reviewIdentificacao"></div>
     </div>
@@ -1326,7 +1368,7 @@
   <!-- Modal de Prévia da Foto -->
   <div id="photoPreviewModal" class="exam-modal" style="display: none;">
     <h3>Prévia do Exame</h3>
-    <img id="previewImage" src="" alt="Prévia do Exame" style="max-width: 100%; margin: 15px 0;">
+    <div class="album-container" id="photoAlbumPreview"></div>
     <div class="exam-modal-actions">
       <button id="retakePhotoBtn" class="action-btn btn-danger">
         <i class="fas fa-sync-alt"></i> Tirar Novamente
@@ -1338,7 +1380,7 @@
   </div>
 
   <!-- Input oculto para upload de arquivos -->
-  <input type="file" id="examFileInput" accept="image/*" style="display: none;">
+  <input type="file" id="examFileInput" accept="image/*" style="display: none;" multiple>
 
   <!-- Elementos da câmera para exames -->
   <div class="camera-container" id="cameraContainer">
@@ -1415,7 +1457,8 @@
     let examesUnsubscribe = null;
     let cameraStream = null;
     let usingFrontCamera = false;
-    let capturedPhotoUrl = null;
+    let capturedPhotos = [];
+    let currentExamPhotos = [];
 
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
@@ -1464,10 +1507,22 @@
         exames.forEach(exame => {
           const exameItem = document.createElement('div');
           exameItem.className = 'exame-item';
+          
+          // Verifica se é um álbum (array de fotos) ou uma única foto
+          const isAlbum = Array.isArray(exame.url);
+          
           exameItem.innerHTML = `
             <div class="exame-info">
-              <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
-                   onclick="showExamePreview('${exame.url}')">
+              ${isAlbum ? 
+                `<div class="album-container">
+                  ${exame.url.slice(0, 3).map((url, idx) => 
+                    `<img src="${url}" alt="Exame ${idx+1}" class="exame-thumbnail" 
+                         onclick="showExamePreview('${exame.id}', ${idx})">`
+                  ).join('')}
+                  ${exame.url.length > 3 ? `<div class="album-count">+${exame.url.length - 3}</div>` : ''}
+                </div>` : 
+                `<img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                     onclick="showExamePreview('${exame.id}', 0)">`}
               <div class="exame-details">
                 <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
                 <div class="exame-date">${formatDate(exame.data)}</div>
@@ -1487,15 +1542,10 @@
       }
     }
 
-    function showExamePreview(imageUrl) {
-      const modal = document.getElementById('examePreviewModal');
-      const img = document.getElementById('examePreviewImage');
-      img.src = imageUrl;
-      modal.style.display = 'flex';
-      
-      document.getElementById('closePreviewBtn').onclick = () => {
-        modal.style.display = 'none';
-      };
+    function showExamePreview(exameId, photoIndex) {
+      // Implementar a visualização do exame específico
+      // Esta função precisaria buscar o exame no Firestore e mostrar a foto específica
+      console.log(`Mostrando exame ${exameId}, foto ${photoIndex}`);
     }
 
     async function deleteExame(exameId) {
@@ -1575,14 +1625,31 @@
       canvas.height = video.videoHeight;
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       
-      capturedPhotoUrl = canvas.toDataURL('image/jpeg', 0.8);
-      showPhotoPreview(capturedPhotoUrl);
+      const photoUrl = canvas.toDataURL('image/jpeg', 0.8);
+      currentExamPhotos.push(photoUrl);
+      
+      // Mostra prévia das fotos tiradas
+      showPhotoPreview();
     }
     
-    function showPhotoPreview(imageUrl) {
+    function showPhotoPreview() {
       const previewModal = document.getElementById('photoPreviewModal');
-      const previewImage = document.getElementById('previewImage');
-      previewImage.src = imageUrl;
+      const albumContainer = document.getElementById('photoAlbumPreview');
+      
+      albumContainer.innerHTML = '';
+      
+      currentExamPhotos.forEach((photoUrl, index) => {
+        const img = document.createElement('img');
+        img.src = photoUrl;
+        img.className = 'album-thumbnail';
+        img.onclick = () => {
+          // Mostrar foto em tamanho maior
+          document.getElementById('examePreviewImage').src = photoUrl;
+          document.getElementById('examePreviewModal').style.display = 'flex';
+        };
+        albumContainer.appendChild(img);
+      });
+      
       previewModal.style.display = 'block';
     }
     
@@ -1594,6 +1661,7 @@
     
     function retakePhoto() {
       document.getElementById('photoPreviewModal').style.display = 'none';
+      currentExamPhotos = [];
       startCamera(usingFrontCamera ? 'user' : 'environment');
     }
     
@@ -1604,23 +1672,38 @@
 
     async function takeExamPhoto() {
       closeExamModal();
+      currentExamPhotos = []; // Limpa fotos anteriores
       startCamera('environment'); // Usa a câmera traseira por padrão
     }
 
     async function handleFileUpload(event) {
       closeExamModal();
-      const file = event.target.files[0];
-      if (!file) return;
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
       
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const description = prompt('Descreva o exame (opcional):');
-        uploadExamToFirebase(e.target.result, description);
-      };
-      reader.readAsDataURL(file);
+      currentExamPhotos = [];
+      
+      // Processa cada arquivo selecionado
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const photoUrl = await readFileAsDataURL(file);
+        currentExamPhotos.push(photoUrl);
+      }
+      
+      // Mostra prévia das fotos selecionadas
+      showPhotoPreview();
+    }
+    
+    function readFileAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsDataURL(file);
+      });
     }
 
-    async function uploadExamToFirebase(imageData, description) {
+    async function uploadExamToFirebase(photos, description) {
       const username = localStorage.getItem('currentUser');
       if (!username) {
         showPopup('Nenhum usuário selecionado!', true);
@@ -1635,7 +1718,7 @@
         // Salva no Firestore
         await db.collection('exames').add({
           pacienteId: username,
-          url: imageData,
+          url: photos, // Agora é um array de fotos
           descricao: description || '',
           data: timestamp
         });
@@ -1649,6 +1732,8 @@
         if (document.getElementById('userDetailScreen').style.display === 'block') {
           loadUserExames(username);
         }
+        
+        currentExamPhotos = [];
       } catch (error) {
         console.error('Erro ao salvar exame:', error);
         showPopup('Erro ao salvar exame!', true);
@@ -1677,10 +1762,22 @@
           exames.forEach(exame => {
             const exameItem = document.createElement('div');
             exameItem.className = 'exame-item';
+            
+            // Verifica se é um álbum (array de fotos) ou uma única foto
+            const isAlbum = Array.isArray(exame.url);
+            
             exameItem.innerHTML = `
               <div class="exame-info">
-                <img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
-                     onclick="showExamePreview('${exame.url}')">
+                ${isAlbum ? 
+                  `<div class="album-container">
+                    ${exame.url.slice(0, 3).map((url, idx) => 
+                      `<img src="${url}" alt="Exame ${idx+1}" class="exame-thumbnail" 
+                           onclick="showExamePreview('${exame.id}', ${idx})">`
+                    ).join('')}
+                    ${exame.url.length > 3 ? `<div class="album-count">+${exame.url.length - 3}</div>` : ''}
+                  </div>` : 
+                  `<img src="${exame.url}" alt="Exame" class="exame-thumbnail" 
+                       onclick="showExamePreview('${exame.id}', 0)">`}
                 <div class="exame-details">
                   <div class="exame-name">${exame.descricao || 'Exame médico'}</div>
                   <div class="exame-date">${formatDate(exame.data)}</div>
@@ -1714,6 +1811,150 @@
         showPopup('Erro ao carregar exames do paciente!', true);
       }
     }
+
+    // Função modificada para configurar alarmes de medicação
+    async function setMedicationAlarm() {
+      try {
+        const username = localStorage.getItem('currentUser');
+        if (!username) {
+          showPopup('Nenhum usuário encontrado!', true);
+          return;
+        }
+        
+        const doc = await db.collection('usuarios').doc(username).get();
+        if (!doc.exists) {
+          showPopup('Dados do usuário não encontrados!', true);
+          return;
+        }
+        
+        const medicamentos = doc.data().medicamentos;
+        if (!medicamentos || medicamentos.length === 0) {
+          showPopup('Nenhum medicamento cadastrado para configurar alarmes!', true);
+          return;
+        }
+        
+        // Solicitar permissão para notificações
+        if ('Notification' in window) {
+          const permission = await Notification.requestPermission();
+          if (permission !== 'granted') {
+            showPopup('Permissão para notificações não concedida!', true);
+            return;
+          }
+        }
+        
+        // Registrar o Service Worker se ainda não estiver registrado
+        if ('serviceWorker' in navigator) {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('Service Worker registrado com sucesso:', registration);
+          } catch (error) {
+            console.error('Falha ao registrar Service Worker:', error);
+            showPopup('Erro ao configurar alarmes!', true);
+            return;
+          }
+        }
+        
+        // Armazenar os alarmes no IndexedDB
+        const dbName = 'MedicationAlarmsDB';
+        const dbVersion = 1;
+        
+        const request = indexedDB.open(dbName, dbVersion);
+        
+        request.onerror = (event) => {
+          console.error('Erro ao abrir o banco de dados:', event.target.error);
+          showPopup('Erro ao configurar alarmes!', true);
+        };
+        
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('alarms')) {
+            const store = db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+        
+        request.onsuccess = (event) => {
+          const db = event.target.result;
+          const transaction = db.transaction(['alarms'], 'readwrite');
+          const store = transaction.objectStore('alarms');
+          
+          // Limpar alarmes antigos
+          store.clear();
+          
+          const now = new Date();
+          let alarmesConfigurados = 0;
+          
+          medicamentos.forEach((med, index) => {
+            if (med.horario) {
+              const [hours, minutes] = med.horario.split(':');
+              const alarmTime = new Date();
+              alarmTime.setHours(hours);
+              alarmTime.setMinutes(minutes);
+              
+              // Se o horário já passou hoje, agenda para amanhã
+              if (alarmTime < now) {
+                alarmTime.setDate(alarmTime.getDate() + 1);
+              }
+              
+              const timeUntilAlarm = alarmTime.getTime() - now.getTime();
+              
+              if (timeUntilAlarm > 0) {
+                const alarmData = {
+                  medicamento: med.nome,
+                  dose: med.dose,
+                  posologia: med.posologia,
+                  horario: med.horario,
+                  timestamp: alarmTime.getTime(),
+                  notificationId: `med-alarm-${Date.now()}-${index}`
+                };
+                
+                store.add(alarmData);
+                alarmesConfigurados++;
+                
+                // Enviar mensagem para o Service Worker para agendar a notificação
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.controller.postMessage({
+                    type: 'SCHEDULE_NOTIFICATION',
+                    alarmData: alarmData
+                  });
+                }
+              }
+            }
+          });
+          
+          transaction.oncomplete = () => {
+            db.close();
+            if (alarmesConfigurados > 0) {
+              showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
+              
+              // Configurar o próximo alarme
+              scheduleNextAlarm();
+            } else {
+              showPopup('Nenhum horário de medicação válido encontrado!', true);
+            }
+          };
+          
+          transaction.onerror = (event) => {
+            console.error('Erro na transação:', event.target.error);
+            showPopup('Erro ao configurar alarmes!', true);
+          };
+        };
+      } catch (error) {
+        console.error('Erro ao configurar alarmes:', error);
+        showPopup('Erro ao configurar alarmes!', true);
+      }
+    }
+
+    // Função para agendar o próximo alarme
+    function scheduleNextAlarm() {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'SCHEDULE_NEXT_ALARM'
+        });
+      }
+    }
+
+    // Restante do código permanece igual...
 
     document.getElementById('startBtn').addEventListener('click', () => {
       document.getElementById('homeScreen').style.display = 'none';
@@ -2552,7 +2793,7 @@
           
           await batch.commit();
           
-          // Depois deleta o usuário do Firestore
+          // Depois deleta os dados do Firestore
           await db.collection('usuarios').doc(currentEditingUser).delete();
           
           showPopup('Usuário excluído com sucesso!');
@@ -2623,133 +2864,6 @@
       });
     });
 
-    // Função modificada para configurar alarmes de medicação
-    async function setMedicationAlarm() {
-      try {
-        const username = localStorage.getItem('currentUser');
-        if (!username) {
-          showPopup('Nenhum usuário encontrado!', true);
-          return;
-        }
-        
-        const doc = await db.collection('usuarios').doc(username).get();
-        if (!doc.exists) {
-          showPopup('Dados do usuário não encontrados!', true);
-          return;
-        }
-        
-        const medicamentos = doc.data().medicamentos;
-        if (!medicamentos || medicamentos.length === 0) {
-          showPopup('Nenhum medicamento cadastrado para configurar alarmes!', true);
-          return;
-        }
-        
-        // Solicitar permissão para notificações
-        if ('Notification' in window) {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            showPopup('Permissão para notificações não concedida!', true);
-            return;
-          }
-        }
-        
-        // Registrar o Service Worker se ainda não estiver registrado
-        if ('serviceWorker' in navigator) {
-          try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker registrado com sucesso:', registration);
-          } catch (error) {
-            console.error('Falha ao registrar Service Worker:', error);
-            showPopup('Erro ao configurar alarmes!', true);
-            return;
-          }
-        }
-        
-        // Armazenar os alarmes no IndexedDB
-        const dbName = 'MedicationAlarmsDB';
-        const dbVersion = 1;
-        
-        const request = indexedDB.open(dbName, dbVersion);
-        
-        request.onerror = (event) => {
-          console.error('Erro ao abrir o banco de dados:', event.target.error);
-          showPopup('Erro ao configurar alarmes!', true);
-        };
-        
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains('alarms')) {
-            db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
-          }
-        };
-        
-        request.onsuccess = (event) => {
-          const db = event.target.result;
-          const transaction = db.transaction(['alarms'], 'readwrite');
-          const store = transaction.objectStore('alarms');
-          
-          // Limpar alarmes antigos
-          store.clear();
-          
-          const now = new Date();
-          let alarmesConfigurados = 0;
-          
-          medicamentos.forEach((med, index) => {
-            if (med.horario) {
-              const [hours, minutes] = med.horario.split(':');
-              const alarmTime = new Date();
-              alarmTime.setHours(hours);
-              alarmTime.setMinutes(minutes);
-              
-              if (alarmTime < now) {
-                alarmTime.setDate(alarmTime.getDate() + 1);
-              }
-              
-              const timeUntilAlarm = alarmTime.getTime() - now.getTime();
-              
-              if (timeUntilAlarm > 0) {
-                const alarmData = {
-                  medicamento: med.nome,
-                  dose: med.dose,
-                  posologia: med.posologia,
-                  horario: med.horario,
-                  timestamp: alarmTime.getTime()
-                };
-                
-                store.add(alarmData);
-                alarmesConfigurados++;
-                
-                // Enviar mensagem para o Service Worker para agendar a notificação
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                  navigator.serviceWorker.controller.postMessage({
-                    type: 'SCHEDULE_NOTIFICATION',
-                    alarmData: alarmData
-                  });
-                }
-              }
-            }
-          });
-          
-          transaction.oncomplete = () => {
-            db.close();
-            if (alarmesConfigurados > 0) {
-              showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
-            } else {
-              showPopup('Nenhum horário de medicação válido encontrado!', true);
-            }
-          };
-          
-          transaction.onerror = (event) => {
-            console.error('Erro na transação:', event.target.error);
-            showPopup('Erro ao configurar alarmes!', true);
-          };
-        };
-      } catch (error) {
-        console.error('Erro ao configurar alarmes:', error);
-        showPopup('Erro ao configurar alarmes!', true);
-      }
-    }
-
     // Event listeners para os controles da câmera
     document.getElementById('captureBtn').addEventListener('click', capturePhoto);
     document.getElementById('closeCameraBtn').addEventListener('click', stopCamera);
@@ -2758,7 +2872,7 @@
     // Event listeners para o diálogo de nome do exame
     document.getElementById('cancelExamNameBtn').addEventListener('click', () => {
       document.getElementById('examNameDialog').style.display = 'none';
-      capturedPhotoUrl = null;
+      currentExamPhotos = [];
     });
     
     document.getElementById('saveExamNameBtn').addEventListener('click', async () => {
@@ -2771,37 +2885,9 @@
       document.getElementById('examNameDialog').style.display = 'none';
       document.getElementById('examNameInput').value = '';
       
-      if (capturedPhotoUrl) {
+      if (currentExamPhotos.length > 0) {
         try {
-          const username = localStorage.getItem('currentUser');
-          if (!username) {
-            showPopup('Nenhum usuário selecionado!', true);
-            return;
-          }
-          
-          showPopup('Salvando exame...');
-          
-          const timestamp = new Date().toISOString();
-          
-          // Salva no Firestore
-          await db.collection('exames').add({
-            pacienteId: username,
-            url: capturedPhotoUrl,
-            descricao: examName,
-            data: timestamp
-          });
-          
-          showPopup('Exame salvo com sucesso!');
-          
-          // Atualiza a lista de exames
-          loadExames(username);
-          
-          // Atualiza também na tela de detalhes do médico, se estiver aberta
-          if (document.getElementById('userDetailScreen').style.display === 'block') {
-            loadUserExames(username);
-          }
-          
-          capturedPhotoUrl = null;
+          await uploadExamToFirebase(currentExamPhotos, examName);
           stopCamera();
         } catch (error) {
           console.error('Erro ao salvar exame:', error);
@@ -2837,6 +2923,15 @@
       });
       document.getElementById('closeExamModalBtn').addEventListener('click', closeExamModal);
       document.getElementById('examFileInput').addEventListener('change', handleFileUpload);
+      
+      // Verifica se há notificações pendentes quando a página é carregada
+      if ('serviceWorker' in navigator && 'Notification' in window) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.active.postMessage({
+            type: 'CHECK_PENDING_NOTIFICATIONS'
+          });
+        });
+      }
     });
 
     async function loadUserData(username) {
