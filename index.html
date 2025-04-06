@@ -1015,10 +1015,11 @@
     #medicalLoginScreen,
     #medicalAccessScreen,
     #qrCodeScreen {
+      
       text-align: left;
     }
 
-    /* Estilo para a imagem do container de identificação - AUMENTADA EM 30% */
+    /* Estilo para a imagem do container de identificação - AUMENTADA EM 40% */
     .review-container#reviewIdentificacaoContainer {
       padding-right: 150px;
       min-height: 180px;
@@ -1347,10 +1348,6 @@
     <div class="review-container">
       <h3>Medicamentos em Uso</h3>
       <div id="reviewMedicamentos"></div>
-      <button class="alarm-btn" onclick="setMedicationAlarm()">
-        <i class="fas fa-clock"></i>
-        Definir alarme para medicações
-      </button>
     </div>
     <div class="review-container">
       <h3>Mapeamento de PA e Glicemia</h3>
@@ -1750,7 +1747,8 @@
         
         document.getElementById('photoViewerPrev').onclick = () => {
           if (exame.url.length > 0) {
-            currentPhotoIndex = (currentPhotoIndex - 1 + exame.url.length) % exame.url.length;
+            currentPhoto
+Index = (currentPhotoIndex - 1 + exame.url.length) % exame.url.length;
             mainImg.src = exame.url[currentPhotoIndex];
             updateThumbnailSelection();
           }
@@ -2381,7 +2379,13 @@
     document.getElementById('exportBtn').addEventListener('click', () => {
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.setFontSize(18);
+      
+      // Adiciona a imagem no cabeçalho
+      const img = new Image();
+      img.src = 'https://i.imgur.com/XRYaCsH.png';
+      doc.addImage(img, 'PNG', 150, 10, 40, 40); // Aumentado em 85%
+      
+      doc.setFontSize(16); // Fonte reduzida
       doc.text('Caderneta Virtual do Idoso', 20, 20);
       
       const sections = document.querySelectorAll('.review-container');
@@ -2391,17 +2395,17 @@
         const title = section.querySelector('h3').innerText;
         const content = section.querySelector('div').innerText;
         
-        doc.setFontSize(14);
+        doc.setFontSize(12); // Fonte reduzida
         doc.text(title, 20, yPosition);
-        yPosition += 10;
+        yPosition += 8; // Espaçamento reduzido
         
-        doc.setFontSize(12);
+        doc.setFontSize(10); // Fonte reduzida
         const splitContent = doc.splitTextToSize(content, 170);
         splitContent.forEach(line => {
           doc.text(line, 20, yPosition);
-          yPosition += 7;
+          yPosition += 5; // Espaçamento reduzido
         });
-        yPosition += 10;
+        yPosition += 8; // Espaçamento reduzido
       });
 
       doc.save('caderneta-idoso.pdf');
@@ -2943,151 +2947,78 @@
       });
     });
 
-    // Função modificada para configurar alarmes de medicação
-    async function setMedicationAlarm() {
-      try {
-        const username = localStorage.getItem('currentUser');
-        if (!username) {
-          showPopup('Nenhum usuário encontrado!', true);
-          return;
-        }
-        
+    document.getElementById('editBtn').addEventListener('click', async () => {
+      const username = localStorage.getItem('currentUser');
+      if (username) {
         const doc = await db.collection('usuarios').doc(username).get();
-        if (!doc.exists) {
-          showPopup('Dados do usuário não encontrados!', true);
-          return;
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById('nome').value = data.identificacao.nome;
+          document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
+          document.getElementById('peso').value = data.identificacao.peso;
+          document.getElementById('contato').value = data.identificacao.contato;
+          document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
+          document.getElementById('anotacoes').value = data.anotacoes;
+          
+          document.getElementById('reviewScreen').style.display = 'none';
+          document.getElementById('editScreen').style.display = 'block';
         }
-        
-        const medicamentos = doc.data().medicamentos;
-        if (!medicamentos || medicamentos.length === 0) {
-          showPopup('Nenhum medicamento cadastrado para configurar alarmes!', true);
-          return;
-        }
-        
-        // Solicitar permissão para notificações
-        if ('Notification' in window) {
-          const permission = await Notification.requestPermission();
-          if (permission !== 'granted') {
-            showPopup('Permissão para notificações não concedida!', true);
+      }
+    });
+
+    // Função modificada para excluir todos os dados
+    document.getElementById('deleteAllBtn').addEventListener('click', async function() {
+      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?\nEsta ação não pode ser desfeita!')) {
+        try {
+          const username = localStorage.getItem('currentUser');
+          if (!username) {
+            showPopup('Nenhum usuário encontrado para excluir!', true);
             return;
           }
-        } else {
-          showPopup('Seu navegador não suporta notificações!', true);
-          return;
-        }
-        
-        // Verificar se o Service Worker está registrado
-        if ('serviceWorker' in navigator) {
-          try {
-            const registration = await navigator.serviceWorker.register('/sw.js');
-            console.log('Service Worker registrado com sucesso:', registration);
-          } catch (error) {
-            console.error('Falha ao registrar Service Worker:', error);
-            showPopup('Erro ao configurar alarmes!', true);
-            return;
-          }
-        } else {
-          showPopup('Seu navegador não suporta Service Workers!', true);
-          return;
-        }
-        
-        // Armazenar os alarmes no IndexedDB
-        const dbName = 'MedicationAlarmsDB';
-        const dbVersion = 1;
-        
-        const request = indexedDB.open(dbName, dbVersion);
-        
-        request.onerror = (event) => {
-          console.error('Erro ao abrir o banco de dados:', event.target.error);
-          showPopup('Erro ao configurar alarmes!', true);
-        };
-        
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains('alarms')) {
-            const store = db.createObjectStore('alarms', { keyPath: 'id', autoIncrement: true });
-            store.createIndex('timestamp', 'timestamp', { unique: false });
-          }
-        };
-        
-        request.onsuccess = (event) => {
-          const db = event.target.result;
-          const transaction = db.transaction(['alarms'], 'readwrite');
-          const store = transaction.objectStore('alarms');
           
-          // Limpar alarmes antigos
-          store.clear();
+          // Deleta todos os exames do usuário
+          const examesRef = db.collection('exames').where('pacienteId', '==', username);
+          const querySnapshot = await examesRef.get();
           
-          const now = new Date();
-          let alarmesConfigurados = 0;
-          
-          medicamentos.forEach((med, index) => {
-            if (med.horario) {
-              const [hours, minutes] = med.horario.split(':');
-              const alarmTime = new Date();
-              alarmTime.setHours(hours);
-              alarmTime.setMinutes(minutes);
-              
-              // Se o horário já passou hoje, agendar para amanhã
-              if (alarmTime < now) {
-                alarmTime.setDate(alarmTime.getDate() + 1);
-              }
-              
-              const timeUntilAlarm = alarmTime.getTime() - now.getTime();
-              
-              if (timeUntilAlarm > 0) {
-                const alarmData = {
-                  medicamento: med.nome,
-                  dose: med.dose,
-                  posologia: med.posologia,
-                  horario: med.horario,
-                  timestamp: alarmTime.getTime(),
-                  notificationId: `med-alarm-${Date.now()}-${index}`
-                };
-                
-                store.add(alarmData);
-                alarmesConfigurados++;
-                
-                // Enviar mensagem para o Service Worker para agendar a notificação
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                  navigator.serviceWorker.controller.postMessage({
-                    type: 'SCHEDULE_NOTIFICATION',
-                    alarmData: alarmData
-                  });
-                }
-              }
-            }
+          const batch = db.batch();
+          querySnapshot.forEach(doc => {
+            batch.delete(doc.ref);
           });
           
-          transaction.oncomplete = () => {
-            db.close();
-            if (alarmesConfigurados > 0) {
-              showPopup(`${alarmesConfigurados} alarme(s) de medicação configurado(s) com sucesso!`);
-              
-              // No iOS, precisamos disparar uma notificação imediatamente para garantir que as permissões funcionem
-              if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
-                if ('Notification' in window && Notification.permission === 'granted') {
-                  new Notification('Alarmes configurados', {
-                    body: 'Os alarmes para suas medicações foram configurados com sucesso!',
-                    icon: 'https://i.imgur.com/BzIGz3X.png'
-                  });
-                }
-              }
-            } else {
-              showPopup('Nenhum horário de medicação válido encontrado!', true);
-            }
+          await batch.commit();
+          
+          // Deleta os dados do Firestore
+          await db.collection('usuarios').doc(username).delete();
+          
+          // Remove o usuário atual do localStorage
+          localStorage.removeItem('currentUser');
+          
+          // Remove os alarmes do IndexedDB
+          const dbName = 'MedicationAlarmsDB';
+          const request = indexedDB.deleteDatabase(dbName);
+          
+          request.onsuccess = () => {
+            console.log('Banco de dados de alarmes excluído com sucesso');
           };
           
-          transaction.onerror = (event) => {
-            console.error('Erro na transação:', event.target.error);
-            showPopup('Erro ao configurar alarmes!', true);
+          request.onerror = (event) => {
+            console.error('Erro ao excluir banco de dados de alarmes:', event.target.error);
           };
-        };
-      } catch (error) {
-        console.error('Erro ao configurar alarmes:', error);
-        showPopup('Erro ao configurar alarmes!', true);
+          
+          showPopup('Todos os dados foram excluídos com sucesso!');
+          
+          // Esconde todas as telas e mostra apenas a tela inicial
+          document.querySelectorAll('.container, #medicalLoginScreen, #medicalAccessScreen, #userDetailScreen, #qrCodeScreen').forEach(el => {
+            el.style.display = 'none';
+          });
+          document.getElementById('homeScreen').style.display = 'block';
+          
+        } catch (error) {
+          console.error('Erro ao excluir dados:', error);
+          showPopup('Erro ao excluir dados!', true);
+        }
       }
-    }
+    });
 
     // Event listeners para os controles da câmera
     document.getElementById('captureBtn').addEventListener('click', capturePhoto);
@@ -3165,79 +3096,6 @@
       popup.classList.add('show');
       setTimeout(() => popup.classList.remove('show'), 3000);
     }
-
-    document.getElementById('editBtn').addEventListener('click', async () => {
-      const username = localStorage.getItem('currentUser');
-      if (username) {
-        const doc = await db.collection('usuarios').doc(username).get();
-        if (doc.exists) {
-          const data = doc.data();
-          document.getElementById('nome').value = data.identificacao.nome;
-          document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
-          document.getElementById('peso').value = data.identificacao.peso;
-          document.getElementById('contato').value = data.identificacao.contato;
-          document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
-          document.getElementById('anotacoes').value = data.anotacoes;
-          
-          document.getElementById('reviewScreen').style.display = 'none';
-          document.getElementById('editScreen').style.display = 'block';
-        }
-      }
-    });
-
-    // Função modificada para excluir todos os dados
-    document.getElementById('deleteAllBtn').addEventListener('click', async function() {
-      if(confirm('Tem certeza que deseja excluir TODOS os dados permanentemente?\nEsta ação não pode ser desfeita!')) {
-        try {
-          const username = localStorage.getItem('currentUser');
-          if (!username) {
-            showPopup('Nenhum usuário encontrado para excluir!', true);
-            return;
-          }
-          
-          // Deleta todos os exames do usuário
-          const examesRef = db.collection('exames').where('pacienteId', '==', username);
-          const querySnapshot = await examesRef.get();
-          
-          const batch = db.batch();
-          querySnapshot.forEach(doc => {
-            batch.delete(doc.ref);
-          });
-          
-          await batch.commit();
-          
-          // Deleta os dados do Firestore
-          await db.collection('usuarios').doc(username).delete();
-          
-          // Remove o usuário atual do localStorage
-          localStorage.removeItem('currentUser');
-          
-          // Remove os alarmes do IndexedDB
-          const dbName = 'MedicationAlarmsDB';
-          const request = indexedDB.deleteDatabase(dbName);
-          
-          request.onsuccess = () => {
-            console.log('Banco de dados de alarmes excluído com sucesso');
-          };
-          
-          request.onerror = (event) => {
-            console.error('Erro ao excluir banco de dados de alarmes:', event.target.error);
-          };
-          
-          showPopup('Todos os dados foram excluídos com sucesso!');
-          
-          // Esconde todas as telas e mostra apenas a tela inicial
-          document.querySelectorAll('.container, #medicalLoginScreen, #medicalAccessScreen, #userDetailScreen, #qrCodeScreen').forEach(el => {
-            el.style.display = 'none';
-          });
-          document.getElementById('homeScreen').style.display = 'block';
-          
-        } catch (error) {
-          console.error('Erro ao excluir dados:', error);
-          showPopup('Erro ao excluir dados!', true);
-        }
-      }
-    });
 
     // Registrar o Service Worker
     if ('serviceWorker' in navigator) {
