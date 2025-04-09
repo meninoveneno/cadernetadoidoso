@@ -1315,16 +1315,18 @@
 
     /* Ajuste para o campo de texto do diário - REDUZIDO PARA CABER NO CONTAINER */
     .diary-form textarea {
-  width: 100%; /* Reduz a largura considerando o padding */
-  padding: 8px;
+  width: 100%; /* Ocupa a mesma largura do botão */
+  max-width: 300px; /* Define um limite máximo igual ao botão */
+  padding: 10px;
   border: 1px solid #ced4da;
-  border-radius: 6px;
-  margin: 0 auto 8px; /* Centraliza e reduz margem */
-  min-height: 50px; /* Altura mínima menor */
-  max-height: 100px; /* Altura máxima menor */
+  border-radius: 8px;
+  margin-bottom: 10px;
+  min-height: 100px; /* Aumentei a altura mínima */
+  max-height: 200px; /* Aumentei a altura máxima */
+  resize: vertical; /* Permite redimensionar verticalmente */
   box-sizing: border-box; /* Garante que padding não aumente o tamanho */
-  resize: vertical; /* Permite redimensionar apenas na vertical */
-  font-size: 14px; /* Tamanho da fonte menor, se necessário */
+  font-size: 14px;
+  display: block; /* Faz com que ocupe a linha inteira */
 }
 
     /* Estilos para o calendário de atividades físicas */
