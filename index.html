@@ -1241,6 +1241,7 @@
       margin: 0;
     }
 
+    /* Ajuste para o campo de peso e botão de adicionar */
     .weight-form {
       display: flex;
       gap: 10px;
@@ -1249,9 +1250,10 @@
 
     .weight-form input {
       flex: 1;
-      padding: 10px;
+      padding: 8px;
       border: 1px solid #ced4da;
       border-radius: 8px;
+      max-width: 120px;
     }
 
     .weight-form button {
@@ -1259,8 +1261,10 @@
       color: white;
       border: none;
       border-radius: 8px;
-      padding: 10px 15px;
+      padding: 8px 12px;
       cursor: pointer;
+      white-space: nowrap;
+      font-size: 14px;
     }
 
     .weight-chart-container {
@@ -1309,13 +1313,15 @@
       font-size: 14px;
     }
 
+    /* Ajuste para o campo de texto do diário */
     .diary-form textarea {
       width: 100%;
       padding: 10px;
       border: 1px solid #ced4da;
       border-radius: 8px;
       margin-bottom: 10px;
-      min-height: 100px;
+      min-height: 80px;
+      max-height: 150px;
     }
 
     /* Estilos para o calendário de atividades físicas */
@@ -1437,11 +1443,12 @@
       pointer-events: none;
     }
 
+    /* Ícone minimalista para substituir o cadeado */
     .lock-icon {
       position: absolute;
       top: 10px;
       right: 10px;
-      background-color: #dc3545;
+      background-color: #4D6057;
       color: white;
       width: 30px;
       height: 30px;
@@ -1700,7 +1707,7 @@
     <div class="review-container locked-container">
       <div class="lock-overlay">
         <div class="lock-icon">
-          <i class="fas fa-lock"></i>
+          <i class="fas fa-comment"></i>
         </div>
       </div>
       <h3>Recomendações/Anotações Médicas</h3>
@@ -1786,7 +1793,6 @@
       <div class="detail-tab" data-tab="detail-vacinacao">Vacinação</div>
       <div class="detail-tab" data-tab="detail-doencas">Doenças</div>
       <div class="detail-tab" data-tab="detail-medicamentos">Medicamentos</div>
-      <div class="detail-tab" data-tab="detail-anotacoes">Anotações</div>
       <div class="detail-tab" data-tab="detail-monitoramento">Monitoramento</div>
       <div class="detail-tab" data-tab="detail-exames">Exames</div>
       <div class="detail-tab" data-tab="detail-peso">Peso</div>
@@ -3127,7 +3133,7 @@
     function updateReviewScreen(data) {
       document.getElementById('reviewIdentificacao').innerHTML = `
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
-        <p><strong>Nascimento:</strong> ${data.identificacao.dataNascimento}</p>
+        <p><strong>Nascimento:</strong> ${formatarDataBrasileira(data.identificacao.dataNascimento)}</p>
         <p><strong>Peso:</strong> ${data.identificacao.peso} kg</p>
         <p><strong>Contato:</strong> ${data.identificacao.contato}</p>
         <p><strong>Emergência:</strong> ${data.identificacao.contatoEmergencia}</p>
@@ -3136,7 +3142,7 @@
       document.getElementById('reviewVacinacao').innerHTML = data.vacinacao.map(vacina => `
         <div class="review-item">
           <p><strong>${vacina.nomeVacina}</strong></p>
-          <p>Data: ${vacina.dataAplicacao}</p>
+          <p>Data: ${formatarDataBrasileira(vacina.dataAplicacao)}</p>
           <p>Lote: ${vacina.loteVacina}</p>
           <p>Observações: ${vacina.observacoes}</p>
         </div>
@@ -3185,6 +3191,14 @@
         activityDates = data.activityDates;
         renderActivityCalendar();
       }
+    }
+
+    // Função para formatar data no padrão brasileiro (DD/MM/AAAA)
+    function formatarDataBrasileira(dataString) {
+      if (!dataString) return '';
+      const partes = dataString.split('-');
+      if (partes.length !== 3) return dataString;
+      return `${partes[2]}/${partes[1]}/${partes[0]}`;
     }
 
     async function deleteMonitoramentoEntry(username, timestamp) {
@@ -3352,7 +3366,7 @@
           <div class="user-name">${user.nome}</div>
           <div class="user-details">
             <span class="user-id">ID: ${user.id}</span>
-            <span class="user-birth">Nasc: ${user.dataNascimento}</span>
+            <span class="user-birth">Nasc: ${formatarDataBrasileira(user.dataNascimento)}</span>
           </div>
         </div>
       `).join('');
@@ -3401,7 +3415,7 @@
               <label>Nascimento:</label>
               ${isEditing ? 
                 `<input type="date" class="edit-input" data-field="identificacao.dataNascimento" value="${userData.identificacao.dataNascimento}">` : 
-                `<span>${userData.identificacao.dataNascimento}</span>`}
+                `<span>${formatarDataBrasileira(userData.identificacao.dataNascimento)}</span>`}
             </div>
             <div class="form-row">
               <label>Contato:</label>
@@ -3437,7 +3451,7 @@
                 <label>Data:</label>
                 ${isEditing ? 
                   `<input type="date" class="edit-input" data-field="vacinacao[${index}].dataAplicacao" value="${vacina.dataAplicacao}">` : 
-                  `<span>${vacina.dataAplicacao}</span>`}
+                  `<span>${formatarDataBrasileira(vacina.dataAplicacao)}</span>`}
               </div>
               <div class="form-row">
                 <label>Lote:</label>
@@ -3519,19 +3533,6 @@
             </div>
           `).join('')}
           ${isEditing ? `<button class="btn add-item-btn" onclick="addNewMedicamento()">+ Novo Medicamento</button>` : ''}
-        </div>
-
-        <div class="detail-tab-content" id="detail-anotacoes">
-          <div class="form-row locked-container">
-            <div class="lock-overlay">
-              <div class="lock-icon">
-                <i class="fas fa-lock"></i>
-              </div>
-            </div>
-            ${isEditing ? 
-              `<textarea class="edit-input" data-field="anotacoes">${userData.anotacoes || ''}</textarea>` : 
-              `<span>${userData.anotacoes || 'Nenhuma anotação'}</span>`}
-          </div>
         </div>
 
         <div class="detail-tab-content" id="detail-monitoramento">
