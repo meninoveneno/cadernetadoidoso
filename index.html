@@ -1313,15 +1313,15 @@
       font-size: 14px;
     }
 
-    /* Ajuste para o campo de texto do diário */
+    /* Ajuste para o campo de texto do diário - REDUZIDO PARA CABER NO CONTAINER */
     .diary-form textarea {
       width: 100%;
       padding: 10px;
       border: 1px solid #ced4da;
       border-radius: 8px;
       margin-bottom: 10px;
-      min-height: 80px;
-      max-height: 150px;
+      min-height: 60px;
+      max-height: 120px;
     }
 
     /* Estilos para o calendário de atividades físicas */
@@ -1530,7 +1530,7 @@
       <li class="tab" data-tab="vacinacao">Vacinação</li>
       <li class="tab" data-tab="doencas">Doenças Crônicas</li>
       <li class="tab" data-tab="medicamentos">Medicamentos</li>
-      <li class="tab" data-tab="recomendacoes">Anotações</li>
+      <!-- Removida a aba "Anotações" da tela de edição/registro -->
     </ul>
 
     <div class="tab-content active" id="identificacao">
@@ -1600,13 +1600,6 @@
           </div>
         </div>
         <button type="button" id="addMedicamento" class="btn">Adicionar Medicamento</button>
-      </form>
-    </div>
-
-    <div class="tab-content" id="recomendacoes">
-      <form id="form-recomendacoes">
-        <label for="anotacoes">Anotações Médicas:</label>
-        <textarea id="anotacoes" name="anotacoes"></textarea>
       </form>
     </div>
 
@@ -1809,6 +1802,10 @@
       <button id="saveUserBtn" class="btn" style="display: none;" onclick="saveUserChanges()">Salvar</button>
       <button class="btn btn-danger" onclick="deleteUser()">Excluir Usuário</button>
       <button onclick="closeUserDetail()" class="btn">Voltar</button>
+    </div>
+  </div>
+
+  <!-- Overlay e Tela de Monitor  class="btn">Voltar</button>
     </div>
   </div>
 
@@ -3065,6 +3062,18 @@
 
       const username = generateUsername(nome, dataNascimento);
       
+      // Verifica se já existem dados para este usuário
+      let existingData = {};
+      try {
+        const docRef = db.collection('usuarios').doc(username);
+        const doc = await docRef.get();
+        if (doc.exists) {
+          existingData = doc.data();
+        }
+      } catch (error) {
+        console.error('Erro ao verificar dados existentes:', error);
+      }
+      
       const formData = {
         identificacao: {
           nome: nome,
@@ -3092,11 +3101,16 @@
           posologia: form.querySelector('input[name="posologiaMedicamento[]"]').value,
           horario: form.querySelector('input[name="horarioMedicamento[]"]').value
         })),
-        anotacoes: document.getElementById('anotacoes').value,
-        monitoramento: [],
-        weightRecords: [],
-        diaryEntries: [],
-        activityDates: []
+        // Preserva as anotações médicas existentes
+        anotacoes: existingData.anotacoes || '',
+        // Preserva os dados de monitoramento existentes
+        monitoramento: existingData.monitoramento || [],
+        // Preserva os registros de peso existentes
+        weightRecords: existingData.weightRecords || [],
+        // Preserva as entradas do diário existentes
+        diaryEntries: existingData.diaryEntries || [],
+        // Preserva as datas de atividades existentes
+        activityDates: existingData.activityDates || []
       };
 
       try {
@@ -3111,13 +3125,13 @@
         loadExames(username);
         
         // Inicializa o gráfico de peso
-        updateWeightChart([]);
+        updateWeightChart(formData.weightRecords);
         
         // Inicializa o diário de eventos
-        updateDiaryEntries([]);
+        updateDiaryEntries(formData.diaryEntries);
         
         // Inicializa o calendário de atividades
-        activityDates = [];
+        activityDates = formData.activityDates;
         renderActivityCalendar();
         
         // Define a data atual no input de data do peso
@@ -3928,7 +3942,10 @@
           horario: form.querySelector('[data-field$=".horario"]')?.value || ''
         }));
 
-        updatedData.anotacoes = document.querySelector('[data-field="anotacoes"]')?.value || '';
+        // Somente médicos podem editar anotações
+        if (document.querySelector('[data-field="anotacoes"]')) {
+          updatedData.anotacoes = document.querySelector('[data-field="anotacoes"]')?.value || '';
+        }
 
         await userRef.set(updatedData, { merge: true });
         
@@ -4035,12 +4052,91 @@
         const doc = await db.collection('usuarios').doc(username).get();
         if (doc.exists) {
           const data = doc.data();
+          
+          // Salvar os dados atuais para preservá-los
+          const currentData = {
+            monitoramento: data.monitoramento || [],
+            weightRecords: data.weightRecords || [],
+            diaryEntries: data.diaryEntries || [],
+            activityDates: data.activityDates || [],
+            anotacoes: data.anotacoes || ''
+          };
+          
+          // Preencher o formulário com os dados existentes
           document.getElementById('nome').value = data.identificacao.nome;
           document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
           document.getElementById('peso').value = data.identificacao.peso;
           document.getElementById('contato').value = data.identificacao.contato;
           document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
-          document.getElementById('anotacoes').value = data.anotacoes;
+          
+          document.getElementById('hipertensao').checked = data.doencas.hipertensao;
+          document.getElementById('diabetes').checked = data.doencas.diabetes;
+          document.getElementById('cardiopatias').checked = data.doencas.cardiopatias;
+          document.getElementById('chagas').checked = data.doencas.chagas;
+          document.getElementById('outrasDoencas').value = data.doencas.outras || '';
+          
+          // Limpar e recriar os containers de vacinas e medicamentos
+          document.getElementById('vacinasContainer').innerHTML = '';
+          document.getElementById('medicamentosContainer').innerHTML = '';
+          
+          // Adicionar vacinas existentes
+          if (data.vacinacao && data.vacinacao.length > 0) {
+            data.vacinacao.forEach(vacina => {
+              const container = document.getElementById('vacinasContainer');
+              const newBlock = document.createElement('div');
+              newBlock.classList.add('vacina-form');
+              newBlock.innerHTML = `
+                <div class="form-row">
+                  <label>Nome da Vacina:</label>
+                  <input type="text" class="nomeVacina" name="nomeVacina[]" value="${vacina.nomeVacina || ''}">
+                </div>
+                <div class="form-row">
+                  <label>Data de Aplicação:</label>
+                  <input type="date" class="dataAplicacao" name="dataAplicacao[]" value="${vacina.dataAplicacao || ''}">
+                </div>
+                <div class="form-row">
+                  <label>Lote:</label>
+                  <input type="text" class="loteVacina" name="loteVacina[]" value="${vacina.loteVacina || ''}">
+                </div>
+                <div class="form-row">
+                  <label>Observações:</label>
+                  <textarea class="observacoesVacina" name="observacoesVacina[]">${vacina.observacoes || ''}</textarea>
+                </div>
+                <button type="button" class="delete-btn" onclick="deleteVacinaForm(this)">Excluir Vacina</button>
+              `;
+              container.appendChild(newBlock);
+            });
+          } else {
+            // Adicionar um formulário vazio se não houver vacinas
+            document.getElementById('addVacina').click();
+          }
+          
+          // Adicionar medicamentos existentes
+          if (data.medicamentos && data.medicamentos.length > 0) {
+            data.medicamentos.forEach(med => {
+              const container = document.getElementById('medicamentosContainer');
+              const newBlock = document.createElement('div');
+              newBlock.classList.add('medicamento-form');
+              newBlock.innerHTML = `
+                <label>Nome do Medicamento:</label>
+                <input type="text" name="nomeMedicamento[]" value="${med.nome || ''}">
+                <label>Dose:</label>
+                <input type="text" name="doseMedicamento[]" value="${med.dose || ''}">
+                <label>Posologia:</label>
+                <input type="text" name="posologiaMedicamento[]" value="${med.posologia || ''}">
+                <label>Horário:</label>
+                <input type="time" name="horarioMedicamento[]" value="${med.horario || ''}">
+                <button type="button" class="delete-btn" onclick="deleteMedicamentoForm(this)">Excluir Medicamento</button>
+              `;
+              container.appendChild(newBlock);
+            });
+          } else {
+            // Adicionar um formulário vazio se não houver medicamentos
+            document.getElementById('addMedicamento').click();
+          }
+          
+          // Armazenar os dados atuais para preservá-los ao salvar
+          localStorage.setItem('currentData', JSON.stringify(currentData));
           
           document.getElementById('reviewScreen').style.display = 'none';
           document.getElementById('editScreen').style.display = 'block';
