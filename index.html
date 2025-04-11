@@ -1315,19 +1315,19 @@
 
     /* Ajuste para o campo de texto do diário - REDUZIDO PARA CABER NO CONTAINER */
     .diary-form textarea {
-  width: 100%; /* Ocupa a mesma largura do botão */
-  max-width: 300px; /* Define um limite máximo igual ao botão */
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  min-height: 100px; /* Aumentei a altura mínima */
-  max-height: 200px; /* Aumentei a altura máxima */
-  resize: vertical; /* Permite redimensionar verticalmente */
-  box-sizing: border-box; /* Garante que padding não aumente o tamanho */
-  font-size: 14px;
-  display: block; /* Faz com que ocupe a linha inteira */
-}
+      width: 100%; /* Ocupa a mesma largura do botão */
+      max-width: 300px; /* Define um limite máximo igual ao botão */
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      min-height: 100px; /* Aumentei a altura mínima */
+      max-height: 200px; /* Aumentei a altura máxima */
+      resize: vertical; /* Permite redimensionar verticalmente */
+      box-sizing: border-box; /* Garante que padding não aumente o tamanho */
+      font-size: 14px;
+      display: block; /* Faz com que ocupe a linha inteira */
+    }
 
     /* Estilos para o calendário de atividades físicas */
     .activity-container {
@@ -1504,6 +1504,98 @@
       background-color: #4D6057;
       color: white;
     }
+
+    /* Estilos para o container de telefones úteis */
+    .emergency-phones-container {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .emergency-phones-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #4D6057;
+      margin: 0 0 15px 0;
+    }
+
+    .emergency-phones-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+
+    .emergency-phone-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .emergency-phone-btn i {
+      font-size: 24px;
+    }
+
+    .emergency-phone-samu {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .emergency-phone-samu:hover {
+      background-color: #c82333;
+    }
+
+    .emergency-phone-bombeiros {
+      background-color: #fd7e14;
+      color: white;
+    }
+
+    .emergency-phone-bombeiros:hover {
+      background-color: #e36c0a;
+    }
+
+    .emergency-phone-policia {
+      background-color: #0d6efd;
+      color: white;
+    }
+
+    .emergency-phone-policia:hover {
+      background-color: #0a58ca;
+    }
+
+    /* Estilos para sugestões de vacinas */
+    .vaccine-suggestions {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #e9f7ef;
+      border-radius: 8px;
+      border-left: 4px solid #4D6057;
+    }
+
+    .vaccine-suggestions h4 {
+      margin-top: 0;
+      color: #4D6057;
+      font-size: 16px;
+    }
+
+    .vaccine-suggestions ul {
+      margin: 10px 0 0 0;
+      padding-left: 20px;
+    }
+
+    .vaccine-suggestions li {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -1546,6 +1638,8 @@
         <input type="date" id="dataNascimento" name="dataNascimento">
         <label for="peso">Peso (kg):</label>
         <input type="number" id="peso" name="peso">
+        <label for="panturrilha">Circunferência da Panturrilha (cm):</label>
+        <input type="number" id="panturrilha" name="panturrilha" step="0.1">
         <label for="contato">Contato:</label>
         <input type="tel" id="contato" name="contato">
         <label for="contatoEmergencia">Contato de Emergência:</label>
@@ -1554,6 +1648,18 @@
     </div>
 
     <div class="tab-content" id="vacinacao">
+      <div class="vaccine-suggestions">
+        <h4>Vacinas recomendadas para idosos (Calendário Nacional de Vacinação):</h4>
+        <ul>
+          <li>Influenza (anual)</li>
+          <li>Pneumocócica 23-valente (a cada 5 anos)</li>
+          <li>dT (Difteria e Tétano) - reforço a cada 10 anos</li>
+          <li>Hepatite B (3 doses)</li>
+          <li>Febre amarela (dose única)</li>
+          <li>COVID-19 (conforme esquema vigente)</li>
+          <li>Herpes Zóster (dose única a partir dos 60 anos)</li>
+        </ul>
+      </div>
       <div id="vacinasContainer">
         <div class="vacina-form">
           <div class="form-row">
@@ -1631,6 +1737,17 @@
       <h3>Medicamentos em Uso</h3>
       <div id="reviewMedicamentos"></div>
     </div>
+    
+    <div class="review-container locked-container">
+      <div class="lock-overlay">
+        <div class="lock-icon">
+          <i class="fas fa-comment"></i>
+        </div>
+      </div>
+      <h3>Recomendações/Anotações Médicas</h3>
+      <div id="reviewAnotacoes"></div>
+    </div>
+    
     <div class="review-container">
       <h3>Mapeamento de PA e Glicemia</h3>
       <div id="reviewMonitoramento"></div>
@@ -1702,15 +1819,24 @@
       </div>
     </div>
     
-    <div class="review-container locked-container">
-      <div class="lock-overlay">
-        <div class="lock-icon">
-          <i class="fas fa-comment"></i>
+    <!-- Novo container para telefones úteis -->
+    <div class="review-container">
+      <h3>Telefones Úteis</h3>
+      <div class="emergency-phones-container">
+        <div class="emergency-phones-grid">
+          <button class="emergency-phone-btn emergency-phone-samu" onclick="callEmergency('192')">
+            <i class="fas fa-ambulance"></i> SAMU - 192
+          </button>
+          <button class="emergency-phone-btn emergency-phone-bombeiros" onclick="callEmergency('193')">
+            <i class="fas fa-fire-extinguisher"></i> BOMBEIROS - 193
+          </button>
+          <button class="emergency-phone-btn emergency-phone-policia" onclick="callEmergency('190')">
+            <i class="fas fa-shield-alt"></i> POLÍCIA - 190
+          </button>
         </div>
       </div>
-      <h3>Recomendações/Anotações Médicas</h3>
-      <div id="reviewAnotacoes"></div>
     </div>
+    
     
     <!-- Seção de Exames melhorada -->
     <div class="review-container">
@@ -1807,10 +1933,6 @@
       <button id="saveUserBtn" class="btn" style="display: none;" onclick="saveUserChanges()">Salvar</button>
       <button class="btn btn-danger" onclick="deleteUser()">Excluir Usuário</button>
       <button onclick="closeUserDetail()" class="btn">Voltar</button>
-    </div>
-  </div>
-
-  <!-- Overlay e Tela de Monitor  class="btn">Voltar</button>
     </div>
   </div>
 
@@ -1992,6 +2114,13 @@
     let currentCalendarDate = new Date();
     let activityDates = [];
     
+    // Função para ligar para serviços de emergência
+    function callEmergency(number) {
+      if (confirm(`Deseja ligar para o número ${number}?`)) {
+        window.location.href = `tel:${number}`;
+      }
+    }
+    
     function generateUsername(nome, dataNascimento) {
       const normalized = nome.toLowerCase()
         .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -2017,36 +2146,45 @@
 
     async function loadExames(username) {
       try {
+        // Primeiro, carregamos os exames do Firebase
         const examesRef = db.collection('exames').where('pacienteId', '==', username);
         const querySnapshot = await examesRef.get();
         
         const examesList = document.getElementById('examesList');
         examesList.innerHTML = '';
         
-        if (querySnapshot.empty) {
-          examesList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado ainda.</p>';
-          return;
-        }
-        
         const exames = [];
         querySnapshot.forEach(doc => {
           exames.push({ id: doc.id, ...doc.data() });
         });
         
-        // Ordena por data (mais recente primeiro)
-        exames.sort((a, b) => new Date(b.data) - new Date(a.data));
+        // Agora, carregamos os exames do localStorage
+        const localExames = getLocalExames(username);
         
-        exames.forEach(exame => {
+        // Combinamos os dois arrays
+        const allExames = [...exames, ...localExames];
+        
+        if (allExames.length === 0) {
+          examesList.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado ainda.</p>';
+          return;
+        }
+        
+        // Ordena por data (mais recente primeiro)
+        allExames.sort((a, b) => new Date(b.data) - new Date(a.data));
+        
+        allExames.forEach(exame => {
           const exameItem = document.createElement('div');
           exameItem.className = 'exame-item';
           
           // Verifica se é um PDF ou uma imagem
           const isPdf = exame.tipo === 'pdf';
+          const isLocal = exame.isLocal === true;
+          
           const thumbnailHtml = isPdf ? 
             `<div class="pdf-thumbnail">
               <i class="fas fa-file-pdf pdf-icon"></i>
             </div>` : 
-            `<img src="${exame.url[0]}" alt="Exame" class="exame-thumbnail">`;
+            `<img src="${exame.url[0] || exame.url}" alt="Exame" class="exame-thumbnail">`;
           
           exameItem.innerHTML = `
             <div class="exame-info">
@@ -2062,10 +2200,14 @@
               </div>
             </div>
             <div class="exame-actions">
-              <button class="exame-action-btn" onclick="${isPdf ? `showPdfViewer('${exame.url}')` : `showExameAlbum('${exame.id}')`}" title="Visualizar exame">
+              <button class="exame-action-btn" onclick="${isPdf ? 
+                (isLocal ? `showLocalPdfViewer('${exame.id}')` : `showPdfViewer('${exame.url}')`) : 
+                (isLocal ? `showLocalExameAlbum('${exame.id}')` : `showExameAlbum('${exame.id}')`)}" title="Visualizar exame">
                 <i class="fas fa-eye"></i>
               </button>
-              <button class="exame-action-btn" onclick="deleteExame('${exame.id}')" title="Excluir exame">
+              <button class="exame-action-btn" onclick="${isLocal ? 
+                `deleteLocalExame('${exame.id}')` : 
+                `deleteExame('${exame.id}')`}" title="Excluir exame">
                 <i class="fas fa-trash"></i>
               </button>
             </div>
@@ -2076,6 +2218,127 @@
         console.error('Erro ao carregar exames:', error);
         showPopup('Erro ao carregar exames!', true);
       }
+    }
+
+    // Funções para gerenciar exames no localStorage
+    function getLocalExames(username) {
+      const localExamesKey = `exames_${username}`;
+      const localExamesJson = localStorage.getItem(localExamesKey);
+      return localExamesJson ? JSON.parse(localExamesJson) : [];
+    }
+
+    function saveLocalExame(username, exame) {
+      const localExamesKey = `exames_${username}`;
+      const localExames = getLocalExames(username);
+      
+      // Adiciona um ID único e marca como local
+      exame.id = 'local_' + Date.now();
+      exame.isLocal = true;
+      
+      localExames.push(exame);
+      localStorage.setItem(localExamesKey, JSON.stringify(localExames));
+      return exame.id;
+    }
+
+    function deleteLocalExame(exameId) {
+      if(!confirm('Tem certeza que deseja excluir este exame permanentemente?')) return;
+      
+      const username = localStorage.getItem('currentUser');
+      if (!username) return;
+      
+      const localExamesKey = `exames_${username}`;
+      let localExames = getLocalExames(username);
+      
+      localExames = localExames.filter(exame => exame.id !== exameId);
+      localStorage.setItem(localExamesKey, JSON.stringify(localExames));
+      
+      showPopup('Exame excluído com sucesso!');
+      loadExames(username);
+    }
+
+    function getLocalExameById(username, exameId) {
+      const localExames = getLocalExames(username);
+      return localExames.find(exame => exame.id === exameId);
+    }
+
+    function showLocalPdfViewer(exameId) {
+      const username = localStorage.getItem('currentUser');
+      if (!username) return;
+      
+      const exame = getLocalExameById(username, exameId);
+      if (!exame) return;
+      
+      const modal = document.getElementById('pdfViewerModal');
+      const frame = document.getElementById('pdfViewerFrame');
+      
+      frame.src = exame.url;
+      modal.style.display = 'flex';
+      
+      document.getElementById('pdfViewerClose').onclick = () => {
+        modal.style.display = 'none';
+        frame.src = '';
+      };
+    }
+
+    function showLocalExameAlbum(exameId) {
+      const username = localStorage.getItem('currentUser');
+      if (!username) return;
+      
+      const exame = getLocalExameById(username, exameId);
+      if (!exame) return;
+      
+      const modal = document.getElementById('photoViewerModal');
+      const mainImg = document.getElementById('photoViewerImage');
+      const thumbnailsContainer = document.getElementById('photoViewerThumbnails');
+      
+      // Limpa thumbnails anteriores
+      thumbnailsContainer.innerHTML = '';
+      
+      // Prepara as URLs das imagens (pode ser um array ou uma única URL)
+      const urls = Array.isArray(exame.url) ? exame.url : [exame.url];
+      
+      // Adiciona todas as fotos do exame
+      urls.forEach((url, index) => {
+        const thumbnail = document.createElement('img');
+        thumbnail.src = url;
+        thumbnail.className = 'photo-viewer-thumbnail' + (index === 0 ? ' active' : '');
+        thumbnail.onclick = () => {
+          currentPhotoIndex = index;
+          mainImg.src = url;
+          updateThumbnailSelection();
+        };
+        thumbnailsContainer.appendChild(thumbnail);
+      });
+      
+      // Mostra a primeira imagem
+      if (urls.length > 0) {
+        currentPhotoIndex = 0;
+        mainImg.src = urls[0];
+        updateThumbnailSelection();
+      }
+      
+      modal.style.display = 'flex';
+      
+      // Configura botões de navegação
+      document.getElementById('photoViewerClose').onclick = () => {
+        modal.style.display = 'none';
+      };
+      
+      document.getElementById('photoViewerPrev').onclick = () => {
+        if (urls.length > 0) {
+          currentPhotoIndex = (currentPhotoIndex - 1 + urls.length) % urls.length;
+          mainImg.src = urls[currentPhotoIndex];
+          updateThumbnailSelection();
+        }
+      };
+      
+      document.getElementById('photoViewerNext').onclick = () => {
+        if (urls.length > 0) {
+          currentPhotoIndex = (currentPhotoIndex + 1) % urls.length;
+          mainImg.src = urls[currentPhotoIndex];
+          updateThumbnailSelection();
+        }
+      };
     }
 
     function showPdfViewer(pdfUrl) {
@@ -2305,6 +2568,8 @@
       document.getElementById('examNameInput').focus();
     }
     
+    
+    
     function addMorePhotos() {
       document.getElementById('photoPreviewModal').style.display = 'none';
       startCamera(usingFrontCamera ? 'user' : 'environment');
@@ -2350,7 +2615,7 @@
       if (!file) return;
       
       try {
-        showPopup('Enviando PDF...');
+        showPopup('Processando PDF...');
         
         const username = localStorage.getItem('currentUser');
         if (!username) {
@@ -2362,33 +2627,34 @@
         const examName = prompt('Digite um nome para o exame:', '');
         if (examName === null) return; // Usuário cancelou
         
-        // Cria uma referência para o arquivo no Storage
-        const storageRef = storage.ref();
-        const fileRef = storageRef.child(`exames/${username}/${Date.now()}_${file.name}`);
+        // Lê o arquivo como URL de dados
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const pdfDataUrl = e.target.result;
+          
+          // Salva no localStorage
+          const exame = {
+            pacienteId: username,
+            url: pdfDataUrl,
+            descricao: examName || 'Exame PDF',
+            data: new Date().toISOString(),
+            tipo: 'pdf'
+          };
+          
+          saveLocalExame(username, exame);
+          
+          showPopup('PDF salvo com sucesso!');
+          
+          // Atualiza a lista de exames
+          loadExames(username);
+          
+          // Atualiza também na tela de detalhes do médico, se estiver aberta
+          if (document.getElementById('userDetailScreen').style.display === 'block') {
+            loadUserExames(username);
+          }
+        };
         
-        // Faz o upload do arquivo
-        const snapshot = await fileRef.put(file);
-        const downloadURL = await snapshot.ref.getDownloadURL();
-        
-        // Salva no Firestore
-        await db.collection('exames').add({
-          pacienteId: username,
-          url: downloadURL,
-          descricao: examName || 'Exame PDF',
-          data: new Date().toISOString(),
-          tipo: 'pdf'
-        });
-        
-        showPopup('PDF salvo com sucesso!');
-        
-        // Atualiza a lista de exames
-        loadExames(username);
-        
-        // Atualiza também na tela de detalhes do médico, se estiver aberta
-        if (document.getElementById('userDetailScreen').style.display === 'block') {
-          loadUserExames(username);
-        }
-        
+        reader.readAsDataURL(file);
         event.target.value = ''; // Limpa o input
       } catch (error) {
         console.error('Erro ao salvar PDF:', error);
@@ -2408,14 +2674,16 @@
         
         const timestamp = new Date().toISOString();
         
-        // Salva no Firestore
-        await db.collection('exames').add({
+        // Salva no localStorage em vez do Firebase
+        const exame = {
           pacienteId: username,
           url: photos,
           descricao: description || '',
           data: timestamp,
           tipo: 'imagem'
-        });
+        };
+        
+        saveLocalExame(username, exame);
         
         showPopup('Exame salvo com sucesso!');
         capturedPhotos = []; // Limpar fotos capturadas
@@ -2435,34 +2703,43 @@
 
     async function loadUserExames(username) {
       try {
+        // Carrega exames do Firebase
         const examesRef = db.collection('exames').where('pacienteId', '==', username);
         const querySnapshot = await examesRef.get();
+        
+        // Carrega exames do localStorage
+        const localExames = getLocalExames(username);
         
         const examesContainer = document.createElement('div');
         examesContainer.className = 'exames-container';
         
-        if (querySnapshot.empty) {
+        const allExames = [];
+        querySnapshot.forEach(doc => {
+          allExames.push({ id: doc.id, ...doc.data(), isLocal: false });
+        });
+        
+        // Adiciona os exames locais
+        allExames.push(...localExames);
+        
+        if (allExames.length === 0) {
           examesContainer.innerHTML = '<p style="text-align: center; color: #666;">Nenhum exame cadastrado para este paciente.</p>';
         } else {
-          const exames = [];
-          querySnapshot.forEach(doc => {
-            exames.push({ id: doc.id, ...doc.data() });
-          });
-          
           // Ordena por data (mais recente primeiro)
-          exames.sort((a, b) => new Date(b.data) - new Date(a.data));
+          allExames.sort((a, b) => new Date(b.data) - new Date(a.data));
           
-          exames.forEach(exame => {
+          allExames.forEach(exame => {
             const exameItem = document.createElement('div');
             exameItem.className = 'exame-item';
             
             // Verifica se é um PDF ou uma imagem
             const isPdf = exame.tipo === 'pdf';
+            const isLocal = exame.isLocal === true;
+            
             const thumbnailHtml = isPdf ? 
               `<div class="pdf-thumbnail">
                 <i class="fas fa-file-pdf pdf-icon"></i>
               </div>` : 
-              `<img src="${exame.url[0]}" alt="Exame" class="exame-thumbnail">`;
+              `<img src="${Array.isArray(exame.url) ? exame.url[0] : exame.url}" alt="Exame" class="exame-thumbnail">`;
             
             exameItem.innerHTML = `
               <div class="exame-info">
@@ -2478,10 +2755,14 @@
                 </div>
               </div>
               <div class="exame-actions">
-                <button class="exame-action-btn" onclick="${isPdf ? `showPdfViewer('${exame.url}')` : `showExameAlbum('${exame.id}')`}" title="Visualizar exame">
+                <button class="exame-action-btn" onclick="${isPdf ? 
+                  (isLocal ? `showLocalPdfViewer('${exame.id}')` : `showPdfViewer('${exame.url}')`) : 
+                  (isLocal ? `showLocalExameAlbum('${exame.id}')` : `showExameAlbum('${exame.id}')`)}" title="Visualizar exame">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button class="exame-action-btn" onclick="deleteExame('${exame.id}')" title="Excluir exame">
+                <button class="exame-action-btn" onclick="${isLocal ? 
+                  `deleteLocalExame('${exame.id}')` : 
+                  `deleteExame('${exame.id}')`}" title="Excluir exame">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -3084,6 +3365,7 @@
           nome: nome,
           dataNascimento: dataNascimento,
           peso: document.getElementById('peso').value,
+          panturrilha: document.getElementById('panturrilha').value,
           contato: document.getElementById('contato').value,
           contatoEmergencia: document.getElementById('contatoEmergencia').value
         },
@@ -3154,6 +3436,7 @@
         <p><strong>Nome:</strong> ${data.identificacao.nome}</p>
         <p><strong>Nascimento:</strong> ${formatarDataBrasileira(data.identificacao.dataNascimento)}</p>
         <p><strong>Peso:</strong> ${data.identificacao.peso} kg</p>
+        ${data.identificacao.panturrilha ? `<p><strong>Panturrilha:</strong> ${data.identificacao.panturrilha} cm</p>` : ''}
         <p><strong>Contato:</strong> ${data.identificacao.contato}</p>
         <p><strong>Emergência:</strong> ${data.identificacao.contatoEmergencia}</p>
       `;
@@ -3252,10 +3535,18 @@
       
       const sections = document.querySelectorAll('.review-container');
       let yPosition = 30;
+      let pageCount = 1;
 
       sections.forEach(section => {
         const title = section.querySelector('h3').innerText;
         const content = section.querySelector('div').innerText;
+        
+        // Verifica se precisa adicionar uma nova página
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+          pageCount++;
+        }
         
         doc.setFontSize(12); // Fonte reduzida
         doc.text(title, 20, yPosition);
@@ -3263,9 +3554,28 @@
         
         doc.setFontSize(10); // Fonte reduzida
         const splitContent = doc.splitTextToSize(content, 170);
+        
+        // Verifica se o conteúdo cabe na página atual
+        if (yPosition + splitContent.length * 5 > 280) {
+          doc.addPage();
+          yPosition = 20;
+          pageCount++;
+          doc.setFontSize(12);
+          doc.text(title + " (continuação)", 20, yPosition);
+          yPosition += 8;
+          doc.setFontSize(10);
+        }
+        
         splitContent.forEach(line => {
           doc.text(line, 20, yPosition);
           yPosition += 5; // Espaçamento reduzido
+          
+          // Verifica se precisa adicionar uma nova página
+          if (yPosition > 280) {
+            doc.addPage();
+            yPosition = 20;
+            pageCount++;
+          }
         });
         yPosition += 8; // Espaçamento reduzido
       });
@@ -3453,6 +3763,12 @@
               ${isEditing ? 
                 `<input type="number" class="edit-input" data-field="identificacao.peso" value="${userData.identificacao.peso}">` : 
                 `<span>${userData.identificacao.peso}</span>`}
+            </div>
+            <div class="form-row">
+              <label>Panturrilha (cm):</label>
+              ${isEditing ? 
+                `<input type="number" step="0.1" class="edit-input" data-field="identificacao.panturrilha" value="${userData.identificacao.panturrilha || ''}">` : 
+                `<span>${userData.identificacao.panturrilha || 'Não informado'}</span>`}
             </div>
           </div>
         </div>
@@ -3753,7 +4069,7 @@
       calendarContainer.innerHTML = '';
       
       const year = userCurrentCalendarDate.getFullYear();
-      const month = userCurrentCalendarDate.getMonth();
+const month = userCurrentCalendarDate.getMonth();
       
       // Atualiza o título do mês
       document.getElementById('userCurrentMonth').textContent = new Date(year, month, 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -3922,7 +4238,8 @@
           dataNascimento: dataNascimento,
           contato: document.querySelector('[data-field="identificacao.contato"]')?.value || '',
           contatoEmergencia: document.querySelector('[data-field="identificacao.contatoEmergencia"]')?.value || '',
-          peso: document.querySelector('[data-field="identificacao.peso"]')?.value || ''
+          peso: document.querySelector('[data-field="identificacao.peso"]')?.value || '',
+          panturrilha: document.querySelector('[data-field="identificacao.panturrilha"]')?.value || ''
         };
 
         updatedData.doencas = {
@@ -4071,6 +4388,7 @@
           document.getElementById('nome').value = data.identificacao.nome;
           document.getElementById('dataNascimento').value = data.identificacao.dataNascimento;
           document.getElementById('peso').value = data.identificacao.peso;
+          document.getElementById('panturrilha').value = data.identificacao.panturrilha || '';
           document.getElementById('contato').value = data.identificacao.contato;
           document.getElementById('contatoEmergencia').value = data.identificacao.contatoEmergencia;
           
@@ -4175,6 +4493,9 @@
           
           // Remove o usuário atual do localStorage
           localStorage.removeItem('currentUser');
+          
+          // Remove os exames locais
+          localStorage.removeItem(`exames_${username}`);
           
           // Remove os alarmes do IndexedDB
           const dbName = 'MedicationAlarmsDB';
@@ -4336,3 +4657,4 @@
   </script>
 </body>
 </html>
+
