@@ -2806,55 +2806,57 @@
 
     // Funções para o monitoramento de peso
     async function addWeightRecord() {
-      const weight = document.getElementById('weightInput').value;
-      const date = document.getElementById('weightDate').value || new Date().toISOString().split('T')[0];
-      
-      if (!weight) {
-        showPopup('Por favor, informe o peso!', true);
-        return;
-      }
-      
-      const username = localStorage.getItem('currentUser');
-      if (!username) {
-        showPopup('Nenhum usuário selecionado!', true);
-        return;
-      }
-      
-      try {
-        const userRef = db.collection('usuarios').doc(username);
-        const userDoc = await userRef.get();
-        
-        if (!userDoc.exists) {
-          showPopup('Usuário não encontrado!', true);
-          return;
-        }
-        
-        const userData = userDoc.data();
-        const weightRecords = userData.weightRecords || [];
-        
-        // Adiciona o novo registro
-        weightRecords.push({
-          weight: parseFloat(weight),
-          date: date,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Ordena por data
-        weightRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
-        
-        // Atualiza no Firestore
-        await userRef.update({ weightRecords });
-        
-        showPopup('Peso registrado com sucesso!');
-        document.getElementById('weightInput').value = '';
-        
-        // Atualiza o gráfico
-        updateWeightChart(weightRecords);
-      } catch (error) {
-        console.error('Erro ao registrar peso:', error);
-        showPopup('Erro ao registrar peso!', true);
-      }
+  const weight = document.getElementById('weightInput').value;
+  // Corrigir a forma como a data é obtida
+  const dateInput = document.getElementById('weightDate').value;
+  const date = dateInput ? new Date(dateInput).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+  
+  if (!weight) {
+    showPopup('Por favor, informe o peso!', true);
+    return;
+  }
+  
+  const username = localStorage.getItem('currentUser');
+  if (!username) {
+    showPopup('Nenhum usuário selecionado!', true);
+    return;
+  }
+  
+  try {
+    const userRef = db.collection('usuarios').doc(username);
+    const userDoc = await userRef.get();
+    
+    if (!userDoc.exists) {
+      showPopup('Usuário não encontrado!', true);
+      return;
     }
+    
+    const userData = userDoc.data();
+    const weightRecords = userData.weightRecords || [];
+    
+    // Adiciona o novo registro
+    weightRecords.push({
+      weight: parseFloat(weight),
+      date: date, // Já formatado como YYYY-MM-DD
+      timestamp: new Date().toISOString()
+    });
+    
+    // Ordena por data
+    weightRecords.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // Atualiza no Firestore
+    await userRef.update({ weightRecords });
+    
+    showPopup('Peso registrado com sucesso!');
+    document.getElementById('weightInput').value = '';
+    
+    // Atualiza o gráfico
+    updateWeightChart(weightRecords);
+  } catch (error) {
+    console.error('Erro ao registrar peso:', error);
+    showPopup('Erro ao registrar peso!', true);
+  }
+}
 
     function updateWeightChart(weightRecords) {
       const ctx = document.getElementById('weightChart').getContext('2d');
