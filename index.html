@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -309,8 +310,8 @@
     }
     .review-buttons {
       display: flex;
-      gap: 15px;
-      justify-content: center;
+      gap: 10px;
+      justify-content: flex-end;
       margin-top: 20px;
     }
     #monitoramentoOverlay {
@@ -1857,13 +1858,14 @@
       </div>
     </div>
     
-  <div class="review-buttons">
-    <button id="exportBtn" class="btn">Exportar</button>
-    <button id="editBtn" class="btn">Editar</button>
-    <button id="deleteAllBtn" class="btn btn-danger">
-      <i class="fas fa-trash"></i> Excluir todos os dados
-    </button>
-  </div>
+    <div class="review-buttons">
+      <button id="exportBtn" class="btn">Exportar</button>
+      <button id="medicalAccessBtn" class="btn">Acesso Médico</button>
+      <button id="editBtn" class="btn">Editar</button>
+      <button id="deleteAllBtn" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Excluir todos os dados
+      </button>
+    </div>
   </div>
 
   <!-- Tela de Login Médico -->
@@ -4626,7 +4628,7 @@
 
     // Inicialização
     window.onload = () => {
-      let username = localStorage.getItem('currentUser');
+      const username = localStorage.getItem('currentUser');
       if (username) {
         reviewUnsubscribe = setupRealtimeUpdates(username);
         document.getElementById('homeScreen').style.display = 'none';
@@ -4650,18 +4652,8 @@
             // Inicializa o calendário de atividades
             activityDates = data.activityDates || [];
             renderActivityCalendar();
-          } else {
-            // Se não encontrou dados, limpa currentUser e mostra tela inicial
-            localStorage.removeItem('currentUser');
-            username = null;
-            document.getElementById('homeScreen').style.display = 'block';
-            document.getElementById('reviewScreen').style.display = 'none';
           }
         });
-      } else {
-        // Se não tem usuário salvo, mostra tela inicial
-        document.getElementById('homeScreen').style.display = 'block';
-        document.getElementById('reviewScreen').style.display = 'none';
       }
       
       // Inicializa os eventos para o monitoramento de peso
