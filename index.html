@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -19,6 +18,26 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    // Verifica se há um usuário salvo ao carregar a página
+document.addEventListener('DOMContentLoaded', () => {
+  const username = localStorage.getItem('currentUser');
+  if (username) {
+    // Se existir um usuário, carrega os dados e vai direto para a tela de revisão
+    loadUserData(username).then(data => {
+      if (data) {
+        document.getElementById('homeScreen').style.display = 'none';
+        document.getElementById('reviewScreen').style.display = 'block';
+        updateReviewScreen(data);
+        setupRealtimeUpdates(username);
+        loadExames(username);
+        updateWeightChart(data.weightRecords || []);
+        updateDiaryEntries(data.diaryEntries || []);
+        activityDates = data.activityDates || [];
+        renderActivityCalendar();
+      }
+    });
+  }
+});
     .contact-header {
       position: fixed;
       top: 0;
