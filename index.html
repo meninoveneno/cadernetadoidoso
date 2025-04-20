@@ -4031,12 +4031,6 @@
             loadUserExames(currentEditingUser);
           }
           
-          // Render
-          // Carrega os exames quando a aba é clicada
-          if (targetTab === 'detail-exames') {
-            loadUserExames(currentEditingUser);
-          }
-          
           // Renderiza o gráfico de peso quando a aba é clicada
           if (targetTab === 'detail-peso') {
             renderUserWeightChart(userData.weightRecords || []);
