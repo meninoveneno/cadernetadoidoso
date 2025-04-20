@@ -4653,6 +4653,9 @@
             renderActivityCalendar();
           }
         });
+      } else {
+        // Se não houver usuário atual, mostrar modal para seleção ou criação de usuário
+        showUserSelectionModal();
       }
       
       // Inicializa os eventos para o monitoramento de peso
@@ -4701,6 +4704,115 @@
         document.getElementById('examNameDialog').style.display = 'none';
       });
     };
+
+    // Função para mostrar modal de seleção/criação de usuário
+    function showUserSelectionModal() {
+      // Cria modal se não existir
+      if (!document.getElementById('userSelectionModal')) {
+        const modal = document.createElement('div');
+        modal.id = 'userSelectionModal';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100%';
+        modal.style.height = '100%';
+        modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.justifyContent = 'center';
+        modal.style.alignItems = 'center';
+        modal.style.zIndex = '10000';
+
+        modal.innerHTML = `
+          <div style="background: white; padding: 20px; border-radius: 12px; max-width: 400px; width: 90%; text-align: center;">
+            <h2>Bem-vindo à Caderneta do Idoso</h2>
+            <p>Por favor, informe seu nome e data de nascimento para carregar seus dados ou criar um novo registro.</p>
+            <input type="text" id="modalNome" placeholder="Nome completo" style="width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;">
+            <input type="date" id="modalDataNascimento" style="width: 100%; padding: 10px; margin: 10px 0; font-size: 16px; border-radius: 8px; border: 1px solid #ccc;">
+            <button id="modalLoadBtn" style="padding: 12px 20px; background-color: #4D6057; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer;">Carregar Dados</button>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        document.getElementById('modalLoadBtn').addEventListener('click', async () => {
+          const nome = document.getElementById('modalNome').value.trim();
+          const dataNascimento = document.getElementById('modalDataNascimento').value;
+
+          if (!nome || !dataNascimento) {
+            alert('Por favor, preencha nome e data de nascimento.');
+            return;
+          }
+
+          const username = generateUsername(nome, dataNascimento);
+
+          // Verifica se o usuário existe no Firebase
+          try {
+            const doc = await db.collection('usuarios').doc(username).get();
+            if (doc.exists) {
+              localStorage.setItem('currentUser', username);
+              reviewUnsubscribe = setupRealtimeUpdates(username);
+              document.getElementById('homeScreen').style.display = 'none';
+              document.getElementById('reviewScreen').style.display = 'block';
+              loadExames(username);
+              document.getElementById('weightDate').valueAsDate = new Date();
+
+              const data = doc.data();
+              updateWeightChart(data.weightRecords || []);
+              updateDiaryEntries(data.diaryEntries || []);
+              activityDates = data.activityDates || [];
+              renderActivityCalendar();
+
+              // Remove modal
+              modal.remove();
+            } else {
+              // Usuário não existe, cria novo registro vazio e salva
+              const newUserData = {
+                identificacao: {
+                  nome: nome,
+                  dataNascimento: dataNascimento,
+                  peso: '',
+                  panturrilha: '',
+                  contato: '',
+                  contatoEmergencia: ''
+                },
+                vacinacao: [],
+                doencas: {
+                  hipertensao: false,
+                  diabetes: false,
+                  cardiopatias: false,
+                  chagas: false,
+                  outras: ''
+                },
+                medicamentos: [],
+                anotacoes: '',
+                monitoramento: [],
+                weightRecords: [],
+                diaryEntries: [],
+                activityDates: []
+              };
+              await db.collection('usuarios').doc(username).set(newUserData);
+              localStorage.setItem('currentUser', username);
+              reviewUnsubscribe = setupRealtimeUpdates(username);
+              document.getElementById('homeScreen').style.display = 'none';
+              document.getElementById('reviewScreen').style.display = 'block';
+              loadExames(username);
+              document.getElementById('weightDate').valueAsDate = new Date();
+
+              updateWeightChart([]);
+              updateDiaryEntries([]);
+              activityDates = [];
+              renderActivityCalendar();
+
+              // Remove modal
+              modal.remove();
+            }
+          } catch (error) {
+            console.error('Erro ao carregar ou criar usuário:', error);
+            alert('Erro ao carregar ou criar usuário. Tente novamente.');
+          }
+        });
+      }
+    }
 
     // Registra o service worker para PWA
     if ('serviceWorker' in navigator) {
