@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -18,26 +19,6 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    // Verifica se há um usuário salvo ao carregar a página
-document.addEventListener('DOMContentLoaded', () => {
-  const username = localStorage.getItem('currentUser');
-  if (username) {
-    // Se existir um usuário, carrega os dados e vai direto para a tela de revisão
-    loadUserData(username).then(data => {
-      if (data) {
-        document.getElementById('homeScreen').style.display = 'none';
-        document.getElementById('reviewScreen').style.display = 'block';
-        updateReviewScreen(data);
-        setupRealtimeUpdates(username);
-        loadExames(username);
-        updateWeightChart(data.weightRecords || []);
-        updateDiaryEntries(data.diaryEntries || []);
-        activityDates = data.activityDates || [];
-        renderActivityCalendar();
-      }
-    });
-  }
-});
     .contact-header {
       position: fixed;
       top: 0;
@@ -328,12 +309,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     .review-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center; /* Centraliza os botões */
-  margin-top: 20px;
-  flex-wrap: wrap; /* Permite que os botões quebrem para a próxima linha em telas pequenas */
-}
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
     #monitoramentoOverlay {
       position: fixed;
       top: 0;
@@ -1880,7 +1860,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     <div class="review-buttons">
       <button id="exportBtn" class="btn">Exportar</button>
-            <button id="editBtn" class="btn">Editar</button>
+      <button id="medicalAccessBtn" class="btn">Acesso Médico</button>
+      <button id="editBtn" class="btn">Editar</button>
       <button id="deleteAllBtn" class="btn btn-danger">
         <i class="fas fa-trash"></i> Excluir todos os dados
       </button>
