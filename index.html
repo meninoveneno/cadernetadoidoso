@@ -4626,7 +4626,7 @@
 
     // Inicialização
     window.onload = () => {
-      const username = localStorage.getItem('currentUser');
+      let username = localStorage.getItem('currentUser');
       if (username) {
         reviewUnsubscribe = setupRealtimeUpdates(username);
         document.getElementById('homeScreen').style.display = 'none';
@@ -4650,8 +4650,18 @@
             // Inicializa o calendário de atividades
             activityDates = data.activityDates || [];
             renderActivityCalendar();
+          } else {
+            // Se não encontrou dados, limpa currentUser e mostra tela inicial
+            localStorage.removeItem('currentUser');
+            username = null;
+            document.getElementById('homeScreen').style.display = 'block';
+            document.getElementById('reviewScreen').style.display = 'none';
           }
         });
+      } else {
+        // Se não tem usuário salvo, mostra tela inicial
+        document.getElementById('homeScreen').style.display = 'block';
+        document.getElementById('reviewScreen').style.display = 'none';
       }
       
       // Inicializa os eventos para o monitoramento de peso
