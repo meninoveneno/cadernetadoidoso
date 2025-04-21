@@ -4317,17 +4317,21 @@ async function addWeightRecord() {
         
         // Atualiza as vacinas (pode ter removido algumas)
         const vacinaForms = document.querySelectorAll('.vacina-form');
-        updatedData.vacinacao = Array.from(vacinaForms).map(form => {
-          const index = parseInt(form.dataset.index);
-          return updatedData.vacinacao[index] || {};
-        });
+        updatedData.vacinacao = Array.from(vacinaForms).map(form => ({
+          nomeVacina: form.querySelector('input[data-field*="nomeVacina"]').value,
+          dataAplicacao: form.querySelector('input[data-field*="dataAplicacao"]').value,
+          loteVacina: form.querySelector('input[data-field*="loteVacina"]').value,
+          observacoes: form.querySelector('textarea[data-field*="observacoes"]').value
+        }));
         
         // Atualiza os medicamentos (pode ter removido alguns)
         const medicamentoForms = document.querySelectorAll('.medicamento-form');
-        updatedData.medicamentos = Array.from(medicamentoForms).map(form => {
-          const index = parseInt(form.dataset.index);
-          return updatedData.medicamentos[index] || {};
-        });
+        updatedData.medicamentos = Array.from(medicamentoForms).map(form => ({
+          nome: form.querySelector('input[data-field*="nome"]').value,
+          dose: form.querySelector('input[data-field*="dose"]').value,
+          posologia: form.querySelector('input[data-field*="posologia"]').value,
+          horario: form.querySelector('input[data-field*="horario"]').value
+        }));
         
         // Salva no Firestore
         await db.collection('usuarios').doc(currentEditingUser).update(updatedData);
