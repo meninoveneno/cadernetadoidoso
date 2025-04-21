@@ -2811,27 +2811,11 @@
     }
 
     // Funções para o monitoramento de peso
-async function addWeightRecord() {
+    async function addWeightRecord() {
   const weight = document.getElementById('weightInput').value;
-  // Corrigir a forma como a data é obtida para evitar deslocamento de fuso horário
+  // Corrigir a forma como a data é obtida
   const dateInput = document.getElementById('weightDate').value;
-  let date;
-  if (dateInput) {
-    const parts = dateInput.split('-');
-    // Criar data local sem deslocamento de fuso horário
-    const localDate = new Date(parts[0], parts[1] - 1, parts[2]);
-    // Formatar para yyyy-mm-dd sem deslocamento de fuso horário
-    const year = localDate.getFullYear();
-    const month = String(localDate.getMonth() + 1).padStart(2, '0');
-    const day = String(localDate.getDate()).padStart(2, '0');
-    date = `${year}-${month}-${day}`;
-  } else {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    date = `${year}-${month}-${day}`;
-  }
+  const date = dateInput ? new Date(dateInput).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
   
   if (!weight) {
     showPopup('Por favor, informe o peso!', true);
@@ -4317,21 +4301,17 @@ async function addWeightRecord() {
         
         // Atualiza as vacinas (pode ter removido algumas)
         const vacinaForms = document.querySelectorAll('.vacina-form');
-        updatedData.vacinacao = Array.from(vacinaForms).map(form => ({
-          nomeVacina: form.querySelector('input[data-field*="nomeVacina"]').value,
-          dataAplicacao: form.querySelector('input[data-field*="dataAplicacao"]').value,
-          loteVacina: form.querySelector('input[data-field*="loteVacina"]').value,
-          observacoes: form.querySelector('textarea[data-field*="observacoes"]').value
-        }));
+        updatedData.vacinacao = Array.from(vacinaForms).map(form => {
+          const index = parseInt(form.dataset.index);
+          return updatedData.vacinacao[index] || {};
+        });
         
         // Atualiza os medicamentos (pode ter removido alguns)
         const medicamentoForms = document.querySelectorAll('.medicamento-form');
-        updatedData.medicamentos = Array.from(medicamentoForms).map(form => ({
-          nome: form.querySelector('input[data-field*="nome"]').value,
-          dose: form.querySelector('input[data-field*="dose"]').value,
-          posologia: form.querySelector('input[data-field*="posologia"]').value,
-          horario: form.querySelector('input[data-field*="horario"]').value
-        }));
+        updatedData.medicamentos = Array.from(medicamentoForms).map(form => {
+          const index = parseInt(form.dataset.index);
+          return updatedData.medicamentos[index] || {};
+        });
         
         // Salva no Firestore
         await db.collection('usuarios').doc(currentEditingUser).update(updatedData);
