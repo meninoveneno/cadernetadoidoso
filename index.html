@@ -2820,11 +2820,17 @@ async function addWeightRecord() {
     const parts = dateInput.split('-');
     // Criar data local sem deslocamento de fuso horário
     const localDate = new Date(parts[0], parts[1] - 1, parts[2]);
-    // Formatar para yyyy-mm-dd
-    date = localDate.toISOString().split('T')[0];
+    // Formatar para yyyy-mm-dd sem deslocamento de fuso horário
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, '0');
+    const day = String(localDate.getDate()).padStart(2, '0');
+    date = `${year}-${month}-${day}`;
   } else {
     const now = new Date();
-    date = now.toISOString().split('T')[0];
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    date = `${year}-${month}-${day}`;
   }
   
   if (!weight) {
